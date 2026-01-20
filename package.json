@@ -1,0 +1,34 @@
+{
+  "name": "betti-apps-hub",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev:all",
+    "dev:all": "concurrently -n hub,senior,caregiver,ems,security,fire \"npm run dev:hub\" \"npm run dev:senior\" \"npm run dev:caregiver\" \"npm run dev:ems\" \"npm run dev:security\" \"npm run dev:fire\"",
+    "dev:hub": "next dev",
+    "dev:senior": "npm run dev --prefix ./betti-senior-dashboard",
+    "dev:caregiver": "npm run dev --prefix ./betti-caregiver-dashboard",
+    "dev:ems": "npm run dev --prefix ./betti-EMS-dashboard",
+    "dev:security": "npm run dev --prefix ./betti-security-dashboard",
+    "dev:fire": "npm run dev --prefix \"./betti-Fire Service-dashboard\"",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "next": "16.1.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
