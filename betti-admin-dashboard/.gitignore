@@ -24,8 +24,6 @@
 .DS_Store
 *.pem
 desktop.ini
-nul
-~$*
 
 # debug
 npm-debug.log*
