@@ -1,0 +1,470 @@
+================================================================================
+                   BETTI APP - REMAINING WORK TO LAUNCH
+================================================================================
+
+Last Updated: February 5, 2026
+
+This document lists everything that needs to be built, fixed, or configured
+before the Betti platform can be considered a full, production-ready application.
+Items are organized by category and priority.
+
+
+================================================================================
+PRIORITY 1 - CRITICAL (Must Have Before Any Launch)
+================================================================================
+
+1.1 BACKEND API LAYER
+----------------------
+Status: NOT STARTED
+Currently all 6 dashboards use hardcoded mock data with no server-side logic.
+
+Tasks:
+  [ ] Choose and set up a backend framework:
+      - Option A: Next.js API Routes (built-in, simplest for current stack)
+      - Option B: Separate Node.js/Express server
+      - Option C: NestJS (enterprise-grade, TypeScript-native)
+  [ ] Create a shared API service layer or centralized backend that all
+      dashboards connect to (avoid duplicating APIs across 6 apps)
+  [ ] Implement RESTful (or GraphQL) endpoints for:
+      - Users (CRUD, search, filter)
+      - Patients (CRUD, medical profiles, risk scores)
+      - Facilities (CRUD, capacity management)
+      - Alerts (create, acknowledge, escalate, resolve)
+      - Devices & Sensors (status, readings, configuration)
+      - Vital Metrics (create, query by patient/date range)
+      - Medications (schedule, log, adherence tracking)
+      - Appointments (CRUD, scheduling)
+      - Communications (messages, calls)
+      - Reports (generate, export)
+      - Audit Logs (create, query)
+      - AI Inferences & Rules (CRUD, trigger management)
+      - Emergency Responders (CRUD, dispatch)
+  [ ] Implement proper error handling and HTTP status codes
+  [ ] Add request validation and input sanitization
+  [ ] Add API rate limiting
+  [ ] Set up API versioning (e.g., /api/v1/)
+
+1.2 DATABASE CONNECTION
+------------------------
+Status: SCHEMA EXISTS (betti_db.sql), NOT CONNECTED
+The MySQL schema has ~50+ tables designed but no app connects to it.
+
+Tasks:
+  [ ] Set up MySQL server (local dev + cloud for staging/production)
+  [ ] Choose an ORM or query builder:
+      - Option A: Prisma (popular, type-safe, great with Next.js)
+      - Option B: Drizzle ORM (lightweight, TypeScript-native)
+      - Option C: Knex.js (flexible query builder)
+  [ ] Run the betti_db.sql schema to create all tables
+  [ ] Fix the commented-out column in patients table (#race_ethnicity)
+  [ ] Create database migration system for future schema changes
+  [ ] Set up database connection pooling
+  [ ] Create seed data scripts for development/testing
+  [ ] Set up environment variables for database credentials:
+      - DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
+  [ ] Replace ALL mock/hardcoded data in every dashboard component with
+      real API calls to the database
+
+1.3 AUTHENTICATION & AUTHORIZATION
+------------------------------------
+Status: NOT IMPLEMENTED (login forms exist but are non-functional)
+Central Hub has a login modal that just redirects without validation.
+Admin Dashboard has demo credentials (admin@betti.com / admin123).
+
+Tasks:
+  [ ] Implement real authentication system:
+      - Option A: NextAuth.js / Auth.js (easiest with Next.js)
+      - Option B: Custom JWT authentication
+      - Option C: Third-party auth (Auth0, Clerk, Supabase Auth)
+  [ ] Connect login to the user_credentials table in MySQL
+  [ ] Implement secure password hashing (bcrypt - schema already has
+      password_hash column)
+  [ ] Implement JWT or session-based tokens
+  [ ] Add token refresh mechanism
+  [ ] Build role-based access control (RBAC) using the existing roles,
+      permissions, and role_permissions tables
+  [ ] Implement route protection / middleware:
+      - Seniors can only access Senior Dashboard
+      - Caregivers can only access Caregiver Dashboard
+      - EMS staff can only access EMS Dashboard
+      - Security can only access Security Dashboard
+      - Fire service can only access Fire Dashboard
+      - Admins can access Admin Dashboard and manage all
+  [ ] Add protected API routes (verify token on every request)
+  [ ] Implement logout with token invalidation
+  [ ] Build "Forgot Password" flow with email reset
+  [ ] Implement the 2FA system (UI exists in EMS settings, needs backend)
+  [ ] Remove hardcoded demo credentials from admin login page
+  [ ] Replace sessionStorage auth with secure httpOnly cookies
+  [ ] Add CSRF protection
+  [ ] Implement account lockout after failed login attempts
+
+1.4 ENVIRONMENT CONFIGURATION
+-------------------------------
+Status: NO .env FILES EXIST
+
+Tasks:
+  [ ] Create .env.local template with all required variables:
+      - Database credentials (DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME)
+      - Authentication secrets (JWT_SECRET, NEXTAUTH_SECRET)
+      - Dashboard URLs (NEXT_PUBLIC_BETTI_SENIOR_URL, etc.)
+      - Email service credentials
+      - SMS service credentials
+      - Cloud storage credentials
+      - API keys for third-party services
+  [ ] Create .env.example file for the repository (without real values)
+  [ ] Ensure .env* is in .gitignore (already done)
+  [ ] Set up environment-specific configs (development, staging, production)
+
+
+================================================================================
+PRIORITY 2 - HIGH (Required for Meaningful Launch)
+================================================================================
+
+2.1 REAL-TIME DATA & SENSOR INTEGRATION
+-----------------------------------------
+Status: ALL SIMULATED (random number generators, mock arrays)
+
+Tasks:
+  [ ] Implement WebSocket or Server-Sent Events (SSE) for real-time data:
+      - Vital signs updates (heart rate, temperature, hydration)
+      - Sensor readings (motion, door, environmental)
+      - Alert notifications (push to relevant dashboards)
+      - Device status changes
+      - Location tracking updates
+  [ ] Build sensor data ingestion pipeline:
+      - API endpoint to receive sensor readings
+      - Store in sensor_readings table
+      - Trigger alerts based on rule_definitions
+  [ ] Integrate with actual IoT hardware:
+      - Halo Sensor (wearable)
+      - Smart Watch
+      - Home Hub
+      - Motion sensors, door sensors, bed sensors
+      - Environmental sensors (temp, humidity, air quality, smoke)
+      - Smart locks
+      - Camera feeds
+  [ ] Implement the AI/ML inference pipeline:
+      - Fall detection model
+      - Activity recognition
+      - Distress/voice analysis
+      - Intoxication detection
+      - Risk score calculation
+  [ ] Replace all setInterval-based simulations with real data streams
+
+2.2 ALERT SYSTEM
+-----------------
+Status: UI COMPLETE, NO REAL ALERT PIPELINE
+
+Tasks:
+  [ ] Build alert generation engine:
+      - Triggered by sensor readings exceeding thresholds
+      - Triggered by AI model inferences
+      - Triggered by missed check-ins
+      - Triggered by device health issues
+  [ ] Implement alert escalation pipeline:
+      - Use escalation_policies table
+      - Auto-escalate unacknowledged alerts after timeout
+      - Notify appropriate roles (caregiver -> security -> EMS)
+  [ ] Build real push notifications:
+      - Browser push notifications (Web Push API)
+      - Mobile push notifications (if mobile app planned)
+      - Email notifications
+      - SMS notifications (Twilio or similar)
+  [ ] Implement alert acknowledgment and resolution workflow
+  [ ] Build alert history and analytics
+
+2.3 COMMUNICATION SYSTEM
+--------------------------
+Status: UI EXISTS, NO REAL MESSAGING
+
+Tasks:
+  [ ] Build real messaging backend:
+      - Store in messages table
+      - Real-time delivery via WebSocket
+      - Read receipts
+      - Message history
+  [ ] Implement real video/voice calling:
+      - WebRTC signaling server
+      - STUN/TURN server setup
+      - Call logging to calls table
+  [ ] Implement email integration:
+      - Transactional emails (alerts, notifications, password reset)
+      - Email service (SendGrid, AWS SES, or similar)
+  [ ] Implement SMS integration:
+      - Alert notifications
+      - SMS service (Twilio, AWS SNS, or similar)
+
+2.4 FORM SUBMISSIONS & DATA PERSISTENCE
+-----------------------------------------
+Status: ALL FORMS ARE UI-ONLY (no data saved)
+
+Tasks:
+  [ ] Wire up all "Add" forms to create records via API:
+      - Add Patient form (Admin Dashboard)
+      - Add Caregiver form (Admin Dashboard)
+      - Add Admin form (Admin Dashboard)
+      - Add Device form
+      - Schedule Appointment form (EMS Dashboard)
+      - Create Rule form (Admin Dashboard)
+  [ ] Wire up all "Edit" actions to update records via API
+  [ ] Wire up all "Delete" actions with confirmation dialogs
+  [ ] Implement form validation on both client and server side
+  [ ] Add loading/success/error states for all form submissions
+  [ ] Ensure data persists across page refreshes (currently lost)
+
+
+================================================================================
+PRIORITY 3 - MEDIUM (Important for Production Quality)
+================================================================================
+
+3.1 HIPAA COMPLIANCE & SECURITY
+---------------------------------
+Status: NOT ADDRESSED (this is a healthcare app - HIPAA is legally required)
+
+Tasks:
+  [ ] Implement data encryption at rest (database encryption)
+  [ ] Implement data encryption in transit (HTTPS everywhere)
+  [ ] Set up audit logging for all data access (audit_logs table exists)
+  [ ] Implement access controls and minimum necessary access
+  [ ] Add session timeout and automatic logout
+  [ ] Implement data backup and recovery procedures
+  [ ] Set up breach notification system
+  [ ] Create Business Associate Agreements (BAA) with cloud providers
+  [ ] Conduct security risk assessment
+  [ ] Implement data retention and disposal policies
+  [ ] Add content security headers (CSP, HSTS, X-Frame-Options)
+  [ ] Penetration testing before launch
+  [ ] HIPAA compliance audit
+  [ ] Document all security policies and procedures
+
+3.2 DEPLOYMENT & HOSTING
+--------------------------
+Status: NOT CONFIGURED (development only)
+
+Tasks:
+  [ ] Choose hosting platform:
+      - Option A: Vercel (best for Next.js, but 7 apps = multiple projects)
+      - Option B: AWS (ECS/EKS for containers, RDS for MySQL)
+      - Option C: DigitalOcean App Platform
+      - Option D: Self-hosted (VPS with Docker)
+  [ ] Create Dockerfiles for each dashboard app
+  [ ] Create docker-compose.yml for local development
+  [ ] Set up CI/CD pipeline (GitHub Actions, GitLab CI, or similar):
+      - Automated testing on pull requests
+      - Automated deployment on merge to main
+      - Environment-specific deploys (staging, production)
+  [ ] Set up SSL/TLS certificates (HTTPS)
+  [ ] Configure domain names and DNS
+  [ ] Set up CDN for static assets
+  [ ] Configure production database (managed MySQL - AWS RDS, PlanetScale, etc.)
+  [ ] Set up database backups (automated daily)
+  [ ] Configure monitoring and alerting (Datadog, New Relic, or similar)
+  [ ] Set up error tracking (Sentry or similar)
+  [ ] Configure logging (centralized log management)
+  [ ] Load testing and performance optimization
+  [ ] Set up staging environment for pre-production testing
+
+3.3 TESTING
+-------------
+Status: NO TESTS EXIST
+
+Tasks:
+  [ ] Set up testing framework (Jest + React Testing Library)
+  [ ] Write unit tests for utility functions and hooks
+  [ ] Write component tests for critical UI components:
+      - Fall detection countdown timer
+      - Alert resolution workflow
+      - Login form validation
+      - Search and filter logic
+  [ ] Write integration tests for API endpoints
+  [ ] Write end-to-end tests (Playwright or Cypress):
+      - Login flow
+      - Dashboard navigation
+      - Alert creation and resolution
+      - Patient CRUD operations
+  [ ] Set up test coverage reporting
+  [ ] Add tests to CI/CD pipeline (block deploys on test failures)
+
+3.4 CODE QUALITY & CONSISTENCY
+--------------------------------
+Status: INCONSISTENT (different Next.js versions, TypeScript/ESLint disabled)
+
+Tasks:
+  [ ] Standardize Next.js version across all dashboards (recommend 15.x or 16.x)
+  [ ] Standardize React version across all dashboards (recommend 19.x)
+  [ ] Re-enable TypeScript strict checking (currently ignoreBuildErrors: true)
+  [ ] Re-enable ESLint checking (currently ignoreDuringBuilds: true)
+  [ ] Fix all TypeScript errors across all dashboards
+  [ ] Fix all ESLint warnings/errors
+  [ ] Set up shared component library (avoid duplicating UI components
+      across 6 dashboards)
+  [ ] Set up shared types/interfaces package
+  [ ] Add Prettier for consistent code formatting
+  [ ] Set up pre-commit hooks (Husky + lint-staged)
+
+
+================================================================================
+PRIORITY 4 - NICE TO HAVE (Polish & Enhancement)
+================================================================================
+
+4.1 REPORT GENERATION
+-----------------------
+Status: UI EXISTS, NO ACTUAL GENERATION
+
+Tasks:
+  [ ] Implement PDF report generation (jsPDF is already installed):
+      - Daily Activity Summary
+      - Weekly Incident Report
+      - Monthly Health Trends
+      - Caregiver Performance
+      - Device Health Report
+      - Compliance Audit
+  [ ] Implement CSV/Excel export (xlsx is already installed in EMS)
+  [ ] Add scheduled report generation (daily/weekly/monthly cron jobs)
+  [ ] Implement report email delivery
+
+4.2 BILLING & RPM INTEGRATION
+-------------------------------
+Status: MOCK CPT CODE DATA ONLY
+
+Tasks:
+  [ ] Implement CPT code management and mapping
+  [ ] Build RPM (Remote Patient Monitoring) time tracking
+  [ ] Integrate with billing/claims systems
+  [ ] Generate billing reports and invoices
+  [ ] Track reimbursement status
+
+4.3 MOBILE APPLICATION
+------------------------
+Status: NOT STARTED (responsive web works on mobile, but no native app)
+
+Tasks:
+  [ ] Evaluate need for native mobile app (React Native or Flutter)
+  [ ] At minimum, ensure all dashboards are Progressive Web Apps (PWA)
+  [ ] Add service workers for offline capability
+  [ ] Implement native push notifications
+
+4.4 PERFORMANCE OPTIMIZATION
+------------------------------
+Status: BASIC (no optimization done)
+
+Tasks:
+  [ ] Enable Next.js Image optimization (currently unoptimized: true)
+  [ ] Implement lazy loading for dashboard sections
+  [ ] Add API response caching (Redis or in-memory)
+  [ ] Implement database query optimization and indexing
+  [ ] Add pagination to all database queries
+  [ ] Implement virtual scrolling for large data sets
+  [ ] Bundle size analysis and code splitting
+  [ ] Set up performance monitoring
+
+4.5 ACCESSIBILITY
+------------------
+Status: PARTIAL (Radix UI provides good baseline)
+
+Tasks:
+  [ ] Full accessibility audit (WCAG 2.1 AA compliance)
+  [ ] Ensure keyboard navigation works across all dashboards
+  [ ] Add proper ARIA labels to all interactive elements
+  [ ] Test with screen readers (NVDA, VoiceOver)
+  [ ] Ensure color contrast meets AA standards
+  [ ] Senior Dashboard: extra attention to font sizes, touch targets,
+      and simplicity for elderly users
+
+4.6 INTERNATIONALIZATION (i18n)
+---------------------------------
+Status: NOT IMPLEMENTED (English only)
+
+Tasks:
+  [ ] Set up i18n framework (next-intl or react-i18next)
+  [ ] Extract all hardcoded strings to translation files
+  [ ] Support multiple languages (based on target markets)
+  [ ] Support RTL layouts if needed
+
+4.7 DOCUMENTATION
+------------------
+Status: BASIC README ONLY
+
+Tasks:
+  [ ] Write API documentation (Swagger/OpenAPI)
+  [ ] Create developer setup guide
+  [ ] Write user manual for each dashboard role
+  [ ] Create system architecture diagrams
+  [ ] Document database schema relationships (ER diagrams)
+  [ ] Create onboarding guide for new developers
+  [ ] Write incident response playbook
+
+
+================================================================================
+PRIORITY 5 - INFRASTRUCTURE & OPERATIONAL
+================================================================================
+
+5.1 MONITORING & OBSERVABILITY
+-------------------------------
+Tasks:
+  [ ] Application performance monitoring (APM)
+  [ ] Server health monitoring
+  [ ] Database query performance monitoring
+  [ ] Real-time dashboard for system health
+  [ ] Uptime monitoring with alerting
+  [ ] Log aggregation and analysis
+
+5.2 DISASTER RECOVERY
+-----------------------
+Tasks:
+  [ ] Automated database backups (daily + before deployments)
+  [ ] Database replication (primary/replica)
+  [ ] Geographic redundancy for critical systems
+  [ ] Documented recovery procedures
+  [ ] Regular disaster recovery testing
+
+5.3 SCALABILITY
+----------------
+Tasks:
+  [ ] Horizontal scaling strategy for API layer
+  [ ] Database read replicas for heavy read workloads
+  [ ] Message queue for async processing (sensor data ingestion, notifications)
+  [ ] Consider microservices if monolithic backend becomes bottleneck
+  [ ] Auto-scaling policies for cloud infrastructure
+
+
+================================================================================
+SUMMARY - LAUNCH READINESS CHECKLIST
+================================================================================
+
+MINIMUM VIABLE PRODUCT (MVP) LAUNCH requires:
+  [ ] Backend API layer with database connectivity
+  [ ] Real authentication and role-based access control
+  [ ] Data persistence (replace all mock data with real database)
+  [ ] Basic alert pipeline (sensor -> alert -> notification)
+  [ ] HTTPS and basic security
+  [ ] Deployment to cloud hosting
+  [ ] HIPAA compliance baseline (if handling real patient data)
+
+FULL PRODUCT LAUNCH additionally requires:
+  [ ] Real-time data from IoT sensors
+  [ ] Full communication system (messaging, video/voice calls)
+  [ ] Push notifications (browser, email, SMS)
+  [ ] Report generation and export
+  [ ] Automated testing suite
+  [ ] CI/CD pipeline
+  [ ] Monitoring and error tracking
+  [ ] Performance optimization
+  [ ] Security audit and penetration testing
+  [ ] User documentation
+
+
+ESTIMATED EFFORT (rough order of magnitude):
+  Priority 1 (Critical):          8-12 weeks with a small team (2-3 devs)
+  Priority 2 (High):              6-10 weeks
+  Priority 3 (Medium):            4-8 weeks
+  Priority 4 (Nice to Have):      4-6 weeks
+  Priority 5 (Infrastructure):    2-4 weeks (ongoing)
+
+  Total to Full Production:       ~24-40 weeks (6-10 months)
+  Total to MVP:                   ~10-14 weeks (2.5-3.5 months)
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================

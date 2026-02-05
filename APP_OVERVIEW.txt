@@ -1,0 +1,340 @@
+================================================================================
+                        BETTI APP - APPLICATION OVERVIEW
+================================================================================
+
+Last Updated: February 5, 2026
+
+
+1. WHAT IS BETTI?
+================================================================================
+
+Betti is an integrated healthcare monitoring and emergency response platform
+designed for senior care. It provides real-time wellness tracking, fall
+detection, smart home monitoring, and coordinated emergency response across
+multiple user roles: seniors, caregivers, EMS responders, security personnel,
+fire service units, and system administrators.
+
+The platform is built as a monorepo containing a Central Hub app and six
+role-specific dashboard applications, each tailored to a different user type.
+
+
+2. ARCHITECTURE
+================================================================================
+
+The project follows a microservices-style monorepo architecture:
+
+    Central-App/                          (Root - Monorepo)
+    |
+    |-- app/                              Central Hub (Next.js 16.1.1, Port 3000)
+    |-- betti-senior-dashboard/           Senior Dashboard (Next.js 14.2.16, Port 3001)
+    |-- betti-caregiver-dashboard/        Caregiver Dashboard (Next.js 14.2.16, Port 3002)
+    |-- betti-EMS-dashboard/              EMS Dashboard (Next.js 15.2.4, Port 3003)
+    |-- betti-security-dashboard/         Security Dashboard (Next.js 15.2.4, Port 3004)
+    |-- betti-Fire Service-dashboard/     Fire Service Dashboard (Next.js 15.2.4, Port 3005)
+    |-- betti-admin-dashboard/            Admin Dashboard (Next.js 15.2.4, Port 3006)
+    |-- betti_db.sql                      MySQL Database Schema (~700 lines)
+    |-- public/                           Static assets + senior dashboard build
+    |-- lib/                              Shared utilities
+    |-- components/                       Shared components
+    |-- package.json                      Root config with concurrently scripts
+
+Each dashboard is an independent Next.js application that can run standalone
+or be launched together via the Central Hub.
+
+
+3. TECHNOLOGY STACK
+================================================================================
+
+Frontend:
+  - Next.js (14.x, 15.x, 16.x across apps)
+  - React (18.x and 19.x)
+  - TypeScript 5.x
+  - Tailwind CSS 4.x
+  - Radix UI / Shadcn UI component library
+  - Recharts (data visualization / charts)
+  - React Hook Form + Zod (form handling & validation)
+  - Lucide React (icons)
+  - Sonner (toast notifications)
+  - jsPDF + jspdf-autotable (PDF export)
+  - xlsx (Excel export)
+  - next-themes (dark/light mode)
+
+Database (Schema only - not yet connected):
+  - MySQL with InnoDB engine
+  - ~50+ tables covering users, patients, devices, alerts, vitals,
+    medications, facilities, AI inferences, audit logs, and more
+
+Backend:
+  - NOT YET IMPLEMENTED
+  - No API routes, no server-side logic, no database connection
+
+Build Tools:
+  - concurrently (runs all apps simultaneously)
+  - PostCSS, ESLint, TypeScript compiler
+
+
+4. THE SIX DASHBOARDS
+================================================================================
+
+4.1 CENTRAL HUB (Port 3000)
+-----------------------------
+Purpose: Landing page and gateway to all dashboards.
+Features:
+  - Dashboard cards with "Open dashboard" buttons
+  - Login/signup modal (UI only, no real authentication)
+  - Dashboard URL warmup (preloads dashboard URLs for faster switching)
+  - Environment variable support for configurable dashboard URLs
+
+4.2 SENIOR DASHBOARD (Port 3001)
+---------------------------------
+Purpose: Wellness self-monitoring for elderly users.
+Target User: Seniors / Patients
+Key Features:
+  - Daily well-being score (e.g., 85/100)
+  - Fall detection with 30-second countdown and auto-escalation
+  - Quick "I'm OK" check-in button
+  - Emergency panic button
+  - Health tracking: hydration, medications, meals, activity (steps)
+  - Medication history with adherence rates
+  - Appointments list
+  - Smart home controls (door locks, security system)
+  - Restroom activity tracking
+  - Current location display
+  - Large fonts and senior-friendly UI design
+Pages: Dashboard, Medication History, Logs (Restroom, Appointments, Meals,
+       Medications, Hydration), Profile, Settings, Device Status
+
+4.3 CAREGIVER DASHBOARD (Port 3002)
+-------------------------------------
+Purpose: Care coordination and patient monitoring for healthcare providers.
+Target User: Caregivers / Healthcare Staff
+Key Features:
+  - Real-time patient status (location, activity, wellness score)
+  - Fall alert system with multi-stage detection and auto-escalation
+  - Mental health monitoring
+  - Activity feed with recent events
+  - Health summary overview
+  - Communication tools (contact/messaging)
+  - Calendar with filterable reminders (medications, appointments, exercise)
+  - Occupancy & movement tracking with camera feeds and mini-map
+  - Insights & trends analytics
+Pages: Dashboard, Alerts & Safety, Communication, Reminders & Scheduling,
+       Occupancy & Movement, Insights & Trends, Security
+
+4.4 EMS DASHBOARD (Port 3003)
+-------------------------------
+Purpose: Emergency Medical Services monitoring and response coordination.
+Target User: EMS / Paramedics
+Key Features:
+  - Fall emergency response system with full workflow:
+    Standby -> Incoming Call -> Dispatched -> On Scene -> Resolved
+  - Real-time vital signs (heart rate, skin temp, hydration, AI confidence)
+    updating every 2 seconds
+  - Event feed with category filtering (safety, medication, emergency, etc.)
+  - Occupancy & movement with 4-camera feeds and interactive floor plan
+  - Video/voice calling (WebRTC-ready with camera/mic access)
+  - Text messaging and email integration
+  - Appointment scheduling (create, reschedule, cancel)
+  - Smart lock security controls (4 entry points)
+  - Health analytics with charts (heart rate, medication adherence, sleep,
+    hydration)
+  - PDF export and report generation
+  - Allergy banner with anaphylaxis warnings
+Pages: Dashboard, Health & Wellness, Activity Feed, Monitoring, Communication,
+       Appointments, Insights & Reports, Security, Settings
+
+4.5 SECURITY DASHBOARD (Port 3004)
+------------------------------------
+Purpose: AI-powered security monitoring and incident response.
+Target User: Security Personnel / Agencies
+Key Features:
+  - Incident header with active distress alerts
+  - AI-powered distress detection (voice analysis)
+  - Intoxication detection (voice analysis with confidence scores)
+  - Real-time location trail with coordinates
+  - Check-in responsiveness tracking
+  - Device health monitoring
+  - Mental health assessment
+  - Entry route recommendations (AI-suggested)
+  - Activity timeline
+  - Daily routine analysis
+  - Comprehensive incident logging (falls, panic buttons, missed check-ins)
+Pages: Dashboard, Incidents, Alerts, Device Status, Logs, Monitoring,
+       Reports, Settings, Profile
+
+4.6 FIRE SERVICE DASHBOARD (Port 3005)
+----------------------------------------
+Purpose: Fire service response and environmental monitoring.
+Target User: Fire Department / First Responders
+Key Features:
+  - Active incident display with priority/status
+  - Caregiver contact information
+  - Environmental monitoring (temperature, air quality)
+  - Occupancy monitoring
+  - Incident location routing
+  - Device/equipment status
+  - Comprehensive incident management (Fire, Fall, Medical, Panic)
+  - Multi-agency notification (caregiver, security, emergency services)
+  - Live camera feeds (4 cameras, HD 1080p)
+  - Monitoring activity logs
+Pages: Dashboard, Incidents, Analytics, Communication, Monitoring,
+       Environment, Occupancy, Security, Settings
+
+4.7 ADMIN DASHBOARD (Port 3006)
+---------------------------------
+Purpose: Centralized administration and system management.
+Target User: System Administrators
+Key Features:
+  - Overview with 6 KPI cards (patients, caregivers, alerts, risk, sensors,
+    response time)
+  - Patient management (16 mock patients with full profiles)
+  - Caregiver management (22 mock caregivers across 4 facilities)
+  - Alert monitoring with resolve actions
+  - Device & sensor management (motion, door, bed, environmental, wearable)
+  - Fall monitoring with incident tracking
+  - AI & rules engine management (ML model outputs, business rules)
+  - Emergency responder configuration
+  - Security agency management
+  - Fire service unit management
+  - Communications (messages and calls)
+  - Reports & analytics (6 report types)
+  - Billing & RPM (CPT code management)
+  - Multi-facility management (4 facilities)
+  - Audit logs and access control
+  - Admin user management
+  - System settings (HIPAA, backups, maintenance mode)
+Pages: 17 sections accessible via sidebar navigation
+
+
+5. DATABASE SCHEMA
+================================================================================
+
+The MySQL schema (betti_db.sql) defines ~50+ tables organized into:
+
+Core Entities:
+  - facilities, users, user_credentials, patients, roles, permissions
+
+Health & Wellness:
+  - vital_metrics, patient_medical_profile, medication_schedule,
+    medication_logs, daily_adherence, sleep_logs, mental_health_logs,
+    hydration_reminders, hydration_logs, meal_schedule, meal_logs
+
+Devices & IoT:
+  - hubs, room_packs, sensors, device_status, sensor_readings
+
+Alerts & Emergency:
+  - alerts, alert_types, alert_details, smoke_alerts, device_health_alerts,
+    voice_alerts, inactivity_alerts, escalation_policies, severity_levels,
+    emergency_responders, emergency_access_logs
+
+AI & Rules:
+  - rule_definitions, rule_conditions, rule_actions, patient_risk_scores,
+    ai_inferences
+
+Communication:
+  - messages, calls
+
+Infrastructure:
+  - location_history, environmental_metrics, routes, route_steps, audit_logs
+
+
+6. HOW TO SET UP & RUN
+================================================================================
+
+PREREQUISITES:
+  - Node.js (v18 or higher recommended)
+  - npm (comes with Node.js)
+  - Git
+  - MySQL (for database - optional, as data is currently mocked)
+
+STEP 1: Clone the Repository
+  git clone <repository-url>
+  cd Central-App
+
+STEP 2: Install Root Dependencies
+  npm install
+
+STEP 3: Install Dashboard Dependencies
+  Run npm install inside each dashboard folder:
+
+  cd betti-senior-dashboard && npm install && cd ..
+  cd betti-caregiver-dashboard && npm install && cd ..
+  cd betti-EMS-dashboard && npm install && cd ..
+  cd betti-security-dashboard && npm install && cd ..
+  cd "betti-Fire Service-dashboard" && npm install && cd ..
+  cd betti-admin-dashboard && npm install && cd ..
+
+STEP 4: (Optional) Set Up Environment Variables
+  Create a .env.local file in the root directory:
+
+  NEXT_PUBLIC_BETTI_SENIOR_URL=http://localhost:3001
+  NEXT_PUBLIC_BETTI_CAREGIVER_URL=http://localhost:3002
+  NEXT_PUBLIC_BETTI_EMS_URL=http://localhost:3003
+  NEXT_PUBLIC_BETTI_SECURITY_URL=http://localhost:3004
+  NEXT_PUBLIC_BETTI_FIRE_URL=http://localhost:3005
+
+  If not set, the app defaults to these localhost URLs automatically.
+
+STEP 5: (Optional) Set Up the Database
+  Install MySQL and run:
+  mysql -u root -p < betti_db.sql
+
+  Note: The app currently uses mock data and does NOT connect to the database.
+
+STEP 6: Run All Apps Simultaneously
+  From the root directory:
+  npm run dev
+
+  This uses concurrently to start all 7 apps at once:
+    - Central Hub:       http://localhost:3000
+    - Senior Dashboard:  http://localhost:3001
+    - Caregiver:         http://localhost:3002
+    - EMS:               http://localhost:3003
+    - Security:          http://localhost:3004
+    - Fire Service:      http://localhost:3005
+    - Admin:             http://localhost:3006
+
+STEP 7: Run Individual Dashboards (Optional)
+  npm run dev:hub         (Central Hub only)
+  npm run dev:senior      (Senior Dashboard only)
+  npm run dev:caregiver   (Caregiver Dashboard only)
+  npm run dev:ems         (EMS Dashboard only)
+  npm run dev:security    (Security Dashboard only)
+  npm run dev:fire        (Fire Service Dashboard only)
+  npm run dev:admin       (Admin Dashboard only)
+
+
+7. BRAND / COLOR SCHEME
+================================================================================
+
+Primary Navy:    #233E7D  (headers, primary buttons, branding)
+Sage Green:      #5C7F39  (success states, secondary actions, CTA buttons)
+Light Gray:      #DADADA  (backgrounds, borders)
+Dark Gray:       #59595B  (body text)
+White:           #FFFFFF  (card backgrounds)
+
+
+8. CURRENT STATUS
+================================================================================
+
+The application is a HIGH-FIDELITY FRONTEND PROTOTYPE. All six dashboards
+have complete, professional UI/UX with:
+
+  [DONE] Beautiful responsive UI across all dashboards
+  [DONE] Mobile-first design with sidebar navigation
+  [DONE] Dark/light theme support
+  [DONE] Comprehensive mock data reflecting real healthcare scenarios
+  [DONE] Interactive features (fall detection, alerts, search, filters, pagination)
+  [DONE] Loading animations and toast notifications
+  [DONE] Database schema designed (~50+ tables)
+  [DONE] Central Hub with dashboard gateway
+
+  [NOT DONE] Backend API layer
+  [NOT DONE] Database connectivity
+  [NOT DONE] Real authentication / authorization
+  [NOT DONE] Real-time data from sensors/devices
+  [NOT DONE] Deployment / hosting
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================
