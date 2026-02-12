@@ -1,0 +1,7 @@
+build/** filter=lfs diff=lfs merge=lfs -text
+build/ filter=lfs diff=lfs merge=lfs -text
+betti-EMS-dashboard" filter=lfs diff=lfs merge=lfs -text
+betti-senior-dashboard" filter=lfs diff=lfs merge=lfs -text
+betti-security-dashboard" filter=lfs diff=lfs merge=lfs -text
+betti-caregiver-dashboard" filter=lfs diff=lfs merge=lfs -text
+betti-fire-service-dashboard" filter=lfs diff=lfs merge=lfs -text
