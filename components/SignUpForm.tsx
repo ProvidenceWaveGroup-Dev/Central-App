@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
-type RoleOption = "senior" | "caregiver" | "security" | "fire_service" | "ems";
+type RoleOption = "senior" | "caregiver" | "security" | "fire_service" | "ems" | "facility_operator";
 type LocationChoice = "facility" | "home" | "multi";
 
 const stepLabels = [
@@ -20,6 +20,7 @@ const roleLabels: Record<RoleOption, string> = {
   security: "Security",
   fire_service: "Fire Service",
   ems: "EMS",
+  facility_operator: "Facility Operator",
 };
 
 export default function SignUpForm() {
@@ -59,6 +60,9 @@ export default function SignUpForm() {
     emsLicenseNumber: "",
     emsLicenseState: "",
     emsYears: "",
+    operatorFacility: "",
+    operatorRole: "",
+    operatorContact: "",
     accessAcknowledge: false,
     verifyEmail: false,
     verifySms: false,
@@ -160,6 +164,9 @@ export default function SignUpForm() {
       if (selectedRole === "fire_service") {
         return formData.departmentName.trim() && formData.coveredFacilities.trim();
       }
+      if (selectedRole === "facility_operator") {
+        return formData.operatorFacility.trim() && formData.operatorRole.trim();
+      }
       return (
         formData.emsLicenseNumber.trim() &&
         formData.emsLicenseState.trim() &&
@@ -175,7 +182,8 @@ export default function SignUpForm() {
       const requiresAdmin =
         selectedRole === "security" ||
         selectedRole === "fire_service" ||
-        selectedRole === "ems";
+        selectedRole === "ems" ||
+        selectedRole === "facility_operator";
       if (!formData.verifyEmail) {
         return false;
       }
@@ -217,7 +225,7 @@ export default function SignUpForm() {
             />
           </div>
         </div>
-        <h1 className="text-xl font-semibold text-[#233E7D]">
+        <h1 className="font-serif text-2xl font-semibold text-[#233E7D]">
           Create Your Profile
         </h1>
       </div>
@@ -248,7 +256,7 @@ export default function SignUpForm() {
       </div>
 
       <div className="mt-8 border-t border-[#DADADA] pt-6">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-[#59595B]">
+        <h2 className="font-serif text-sm font-semibold uppercase tracking-[0.2em] text-[#233E7D]">
           {stepLabels[activeStep]}
         </h2>
         <p className="mt-2 text-sm text-[#59595B]">
@@ -272,7 +280,7 @@ export default function SignUpForm() {
               First Name *
             </label>
             <input
-              className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+              className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
               placeholder="Casey"
               value={formData.firstName}
               onChange={(event) =>
@@ -285,7 +293,7 @@ export default function SignUpForm() {
               Last Name *
             </label>
             <input
-              className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+              className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
               placeholder="Cupcakes"
               value={formData.lastName}
               onChange={(event) =>
@@ -298,7 +306,7 @@ export default function SignUpForm() {
               Email *
             </label>
             <input
-              className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+              className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
               placeholder="casey@email.com"
               type="email"
               value={formData.email}
@@ -310,7 +318,7 @@ export default function SignUpForm() {
               Phone (optional)
             </label>
             <input
-              className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+              className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
               placeholder="(555) 555-5555"
               inputMode="numeric"
               value={formData.phone}
@@ -325,7 +333,7 @@ export default function SignUpForm() {
             </label>
             <div className="relative">
               <input
-                className="w-full rounded-lg border border-[#DADADA] px-3 py-2 pr-12 text-sm text-[#59595B]"
+                className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 pr-12 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                 placeholder="••••••••"
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
@@ -386,7 +394,7 @@ export default function SignUpForm() {
             </label>
             <div className="relative">
               <input
-                className="w-full rounded-lg border border-[#DADADA] px-3 py-2 pr-12 text-sm text-[#59595B]"
+                className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 pr-12 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                 placeholder="••••••••"
                 type={showConfirmPassword ? "text" : "password"}
                 value={formData.confirmPassword}
@@ -444,7 +452,7 @@ export default function SignUpForm() {
       {activeStep === 1 ? (
         <div className="mt-8 space-y-6">
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-[#233E7D]">
+            <p className="font-serif text-sm font-semibold text-[#233E7D]">
               Where will you be using Betti?
             </p>
             <div className="flex flex-wrap gap-3">
@@ -478,7 +486,7 @@ export default function SignUpForm() {
                   Facility Name *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Betti Senior Living"
                   value={formData.facilityName}
                   onChange={(event) =>
@@ -492,7 +500,7 @@ export default function SignUpForm() {
                   Facility Address *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="123 Wellness Ave"
                   value={formData.facilityAddress}
                   onChange={(event) =>
@@ -506,7 +514,7 @@ export default function SignUpForm() {
                   Optional Room / Unit
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Room 210B"
                   value={formData.roomUnit}
                   onChange={(event) => updateField("roomUnit", event.target.value)}
@@ -522,7 +530,7 @@ export default function SignUpForm() {
                   Home Address *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="456 Home Lane"
                   value={formData.homeAddress}
                   onChange={(event) =>
@@ -536,7 +544,7 @@ export default function SignUpForm() {
                   Optional Room / Unit
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Bedroom 2"
                   value={formData.roomUnit}
                   onChange={(event) => updateField("roomUnit", event.target.value)}
@@ -552,7 +560,7 @@ export default function SignUpForm() {
                   Covered Facilities *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Add facility names or IDs"
                   value={formData.coveredFacilities}
                   onChange={(event) =>
@@ -573,7 +581,7 @@ export default function SignUpForm() {
               Role *
             </label>
             <select
-              className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+              className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
               value={selectedRole}
               onChange={(event) =>
                 setSelectedRole(event.target.value as RoleOption)
@@ -605,7 +613,7 @@ export default function SignUpForm() {
                   Gender *
                 </label>
                 <select
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   value={formData.gender}
                   onChange={(event) => updateField("gender", event.target.value)}
                 >
@@ -620,7 +628,7 @@ export default function SignUpForm() {
                   Primary Language *
                 </label>
                 <select
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   value={formData.primaryLanguage}
                   onChange={(event) =>
                     updateField("primaryLanguage", event.target.value)
@@ -639,7 +647,7 @@ export default function SignUpForm() {
                   Preferred Hospital *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="St. Mary's"
                   value={formData.preferredHospital}
                   onChange={(event) =>
@@ -655,7 +663,7 @@ export default function SignUpForm() {
                   Emergency Notes *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Allergies, DNR status, notes"
                   value={formData.emergencyNotes}
                   onChange={(event) =>
@@ -676,7 +684,7 @@ export default function SignUpForm() {
                   Caregiver Type *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Family / Professional"
                   value={formData.caregiverType}
                   onChange={(event) =>
@@ -689,7 +697,7 @@ export default function SignUpForm() {
                   Link to Patient *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Patient code or search"
                   value={formData.patientLink}
                   onChange={(event) =>
@@ -718,7 +726,7 @@ export default function SignUpForm() {
                   Facility Assignment *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Facility name or ID"
                   value={formData.securityFacility}
                   onChange={(event) =>
@@ -732,7 +740,7 @@ export default function SignUpForm() {
                   Shift Type (optional)
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Day / Night"
                   value={formData.shiftType}
                   onChange={(event) =>
@@ -745,7 +753,7 @@ export default function SignUpForm() {
                   Badge ID (optional)
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Badge 2045"
                   value={formData.badgeId}
                   onChange={(event) =>
@@ -764,7 +772,7 @@ export default function SignUpForm() {
                   Department Name *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Fire Department"
                   value={formData.departmentName}
                   onChange={(event) =>
@@ -780,13 +788,65 @@ export default function SignUpForm() {
                   Covered Facilities *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="Facility names or IDs"
                   value={formData.coveredFacilities}
                   onChange={(event) =>
                     updateField("coveredFacilities", event.target.value)
                   }
                   list="facility-suggestions"
+                />
+              </div>
+            </div>
+          ) : null}
+
+          {selectedRole === "facility_operator" ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-[#59595B]">
+                  Facility Name *
+                </label>
+                <input
+                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
+                  placeholder="Betti Senior Living"
+                  value={formData.operatorFacility}
+                  onChange={(event) =>
+                    updateField("operatorFacility", event.target.value)
+                  }
+                  list="facility-suggestions"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-[#59595B]">
+                  Operator Role *
+                </label>
+                <select
+                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B] bg-white focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
+                  value={formData.operatorRole}
+                  onChange={(event) =>
+                    updateField("operatorRole", event.target.value)
+                  }
+                >
+                  <option value="">Select</option>
+                  <option value="manager">Facility Manager</option>
+                  <option value="director">Director of Operations</option>
+                  <option value="admin">Administrator</option>
+                  <option value="maintenance">Maintenance Lead</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-semibold text-[#59595B]">
+                  Contact Number (optional)
+                </label>
+                <input
+                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
+                  placeholder="(555) 555-5555"
+                  inputMode="numeric"
+                  value={formData.operatorContact}
+                  onChange={(event) =>
+                    updateField("operatorContact", filterNumbersOnly(event.target.value))
+                  }
                 />
               </div>
             </div>
@@ -799,7 +859,7 @@ export default function SignUpForm() {
                   License Number *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="EMS-5528"
                   value={formData.emsLicenseNumber}
                   onChange={(event) =>
@@ -812,7 +872,7 @@ export default function SignUpForm() {
                   License State *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="CA"
                   value={formData.emsLicenseState}
                   onChange={(event) =>
@@ -828,7 +888,7 @@ export default function SignUpForm() {
                   Years of Experience *
                 </label>
                 <input
-                  className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
+                  className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
                   placeholder="5"
                   value={formData.emsYears}
                   onChange={(event) =>
@@ -845,13 +905,13 @@ export default function SignUpForm() {
       {activeStep === 3 ? (
         <div className="mt-8 space-y-6">
           <div className="rounded-2xl border border-[#DADADA] bg-[#DADADA]/40 p-4">
-            <p className="text-sm font-semibold text-[#233E7D]">
+            <p className="font-serif text-sm font-semibold text-[#233E7D]">
               Assigned Role
             </p>
             <p className="text-sm text-[#59595B]">{roleLabels[selectedRole]}</p>
           </div>
           <div className="rounded-2xl border border-[#DADADA] bg-[#DADADA]/40 p-4">
-            <p className="text-sm font-semibold text-[#233E7D]">
+            <p className="font-serif text-sm font-semibold text-[#233E7D]">
               Facilities / Patients
             </p>
             <p className="text-sm text-[#59595B]">
@@ -861,13 +921,13 @@ export default function SignUpForm() {
             </p>
           </div>
           <div className="rounded-2xl border border-[#DADADA] bg-[#DADADA]/40 p-4">
-            <p className="text-sm font-semibold text-[#233E7D]">
+            <p className="font-serif text-sm font-semibold text-[#233E7D]">
               Alert Visibility Level
             </p>
             <p className="text-sm text-[#59595B]">Summary + Critical alerts</p>
           </div>
           <div className="rounded-2xl border border-[#DADADA] bg-[#DADADA]/40 p-4">
-            <p className="text-sm font-semibold text-[#233E7D]">
+            <p className="font-serif text-sm font-semibold text-[#233E7D]">
               Emergency Access Rules
             </p>
             <p className="text-sm text-[#59595B]">
@@ -892,7 +952,7 @@ export default function SignUpForm() {
         <div className="mt-8 space-y-4">
           {showOtp ? (
             <div className="rounded-2xl border border-[#DADADA] bg-[#DADADA]/40 p-4">
-              <p className="text-sm font-semibold text-[#233E7D]">
+              <p className="font-serif text-sm font-semibold text-[#233E7D]">
                 Setup complete
               </p>
               <p className="mt-1 text-sm text-[#59595B]">
@@ -915,7 +975,7 @@ export default function SignUpForm() {
             </div>
           ) : null}
           <div className="rounded-2xl border border-[#DADADA] bg-[#DADADA]/40 p-4">
-            <p className="text-sm font-semibold text-[#233E7D]">
+            <p className="font-serif text-sm font-semibold text-[#233E7D]">
               Verification Methods
             </p>
             <div className="mt-3 space-y-3">
@@ -943,7 +1003,8 @@ export default function SignUpForm() {
               </label>
               {(selectedRole === "security" ||
                 selectedRole === "fire_service" ||
-                selectedRole === "ems") && (
+                selectedRole === "ems" ||
+                selectedRole === "facility_operator") && (
                 <label className="flex items-center gap-2 text-xs font-semibold text-[#59595B]">
                   <input
                     type="checkbox"

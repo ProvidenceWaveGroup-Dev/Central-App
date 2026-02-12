@@ -4,22 +4,23 @@
   "private": true,
   "scripts": {
     "dev": "npm run dev:all",
-    "dev:all": "concurrently -n hub,senior,caregiver,ems,security,fire,admin \"npm run dev:hub\" \"npm run dev:senior\" \"npm run dev:caregiver\" \"npm run dev:ems\" \"npm run dev:security\" \"npm run dev:fire\" \"npm run dev:admin\"",
+    "dev:all": "concurrently -n hub,senior,caregiver,ems,security,fire,admin,operator \"npm run dev:hub\" \"npm run dev:senior\" \"npm run dev:caregiver\" \"npm run dev:ems\" \"npm run dev:security\" \"npm run dev:fire\" \"npm run dev:admin\" \"npm run dev:operator\"",
     "dev:hub": "next dev",
     "dev:senior": "npm run dev --prefix ./betti-senior-dashboard",
     "dev:caregiver": "npm run dev --prefix ./betti-caregiver-dashboard",
     "dev:ems": "npm run dev --prefix ./betti-EMS-dashboard",
     "dev:security": "npm run dev --prefix ./betti-security-dashboard",
-    "dev:fire": "npm run dev --prefix \"./betti-Fire Service-dashboard\"",
+    "dev:fire": "npm run dev --prefix ./betti-fire-service-dashboard",
     "dev:admin": "npm run dev --prefix ./betti-admin-dashboard",
+    "dev:operator": "npm run dev --prefix ./betti-operator-dashboard",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
-    "next": "16.1.1",
-    "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "next": "15.2.4",
+    "react": "^19",
+    "react-dom": "^19"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -28,7 +29,7 @@
     "@types/react-dom": "^19",
     "concurrently": "^9.2.1",
     "eslint": "^9",
-    "eslint-config-next": "16.1.1",
+    "eslint-config-next": "15.2.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -44,6 +44,10 @@ export default function Home() {
       "NEXT_PUBLIC_BETTI_FIRE_URL",
       buildHostUrl("localhost", 3005)
     ),
+    operator: requireUrl(
+      "NEXT_PUBLIC_BETTI_OPERATOR_URL",
+      buildHostUrl("localhost", 3007)
+    ),
   };
 
   const apps = [
@@ -71,6 +75,11 @@ export default function Home() {
       title: "Betti Fire Service",
       description: "Fire service entry that points to the caregiver app.",
       href: appUrls.fire,
+    },
+    {
+      title: "Betti Operator",
+      description: "Facility operator dashboard for day-to-day resident monitoring and care response.",
+      href: appUrls.operator,
     },
   ];
 
