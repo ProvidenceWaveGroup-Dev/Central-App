@@ -51,4 +51,4 @@ yarn-error.log*
 next-env.d.ts
 
 # Betti-Operatore-Dashboard Node Modules
-betti-operator-dashboard/node_modules/@next/swc-win32-x64-msvc/next-swc.win32-x64-msvc.node
+betti-operator-dashboard/node_modules/@next/swc-win32-x64-msvc/next-swc.win32-x64-msvc.nodenode_modules/ 
