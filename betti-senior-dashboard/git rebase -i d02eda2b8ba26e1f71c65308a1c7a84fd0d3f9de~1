@@ -1,0 +1,81 @@
+[33mcommit c398c7e121835712862e1510fdd4bdaa6fda4fb6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Providence-Wave-Group-Dev-Team <dev@providencewavegroup.com>
+Date:   Sun Nov 30 16:47:43 2025 -0500
+
+    Update notify.yml
+    
+    Test notification
+
+[33mcommit d85c82abf154fe0769b16e8276f9f158531369ed[m
+Author: Providence-Wave-Group-Dev-Team <dev@providencewavegroup.com>
+Date:   Tue Nov 25 19:29:06 2025 -0500
+
+    Update notify.yml
+
+[33mcommit fc2cf24fd562ccb6904ced2e0b18dc5f10638e03[m
+Author: Providence-Wave-Group-Dev-Team <dev@providencewavegroup.com>
+Date:   Tue Nov 25 19:17:19 2025 -0500
+
+    Update notify.yml
+
+[33mcommit afbd6655eface03ab1c153fad383f0a1eda64c29[m
+Author: Providence-Wave-Group-Dev-Team <dev@providencewavegroup.com>
+Date:   Tue Nov 25 19:11:43 2025 -0500
+
+    Creating Github push notification in Slack
+
+[33mcommit d02eda2b8ba26e1f71c65308a1c7a84fd0d3f9de[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Patrik-Knoles <107047835+Patrik-Knoles@users.noreply.github.com>
+Date:   Sun Nov 30 17:41:34 2025 -0500
+
+    Update slack-notify.yml
+    
+    Testing Github notification
+
+[33mcommit 74213da98bfefdc13181fd6a5b97054dbe321f21[m
+Author: Patrik-Knoles <107047835+Patrik-Knoles@users.noreply.github.com>
+Date:   Sun Nov 30 17:08:43 2025 -0500
+
+    Testing Github Skack notification
+
+[33mcommit 8ff6af1a7155a3a035b1c4247d3c4bd8126331e9[m
+Author: Patrik-Knoles <107047835+Patrik-Knoles@users.noreply.github.com>
+Date:   Sun Nov 30 16:56:46 2025 -0500
+
+    Testing github slack notification
+
+[33mcommit 2b85a6542b2e422a075109112b2a157feec1cb85[m
+Author: Patrik-Knoles <107047835+Patrik-Knoles@users.noreply.github.com>
+Date:   Mon Nov 24 17:09:12 2025 -0500
+
+    Ading new features to the dashboard
+
+[33mcommit 91feb0f73bc5baf2e4c1dce49a6adea981426721[m
+Author: Patrik-Knoles <107047835+Patrik-Knoles@users.noreply.github.com>
+Date:   Fri Oct 31 11:30:10 2025 -0400
+
+    Changing the title
+
+[33mcommit ed727057276847c1e3b6f9d96f078faf69e614ad[m[33m ([m[1;31morigin/Isaac[m[33m)[m
+Author: Akele Achor <achorisaac@gmail.com>
+Date:   Wed Sep 17 15:25:35 2025 +0100
+
+    routing fixed
+
+[33mcommit 9535bfd6ff1682a200810509198af5a30d0452d3[m
+Author: Akele Achor <achorisaac@gmail.com>
+Date:   Wed Sep 17 09:02:18 2025 +0100
+
+    Responsive fixes
+
+[33mcommit 8047f97a96618b4b2ed51a641f74ed350bea724a[m
+Author: Patrik-Knoles <107047835+Patrik-Knoles@users.noreply.github.com>
+Date:   Mon Sep 15 09:58:36 2025 -0400
+
+    second commit
+
+[33mcommit 2dcf597c5940013035ec379075320b4ead75a801[m
+Author: Patrik-Knoles <107047835+Patrik-Knoles@users.noreply.github.com>
+Date:   Mon Sep 15 09:38:57 2025 -0400
+
+    first commit

@@ -19,7 +19,11 @@
 .next/
 .env
 .env.*
-
+.env.local
+node_modules/
+.next/
+dist/
+build/
 # production
 /build
 

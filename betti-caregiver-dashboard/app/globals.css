@@ -1,0 +1,287 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Updated theme to light mode with Betti brand colors */
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --card: #ffffff;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #5c7f39;
+  --primary-foreground: #ffffff;
+  --secondary: #233e7d;
+  --secondary-foreground: #ffffff;
+  --muted: #f8f9fa;
+  --muted-foreground: #59595b;
+  --accent: #99ca3c;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e5e7eb;
+  --input: #f8f9fa;
+  --ring: #5c7f39;
+  --chart-1: #5c7f39;
+  --chart-2: #233e7d;
+  --chart-3: #99ca3c;
+  --chart-4: #dadada;
+  --chart-5: #59595b;
+  --radius: 0.5rem;
+  --sidebar: #f8f9fa;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #5c7f39;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ffffff;
+  --sidebar-accent-foreground: #1a1a1a;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #5c7f39;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-foreground: #ffffff;
+  --popover: #1a1a1a;
+  --popover-foreground: #ffffff;
+  --primary: #5c7f39;
+  --primary-foreground: #ffffff;
+  --secondary: #233e7d;
+  --secondary-foreground: #ffffff;
+  --muted: #2a2a2a;
+  --muted-foreground: #dadada;
+  --accent: #99ca3c;
+  --accent-foreground: #0a0a0a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #2a2a2a;
+  --input: #2a2a2a;
+  --ring: #5c7f39;
+  --chart-1: #5c7f39;
+  --chart-2: #233e7d;
+  --chart-3: #99ca3c;
+  --chart-4: #dadada;
+  --chart-5: #59595b;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #5c7f39;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #2a2a2a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #2a2a2a;
+  --sidebar-ring: #5c7f39;
+}
+
+@theme inline {
+  --font-sans: Arial, sans-serif;
+  --font-serif: "Georgia Pro", Georgia, serif;
+  --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  /* Custom button hover effects */
+  .btn-primary-hover {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .btn-primary-hover:hover {
+    background-color: #4a6b2f !important; /* Darker shade of primary #5C7F39 */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(92, 127, 57, 0.3);
+  }
+
+  .btn-secondary-hover {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .btn-secondary-hover:hover {
+    background-color: #1a2f63 !important; /* Darker shade of secondary #233E7D */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(35, 62, 125, 0.3);
+  }
+
+  .btn-accent-hover {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .btn-accent-hover:hover {
+    background-color: #7ba32f !important; /* Darker shade of accent #99CA3C */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(153, 202, 60, 0.3);
+  }
+
+  .btn-outline-hover {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .btn-outline-hover:hover {
+    background-color: #5c7f39 !important;
+    color: #ffffff !important;
+    border-color: #5c7f39 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(92, 127, 57, 0.2);
+  }
+
+  .btn-destructive-hover {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .btn-destructive-hover:hover {
+    background-color: #dc2626 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-ghost-hover {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .btn-ghost-hover:hover {
+    background-color: rgba(92, 127, 57, 0.1) !important;
+    color: #5c7f39 !important;
+    transform: translateY(-1px);
+  }
+
+  /* Card animations */
+  .card-animate {
+    @apply transition-all duration-300 ease-in-out;
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .card-animate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+
+  .dark .card-animate:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Card entrance animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Staggered animation delays for cards */
+  .card-animate:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .card-animate:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .card-animate:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .card-animate:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+  .card-animate:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+  .card-animate:nth-child(6) {
+    animation-delay: 0.6s;
+  }
+  .card-animate:nth-child(7) {
+    animation-delay: 0.7s;
+  }
+}
+
+.heartbeat {
+  animation: heartbeat 1.4s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.08);
+  }
+  40% {
+    transform: scale(0.98);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+  80% {
+    transform: scale(1.02);
+  }
+}
