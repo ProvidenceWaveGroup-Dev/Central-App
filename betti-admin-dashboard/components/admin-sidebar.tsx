@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -153,7 +154,16 @@ export function AdminSidebar({
   isMobile = false
 }: AdminSidebarProps) {
   const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { theme, setTheme } = useTheme();
+
+  const handleLogoutClick = () => setShowLogoutConfirm(true);
+  const handleLogoutConfirm = () => {
+    if (typeof window !== "undefined") {
+      window.location.href = "http://localhost:3000";
+    }
+  };
+  const handleLogoutCancel = () => setShowLogoutConfirm(false);
 
   // Use controlled state if provided, otherwise use internal state
   // On mobile, sidebar is never collapsed (always shows full menu)
@@ -270,11 +280,54 @@ export function AdminSidebar({
           variant="ghost"
           size={collapsed ? "icon" : "default"}
           className={cn("w-full text-destructive hover:text-destructive", !collapsed && "justify-start gap-3")}
+          onClick={handleLogoutClick}
         >
           <LogOut className="h-5 w-5" />
           {!collapsed && <span>Logout</span>}
         </Button>
       </div>
+
+      {/* Logout Confirmation Modal - Portal with blurred background */}
+      {showLogoutConfirm &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center"
+            style={{
+              background: "rgba(9, 16, 32, 0.35)",
+              backdropFilter: "blur(3px)",
+              WebkitBackdropFilter: "blur(3px)",
+            }}
+          >
+            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <LogOut className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-semibold text-gray-900">Confirm Logout</h3>
+                  <p className="text-sm text-gray-500">Are you sure you want to logout?</p>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={handleLogoutCancel}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleLogoutConfirm}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                >
+                  Logout
+                </Button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { EnvironmentCard } from "@/components/environment-card";
+import { CO2MonitoringCard } from "@/components/co2-monitoring-card";
+import { VOCHazardCard } from "@/components/voc-hazard-card";
+import { ThermalRiskCard } from "@/components/thermal-risk-card";
+import { HumidityRiskCard } from "@/components/humidity-risk-card";
 import {
   Bell,
   Users,
@@ -150,6 +154,14 @@ export default function DashboardPage() {
 
         {/* Environmental Health */}
         <EnvironmentCard />
+
+        {/* Environmental Monitoring Detail Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <CO2MonitoringCard />
+          <VOCHazardCard />
+          <ThermalRiskCard />
+          <HumidityRiskCard />
+        </div>
 
         {/* Quick Resident Status */}
         <div className="rounded-xl border border-gray-200 bg-white p-5">

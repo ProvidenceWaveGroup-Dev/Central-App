@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { SecuritySidebar } from "@/components/security-sidebar";
+import { BettiLoader, useRouteLoader } from "@/components/betti-loader";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
@@ -26,11 +27,12 @@ export function SecurityLayoutShell({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
-
   const pageTitle = pageTitles[pathname] || "Dashboard";
+  const isPageLoading = useRouteLoader(pathname, 300);
 
   return (
     <div className="min-h-screen bg-white flex">
+      <BettiLoader isLoading={isPageLoading} minDisplayTime={400} />
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <SecuritySidebar

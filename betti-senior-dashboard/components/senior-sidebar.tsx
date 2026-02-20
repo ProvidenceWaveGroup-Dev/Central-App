@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAlerts } from "@/components/alerts-context";
 import type { LucideIcon } from "lucide-react";
 import {
   Heart,
@@ -22,6 +24,8 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  Activity,
+  BarChart3,
 } from "lucide-react";
 
 interface MenuItem {
@@ -50,7 +54,7 @@ const menuItems: MenuItem[] = [
     id: "/alerts",
     label: "Alerts",
     icon: AlertTriangle,
-    badge: "3",
+    badge: null,
     badgeVariant: "destructive" as const,
   },
   {
@@ -93,6 +97,12 @@ const logItems: MenuItem[] = [
     badge: null,
   },
   {
+    id: "/logs/pt-exercise",
+    label: "PT & Exercise",
+    icon: Activity,
+    badge: null,
+  },
+  {
     id: "/logs/medications",
     label: "Medications",
     icon: Pill,
@@ -106,6 +116,15 @@ const logItems: MenuItem[] = [
   },
 ];
 
+const reportsItems: MenuItem[] = [
+  {
+    id: "/reports",
+    label: "Reports & Analysis",
+    icon: BarChart3,
+    badge: null,
+  },
+];
+
 export function SeniorSidebar({
   collapsed: controlledCollapsed,
   onCollapsedChange,
@@ -115,6 +134,7 @@ export function SeniorSidebar({
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const pathname = usePathname();
+  const { unreadCount } = useAlerts();
 
   const collapsed = isMobile
     ? false
@@ -156,6 +176,7 @@ export function SeniorSidebar({
     <Link
       key={item.id}
       href={item.id}
+      prefetch
       onClick={onNavigate}
     >
       <Button
@@ -176,14 +197,21 @@ export function SeniorSidebar({
         {!collapsed && (
           <>
             <span className="flex-1 text-left">{item.label}</span>
-            {item.badge && (
+            {item.id === "/alerts" && unreadCount > 0 ? (
+              <Badge
+                variant="destructive"
+                className="ml-auto text-xs"
+              >
+                {unreadCount}
+              </Badge>
+            ) : item.badge ? (
               <Badge
                 variant={item.badgeVariant || "secondary"}
                 className="ml-auto text-xs"
               >
                 {item.badge}
               </Badge>
-            )}
+            ) : null}
           </>
         )}
       </Button>
@@ -275,6 +303,24 @@ export function SeniorSidebar({
           </div>
 
           {logItems.map(renderItem)}
+
+          {/* Reports & Analysis Separator */}
+          <div
+            className={cn(
+              "pt-4 pb-2",
+              collapsed ? "px-0" : "px-3"
+            )}
+          >
+            {!collapsed ? (
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Reports & Analysis
+              </p>
+            ) : (
+              <div className="border-t border-gray-200" />
+            )}
+          </div>
+
+          {reportsItems.map(renderItem)}
         </nav>
       </div>
 
@@ -294,10 +340,19 @@ export function SeniorSidebar({
         </Button>
       </div>
 
-      {/* Logout Confirmation Modal */}
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+      {/* Logout Confirmation Modal - Portal to body so it overlays everything */}
+      {showLogoutConfirm &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center"
+            style={{
+              background: "rgba(9, 16, 32, 0.35)",
+              backdropFilter: "blur(3px)",
+              WebkitBackdropFilter: "blur(3px)",
+            }}
+          >
+            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
                 <LogOut className="h-6 w-6 text-red-600" />
@@ -323,8 +378,9 @@ export function SeniorSidebar({
               </Button>
             </div>
           </div>
-        </div>
-      )}
+        </div>,
+          document.body
+        )}
     </div>
   );
 }

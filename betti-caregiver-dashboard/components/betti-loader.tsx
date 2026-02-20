@@ -98,17 +98,27 @@ export function BettiLoader({ isLoading = true, minDisplayTime = 1000 }: BettiLo
   );
 }
 
-// Page loader hook for initial page loads
-export function usePageLoader(delay = 500) {
+// Page loader hook for initial page loads (faster: 300ms)
+export function usePageLoader(delay = 300) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, delay);
-
+    const timer = setTimeout(() => setIsLoading(false), delay);
     return () => clearTimeout(timer);
   }, [delay]);
+
+  return isLoading;
+}
+
+// Transition loader: shows on initial load and when key (pathname/section) changes
+export function useTransitionLoader(key: string, delay = 300) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => setIsLoading(false), delay);
+    return () => clearTimeout(timer);
+  }, [key, delay]);
 
   return isLoading;
 }

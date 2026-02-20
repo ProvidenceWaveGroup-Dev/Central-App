@@ -1,5 +1,9 @@
 import { IncidentHeader } from "@/components/incident-header"
 import { EnvironmentCard } from "@/components/environment-card"
+import { CO2MonitoringCard } from "@/components/co2-monitoring-card"
+import { VOCHazardCard } from "@/components/voc-hazard-card"
+import { ThermalRiskCard } from "@/components/thermal-risk-card"
+import { HumidityRiskCard } from "@/components/humidity-risk-card"
 import { OccupancyCard } from "@/components/occupancy-card"
 import { RouteCard } from "@/components/route-card"
 import { DeviceStatusBar } from "@/components/device-status-bar"
@@ -26,6 +30,13 @@ export default function DashboardPage() {
             <EnvironmentCard />
             <OccupancyCard />
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 animate-in fade-in slide-in-from-top-4 duration-500 delay-250">
+          <CO2MonitoringCard />
+          <VOCHazardCard />
+          <ThermalRiskCard />
+          <HumidityRiskCard />
         </div>
 
         <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3 animate-in fade-in slide-in-from-top-4 duration-500 delay-300">

@@ -4,7 +4,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
-import { SidebarNavigation } from "@/components/sidebar-navigation"
+import { RouteLoaderWrapper } from "@/components/route-loader-wrapper"
+import BettiLoadingFallback from "@/components/BettiLoadingFallback"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -21,10 +22,12 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-sans antialiased">
         <ThemeProvider>
-          <Suspense fallback={<div>Loading...</div>}>
-            {children}
-            <Analytics />
-          </Suspense>
+          <RouteLoaderWrapper>
+            <Suspense fallback={<BettiLoadingFallback />}>
+              {children}
+              <Analytics />
+            </Suspense>
+          </RouteLoaderWrapper>
           <Toaster />
         </ThemeProvider>
       </body>

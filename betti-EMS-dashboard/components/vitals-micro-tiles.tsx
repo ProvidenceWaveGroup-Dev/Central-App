@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Heart, Thermometer, Droplets, Activity } from "lucide-react"
+import { Heart, Thermometer, Droplets, Activity, Wind } from "lucide-react"
 
 export function VitalsMicroTiles() {
   const [vitals, setVitals] = useState([
@@ -12,6 +12,15 @@ export function VitalsMicroTiles() {
       label: "Heart Rate",
       value: 72,
       unit: "bpm",
+      status: "normal",
+      color: "text-white",
+      bgColor: "bg-primary",
+    },
+    {
+      icon: Wind,
+      label: "Respiratory Rate",
+      value: 16,
+      unit: "/min",
       status: "normal",
       color: "text-white",
       bgColor: "bg-primary",
@@ -54,6 +63,8 @@ export function VitalsMicroTiles() {
 
           if (vital.label === "Heart Rate") {
             newValue = Math.max(65, Math.min(85, vital.value + change))
+          } else if (vital.label === "Respiratory Rate") {
+            newValue = Math.max(12, Math.min(22, vital.value + change))
           } else if (vital.label === "Skin Temperature") {
             newValue = Math.max(97.5, Math.min(99.0, vital.value + change * 0.1))
           } else if (vital.label === "Hydration Level") {
@@ -90,7 +101,7 @@ export function VitalsMicroTiles() {
         <p className="text-sm text-muted-foreground">Real-time monitoring from Halo sensor</p>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {vitals.map((vital) => (
             <div
               key={vital.label}

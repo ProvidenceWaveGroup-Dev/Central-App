@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { BettiLoader, usePageLoader } from "@/components/betti-loader";
+import { useState, useEffect, useCallback } from "react";
 import { EnvironmentCard } from "@/components/environment-card";
+import { CO2MonitoringCard } from "@/components/co2-monitoring-card";
+import { VOCHazardCard } from "@/components/voc-hazard-card";
+import { ThermalRiskCard } from "@/components/thermal-risk-card";
+import { HumidityRiskCard } from "@/components/humidity-risk-card";
+import { DailyWellbeingCard } from "@/components/daily-wellbeing-card";
+import Link from "next/link";
+import { useAlerts } from "@/components/alerts-context";
 import {
   Heart,
   Droplets,
@@ -22,18 +28,24 @@ import {
   AlertTriangle,
   PersonStanding,
   AlertOctagon,
+  Gauge,
   PhoneCall,
-  ThumbsUp
+  ThumbsUp,
+  Bell,
+  X,
+  ChevronRight,
 } from "lucide-react";
 
 export default function SeniorDashboard() {
-  const isPageLoading = usePageLoader(1500);
-  const [wellBeingScore] = useState(85);
   const [lastOkTime, setLastOkTime] = useState("2 hours ago");
   const [latestAlert, setLatestAlert] = useState<string | null>(null);
   const [okButtonText, setOkButtonText] = useState("I'm OK");
   const [, setShowAlertSnapshot] = useState(false);
   const [emergencyStatus, setEmergencyStatus] = useState("");
+
+  // Notification Bell State — shared via AlertsContext
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { alerts: notificationAlerts, readAlertIds, unreadCount, markAsRead } = useAlerts();
 
   // Fall Detection State
   const [, setFallDetected] = useState(false);
@@ -41,6 +53,12 @@ export default function SeniorDashboard() {
   const [lastFallTime, setLastFallTime] = useState<string | null>(null);
   const [fallAlertCountdown, setFallAlertCountdown] = useState(30);
   const [recoveryStatus, setRecoveryStatus] = useState<"monitoring" | "fall_detected" | "recovering" | "help_requested">("monitoring");
+
+  // Abnormal threshold alert (demo) - same pattern as Fall Detection
+  const abnormalThresholdAlert = null; // Satisfies any stale HMR reference
+  const [showAbnormalThresholdPrompt, setShowAbnormalThresholdPrompt] = useState(false);
+  const [thresholdAlertCountdown, setThresholdAlertCountdown] = useState(30);
+  const [thresholdContactStatus, setThresholdContactStatus] = useState("");
 
   useEffect(() => {
     const hasShownAlert = sessionStorage.getItem("alertShown");
@@ -65,32 +83,49 @@ export default function SeniorDashboard() {
     }
   }, []);
 
-  // Fall Detection Countdown Effect
-  useEffect(() => {
-    let countdownInterval: NodeJS.Timeout;
+  // Simulate abnormal threshold alert (for demo/testing)
+  const simulateAbnormalThresholdAlert = () => {
+    setShowAbnormalThresholdPrompt(true);
+    setThresholdAlertCountdown(30);
+    setThresholdContactStatus("");
+  };
 
-    if (showRecoveryPrompt && fallAlertCountdown > 0) {
-      countdownInterval = setInterval(() => {
-        setFallAlertCountdown((prev) => {
+  const handleThresholdAcknowledge = () => {
+    setShowAbnormalThresholdPrompt(false);
+    setThresholdAlertCountdown(30);
+    setThresholdContactStatus("");
+  };
+
+  const handleThresholdContactCare = useCallback(() => {
+    setShowAbnormalThresholdPrompt(false);
+    setThresholdContactStatus("Contacting care team...");
+    setTimeout(() => {
+      setThresholdContactStatus("Care team notified. You will receive a callback shortly.");
+    }, 2000);
+    setTimeout(() => setThresholdContactStatus(""), 8000);
+  }, []);
+
+  // Abnormal Threshold Countdown Effect - auto-notify care team at 0
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (showAbnormalThresholdPrompt && thresholdAlertCountdown > 0) {
+      interval = setInterval(() => {
+        setThresholdAlertCountdown((prev) => {
           if (prev <= 1) {
-            // Auto-escalate to emergency services
-            handleRequestHelp();
+            handleThresholdContactCare();
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
     }
-
-    return () => {
-      if (countdownInterval) clearInterval(countdownInterval);
-    };
-  }, [showRecoveryPrompt, fallAlertCountdown]);
+    return () => { if (interval) clearInterval(interval); };
+  }, [showAbnormalThresholdPrompt, thresholdAlertCountdown, handleThresholdContactCare]);
 
   // Simulate fall detection (for demo/testing)
   const simulateFallDetection = () => {
     const now = new Date();
-    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeString = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
     setFallDetected(true);
     setLastFallTime(timeString);
@@ -113,7 +148,7 @@ export default function SeniorDashboard() {
   };
 
   // Handle "I Need Help" response
-  const handleRequestHelp = () => {
+  const handleRequestHelp = useCallback(() => {
     setShowRecoveryPrompt(false);
     setRecoveryStatus("help_requested");
     setEmergencyStatus("Contacting emergency services and caregivers...");
@@ -127,7 +162,29 @@ export default function SeniorDashboard() {
       setFallDetected(false);
       setRecoveryStatus("monitoring");
     }, 10000);
-  };
+  }, []);
+
+  // Fall Detection Countdown Effect
+  useEffect(() => {
+    let countdownInterval: NodeJS.Timeout;
+
+    if (showRecoveryPrompt && fallAlertCountdown > 0) {
+      countdownInterval = setInterval(() => {
+        setFallAlertCountdown((prev) => {
+          if (prev <= 1) {
+            // Auto-escalate to emergency services
+            handleRequestHelp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (countdownInterval) clearInterval(countdownInterval);
+    };
+  }, [showRecoveryPrompt, fallAlertCountdown, handleRequestHelp]);
 
   const handleOkButton = () => {
     setOkButtonText("Thank you! Status recorded.");
@@ -157,9 +214,6 @@ export default function SeniorDashboard() {
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
-      {/* Betti Loading Spinner */}
-      <BettiLoader isLoading={isPageLoading} />
-
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Alert Modal */}
         {latestAlert && (
@@ -258,61 +312,185 @@ export default function SeniorDashboard() {
           </div>
         )}
 
+        {/* Abnormal Threshold Alert Modal - same style as Fall Detection */}
+        {showAbnormalThresholdPrompt && (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-lg w-full text-center shadow-2xl">
+              {/* Alert Icon */}
+              <div className="w-24 h-24 bg-amber-100 rounded-full mx-auto mb-6 flex items-center justify-center animate-bounce">
+                <Gauge className="h-14 w-14 text-amber-600" />
+              </div>
+
+              {/* Title */}
+              <h2 className="font-serif text-2xl sm:text-3xl text-amber-600 mb-2">
+                Abnormal Threshold Alert!
+              </h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Blood pressure elevated: 145/95 mmHg — Above normal threshold.
+              </p>
+
+              {/* Countdown Timer */}
+              <div className="mb-6">
+                <div className="text-5xl font-bold text-amber-600 mb-2">
+                  {thresholdAlertCountdown}
+                </div>
+                <p className="text-sm text-gray-500">
+                  seconds until care team is notified
+                </p>
+                <div className="mt-3 h-3 rounded-full bg-amber-100">
+                  <div
+                    className="h-3 rounded-full bg-amber-500 transition-all"
+                    style={{ width: `${(thresholdAlertCountdown / 30) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Response Buttons */}
+              <div className="space-y-4">
+                <button
+                  onClick={handleThresholdAcknowledge}
+                  className="w-full inline-flex items-center justify-center gap-3 rounded-xl bg-green-600 px-6 py-4 sm:py-6 text-xl font-medium text-white hover:bg-green-700 transition-colors"
+                >
+                  <ThumbsUp className="h-7 w-7" />
+                  I&apos;ve Noted It
+                </button>
+
+                <button
+                  onClick={handleThresholdContactCare}
+                  className="w-full inline-flex items-center justify-center gap-3 rounded-xl bg-amber-600 px-6 py-4 sm:py-6 text-xl font-medium text-white hover:bg-amber-700 transition-colors"
+                >
+                  <PhoneCall className="h-7 w-7" />
+                  Contact Care Team
+                </button>
+              </div>
+
+              {/* Additional Info */}
+              <p className="text-xs text-gray-400 mt-6">
+                If you don&apos;t respond, we&apos;ll automatically notify your care team.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Threshold Contact Status Banner */}
+        {thresholdContactStatus && (
+          <div className="fixed top-0 left-0 right-0 bg-amber-600 text-white p-4 z-40 text-center shadow-lg">
+            <div className="flex items-center justify-center gap-3">
+              <PhoneCall className="h-5 w-5 animate-pulse" />
+              <span className="font-medium">{thresholdContactStatus}</span>
+            </div>
+          </div>
+        )}
+
         {/* Welcome Header */}
-        <div>
-          <h1 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">
-            Welcome Back, Margaret
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Here&apos;s your daily health overview
-          </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">
+              Welcome Back, Margaret
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Here&apos;s your daily health overview
+            </p>
+          </div>
+
+          {/* Notification Bell */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              <Bell className="h-5 w-5 text-gray-600" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Dropdown */}
+            {showNotifications && (
+              <>
+                {/* Backdrop */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowNotifications(false)}
+                />
+
+                {/* Dropdown Panel */}
+                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 rounded-xl border border-gray-200 bg-white shadow-xl z-50">
+                  {/* Dropdown Header */}
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-serif text-base font-semibold text-gray-900">Alerts</h3>
+                      {unreadCount > 0 && (
+                        <span className="inline-flex items-center justify-center h-5 min-w-[20px] rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setShowNotifications(false)}
+                      className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <X className="h-4 w-4 text-gray-400" />
+                    </button>
+                  </div>
+
+                  {/* Alert Items */}
+                  <div className="max-h-[360px] overflow-y-auto divide-y divide-gray-50">
+                    {notificationAlerts.map((alert) => {
+                      const isUnread = !readAlertIds.includes(alert.id);
+                      return (
+                        <div
+                          key={alert.id}
+                          onClick={() => markAsRead(alert.id)}
+                          className={`flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer ${isUnread ? "bg-blue-50/40" : ""}`}
+                        >
+                          {/* Unread dot */}
+                          <div className="flex-shrink-0 flex items-center pt-3">
+                            <span className={`h-2 w-2 rounded-full ${isUnread ? "bg-[#233E7D]" : "bg-transparent"}`} />
+                          </div>
+                          <div className={`flex-shrink-0 w-9 h-9 rounded-full ${alert.iconBg} flex items-center justify-center mt-0.5`}>
+                            <alert.icon className={`h-4 w-4 ${alert.iconColor}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-sm truncate ${isUnread ? "font-bold text-gray-900" : "font-normal text-gray-600"}`}>{alert.title}</span>
+                              {alert.severity === "critical" && (
+                                <span className="inline-flex rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">
+                                  Critical
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-xs mt-0.5 line-clamp-2 ${isUnread ? "font-semibold text-gray-700" : "font-normal text-gray-500"}`}>{alert.description}</p>
+                            <span className="text-[11px] text-gray-400 mt-1 block">{alert.time}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* View All Button */}
+                  <div className="border-t border-gray-100 px-4 py-3">
+                    <Link
+                      href="/alerts"
+                      prefetch
+                      className="flex items-center justify-center gap-1.5 w-full rounded-lg bg-[#233E7D] px-4 py-2 text-sm font-medium text-white hover:bg-[#1c3266] transition-colors"
+                    >
+                      View All Alerts
+                      <ChevronRight className="h-4 w-4" />
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-          {/* Well-being Score Card */}
-          <div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Heart className="h-5 w-5 text-[#5C7F39]" />
-              <h2 className="font-serif text-lg font-semibold text-[#5C7F39]">
-                Daily Well-being Score
-              </h2>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
-              <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#5C7F39]">
-                {wellBeingScore}
-              </div>
-              <div className="text-center sm:text-right">
-                <div className="text-sm text-gray-500">Out of 100</div>
-                <span className="inline-flex rounded-full bg-[#5C7F39] px-3 py-1 text-xs font-semibold text-white">
-                  Excellent
-                </span>
-              </div>
-            </div>
-            <div className="mb-4 h-3 rounded-full bg-green-100">
-              <div
-                className="h-3 rounded-full bg-[#5C7F39] transition-all"
-                style={{ width: `${wellBeingScore}%` }}
-              />
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-sm">
-              {[
-                { icon: Droplets, label: "Hydration", value: "Good" },
-                { icon: Bed, label: "Sleep", value: "7.5 hrs" },
-                { icon: Pill, label: "Medications", value: "On track" },
-                { icon: Footprints, label: "Movement", value: "Active" },
-              ].map((item, index) => (
-                <div key={index} className="text-center">
-                  <item.icon className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-1 text-[#5C7F39]" />
-                  <div className="font-medium text-gray-600 text-xs sm:text-sm">
-                    {item.label}
-                  </div>
-                  <div className="text-gray-600 text-xs sm:text-sm">
-                    {item.value}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="lg:col-span-2">
+            <DailyWellbeingCard />
           </div>
 
           {/* Right Sidebar Cards */}
@@ -342,6 +520,15 @@ export default function SeniorDashboard() {
                   >
                     <PersonStanding className="h-4 w-4" />
                     Simulate Fall Detection
+                  </button>
+                )}
+                {recoveryStatus === "monitoring" && (
+                  <button
+                    onClick={simulateAbnormalThresholdAlert}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-lg border border-amber-400 px-4 py-3 text-sm font-medium text-amber-600 hover:bg-amber-500 hover:text-white transition-colors"
+                  >
+                    <Gauge className="h-4 w-4" />
+                    Simulate Abnormal Threshold Alert
                   </button>
                 )}
               </div>
@@ -498,6 +685,14 @@ export default function SeniorDashboard() {
 
         {/* Environmental Health */}
         <EnvironmentCard />
+
+        {/* Environmental Monitoring Detail Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <CO2MonitoringCard />
+          <VOCHazardCard />
+          <ThermalRiskCard />
+          <HumidityRiskCard />
+        </div>
 
         {/* Secondary Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -701,6 +896,14 @@ export default function SeniorDashboard() {
                   <span className="text-gray-700 font-medium">
                     {lastFallTime || "No recent falls"}
                   </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">This Month:</span>
+                  <span className="text-gray-700 font-medium">0 incidents</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Frequency Trend:</span>
+                  <span className="text-green-600 font-medium">Improving</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Sensor Status:</span>

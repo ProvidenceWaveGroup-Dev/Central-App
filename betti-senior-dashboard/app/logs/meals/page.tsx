@@ -1,17 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Utensils,
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   TrendingUp,
-  Filter,
+  CheckCircle,
+  AlertTriangle,
+  Droplets,
+  Smile,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+
+const MEAL_NUTRITION_MOCK = {
+  mealsToday: [
+    { id: "b", label: "Breakfast", confirmed: true, time: "8:00 AM" },
+    { id: "l", label: "Lunch", confirmed: true, time: "12:30 PM" },
+    { id: "d", label: "Dinner", confirmed: false, time: "6:00 PM" },
+  ],
+  missedMealsToday: 0,
+  missedMealsThisWeek: 1,
+  nutritionCompliance: 85,
+  moodCorrelation: "Good meals → Stable mood",
+  hydrationNote: "Higher intake on days with 3 meals",
+};
+
+const ITEMS_PER_PAGE = 5;
+
+const toDateStr = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 export default function MealsPage() {
-  const [dateFilter, setDateFilter] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [mealFilter, setMealFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [confirmingMeal, setConfirmingMeal] = useState<string | null>(null);
+  const [confirmed, setConfirmed] = useState<Record<string, boolean>>({
+    b: MEAL_NUTRITION_MOCK.mealsToday[0].confirmed ?? false,
+    l: MEAL_NUTRITION_MOCK.mealsToday[1].confirmed ?? false,
+    d: MEAL_NUTRITION_MOCK.mealsToday[2].confirmed ?? false,
+  });
+
+  const handleConfirmMeal = (id: string) => {
+    setConfirmingMeal(id);
+    setTimeout(() => {
+      setConfirmed((prev) => ({ ...prev, [id]: true }));
+      setConfirmingMeal(null);
+    }, 800);
+  };
   const mealLogs = [
     {
       id: 1,
@@ -76,12 +115,26 @@ export default function MealsPage() {
     status: "Good",
   };
 
-  const filteredMeals = mealLogs.filter((meal) => {
-    if (dateFilter && !meal.date.includes(dateFilter)) return false;
-    if (mealFilter !== "all" && meal.meal.toLowerCase() !== mealFilter)
-      return false;
-    return true;
-  });
+  const dateFilterStr = selectedDate ? toDateStr(selectedDate) : "";
+  const filteredMeals = useMemo(
+    () =>
+      mealLogs.filter((meal) => {
+        if (selectedDate && meal.date !== dateFilterStr) return false;
+        if (mealFilter !== "all" && meal.meal.toLowerCase() !== mealFilter) return false;
+        return true;
+      }),
+    [mealLogs, selectedDate, dateFilterStr, mealFilter]
+  );
+  const sortedMeals = useMemo(
+    () => [...filteredMeals].sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0)),
+    [filteredMeals]
+  );
+  const totalPages = Math.max(1, Math.ceil(sortedMeals.length / ITEMS_PER_PAGE));
+  const paginatedMeals = sortedMeals.slice(
+    currentPage * ITEMS_PER_PAGE,
+    (currentPage + 1) * ITEMS_PER_PAGE
+  );
+  const datesWithMeals = useMemo(() => new Set(mealLogs.map((m) => m.date)), [mealLogs]);
 
   const getEncouragementMessage = () => {
     const nutritionScore = performanceMetrics.nutritionScore;
@@ -112,6 +165,79 @@ export default function MealsPage() {
             Meal Tracking Logs
           </h1>
           <p className="text-sm text-gray-500 mt-1">Monitor your daily nutrition and meals</p>
+        </div>
+
+        {/* Meal & Nutrition - Today's meals, prompts, compliance */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Utensils className="h-5 w-5 text-[#5C7F39]" />
+            <h2 className="font-serif text-lg font-semibold text-gray-900">Meal & Nutrition</h2>
+          </div>
+          <div className="space-y-2 mb-4">
+            <div className="text-xs font-medium text-gray-500 mb-2">Today&apos;s meals</div>
+            {MEAL_NUTRITION_MOCK.mealsToday.map((meal) => (
+              <div
+                key={meal.id}
+                className={`flex items-center justify-between p-3 rounded-lg border ${confirmed[meal.id] ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}`}
+              >
+                <div className="flex items-center gap-2">
+                  {confirmed[meal.id] ? (
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Clock className="h-4 w-4 text-amber-600" />
+                  )}
+                  <span className="font-medium text-gray-700">{meal.label}</span>
+                  <span className="text-xs text-gray-500">({meal.time})</span>
+                </div>
+                {!confirmed[meal.id] && (
+                  <button
+                    onClick={() => handleConfirmMeal(meal.id)}
+                    disabled={confirmingMeal === meal.id}
+                    className="rounded-lg bg-[#5C7F39] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#4a6a2e] disabled:opacity-70"
+                  >
+                    {confirmingMeal === meal.id ? "Confirming..." : "Confirm"}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          {(MEAL_NUTRITION_MOCK.missedMealsToday > 0 || MEAL_NUTRITION_MOCK.missedMealsThisWeek > 0) && (
+            <div className="mb-4 flex items-center gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
+              <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
+              <div>
+                <div className="text-sm font-medium text-red-700">Missed meals</div>
+                <div className="text-xs text-red-600">
+                  {MEAL_NUTRITION_MOCK.missedMealsToday > 0 && `${MEAL_NUTRITION_MOCK.missedMealsToday} today`}
+                  {MEAL_NUTRITION_MOCK.missedMealsToday > 0 && MEAL_NUTRITION_MOCK.missedMealsThisWeek > 0 && " • "}
+                  {MEAL_NUTRITION_MOCK.missedMealsThisWeek > 0 && `${MEAL_NUTRITION_MOCK.missedMealsThisWeek} this week`}
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-500">Nutrition compliance</span>
+              <span className={`text-sm font-bold ${MEAL_NUTRITION_MOCK.nutritionCompliance >= 80 ? "text-green-600" : MEAL_NUTRITION_MOCK.nutritionCompliance >= 60 ? "text-amber-600" : "text-red-600"}`}>
+                {MEAL_NUTRITION_MOCK.nutritionCompliance}%
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-gray-100">
+              <div
+                className={`h-2 rounded-full ${MEAL_NUTRITION_MOCK.nutritionCompliance >= 80 ? "bg-green-500" : MEAL_NUTRITION_MOCK.nutritionCompliance >= 60 ? "bg-amber-500" : "bg-red-500"}`}
+                style={{ width: `${MEAL_NUTRITION_MOCK.nutritionCompliance}%` }}
+              />
+            </div>
+          </div>
+          <div className="space-y-2 p-3 rounded-lg bg-gray-50 border border-gray-100">
+            <div className="flex items-center gap-2 text-xs">
+              <Smile className="h-3.5 w-3.5 text-[#5C7F39]" />
+              <span className="text-gray-700">{MEAL_NUTRITION_MOCK.moodCorrelation}</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <Droplets className="h-3.5 w-3.5 text-blue-500" />
+              <span className="text-gray-700">{MEAL_NUTRITION_MOCK.hydrationNote}</span>
+            </div>
+          </div>
         </div>
 
         {/* Performance Metrics */}
@@ -157,48 +283,60 @@ export default function MealsPage() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <Filter className="h-5 w-5 text-[#233E7D]" />
-            <h2 className="font-serif text-lg font-semibold text-gray-900">Filters</h2>
+        {/* Calendar + Filter + Meals List */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5 min-h-[420px] flex flex-col">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2">
+              <Utensils className="h-5 w-5 text-[#233E7D]" />
+              <h2 className="font-serif text-lg font-semibold text-gray-900">Meal History</h2>
+            </div>
+            <select
+              value={mealFilter}
+              onChange={(e) => {
+                setMealFilter(e.target.value);
+                setCurrentPage(0);
+              }}
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#233E7D] focus:border-transparent bg-white"
+            >
+              <option value="all">All Meals</option>
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+            </select>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-600 mb-2 block">Filter by Date</label>
-              <input
-                type="date"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#233E7D] focus:border-transparent"
+          <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+            <div className="flex-shrink-0 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(d) => {
+                  setSelectedDate(d);
+                  setCurrentPage(0);
+                }}
+                captionLayout="dropdown"
+                fromYear={2020}
+                toYear={2030}
+                modifiers={{ hasMeal: (date) => datesWithMeals.has(toDateStr(date)) }}
+                modifiersClassNames={{ hasMeal: "bg-[#5C7F39]/10 font-semibold" }}
+                className="mx-auto"
               />
+              {selectedDate && (
+                <button
+                  onClick={() => setSelectedDate(undefined)}
+                  className="mt-3 w-full text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Clear selection
+                </button>
+              )}
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600 mb-2 block">Filter by Meal Type</label>
-              <select
-                value={mealFilter}
-                onChange={(e) => setMealFilter(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#233E7D] focus:border-transparent bg-white"
-              >
-                <option value="all">All Meals</option>
-                <option value="breakfast">Breakfast</option>
-                <option value="lunch">Lunch</option>
-                <option value="dinner">Dinner</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Meals List */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <Utensils className="h-5 w-5 text-[#233E7D]" />
-            <h2 className="font-serif text-lg font-semibold text-gray-900">
-              Meal History ({filteredMeals.length} entries)
-            </h2>
-          </div>
-          <div className="space-y-3">
-            {filteredMeals.map((meal) => (
+            <div className="flex-1 flex flex-col min-w-0">
+              <p className="text-sm text-gray-600 mb-2">
+                {selectedDate
+                  ? `Meals on ${selectedDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}`
+                  : "Click a date to filter by day"}
+              </p>
+              <div className="overflow-y-auto flex-1 space-y-3 pr-1">
+            {paginatedMeals.map((meal) => (
               <div
                 key={meal.id}
                 className="rounded-lg border border-gray-100 bg-gray-50 p-4 hover:bg-gray-100 transition-colors"
@@ -215,7 +353,7 @@ export default function MealsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />
+                      <CalendarIcon className="h-4 w-4 text-gray-400" />
                       <span className="text-sm font-medium text-gray-900">{meal.date}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -241,6 +379,32 @@ export default function MealsPage() {
                 </div>
               </div>
             ))}
+              </div>
+              {sortedMeals.length > ITEMS_PER_PAGE && (
+                <div className="flex-shrink-0 flex items-center justify-between pt-4 mt-2 border-t border-gray-100">
+                  <span className="text-xs text-gray-500">
+                    Showing {currentPage * ITEMS_PER_PAGE + 1}–{Math.min((currentPage + 1) * ITEMS_PER_PAGE, sortedMeals.length)} of {sortedMeals.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                      disabled={currentPage === 0}
+                      className="p-1.5 rounded border border-gray-200 hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="text-sm text-gray-600 px-2">{currentPage + 1} / {totalPages}</span>
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                      disabled={currentPage >= totalPages - 1}
+                      className="p-1.5 rounded border border-gray-200 hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

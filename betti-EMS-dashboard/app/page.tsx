@@ -8,12 +8,14 @@ import { MetricsGrid } from "@/components/metrics-grid";
 import { MedicationAcknowledgment } from "@/components/medication-acknowledgment";
 import { MentalHealthCard } from "@/components/mental-health-card";
 import { FallAlertCard } from "@/components/fall-alert-card";
+import { EmergencyRoomLayout } from "@/components/emergency-room-layout";
 import { EnvironmentCard } from "@/components/environment-card";
-import { PageLoaderWrapper } from "@/components/page-loader-wrapper";
-
+import { CO2MonitoringCard } from "@/components/co2-monitoring-card";
+import { VOCHazardCard } from "@/components/voc-hazard-card";
+import { ThermalRiskCard } from "@/components/thermal-risk-card";
+import { HumidityRiskCard } from "@/components/humidity-risk-card";
 export default function BettiDashboard() {
   return (
-    <PageLoaderWrapper>
     <div className="p-4 md:p-6 lg:p-8">
       {/* Allergy Banner - Always visible */}
       <AllergyBanner />
@@ -40,12 +42,21 @@ export default function BettiDashboard() {
               <MentalHealthCard />
             </div>
 
+            {/* Emergency Room Layout Mapping - just before Environmental monitoring */}
+            <EmergencyRoomLayout />
+
             <EnvironmentCard />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              <CO2MonitoringCard />
+              <VOCHazardCard />
+              <ThermalRiskCard />
+              <HumidityRiskCard />
+            </div>
           </div>
         </div>
         <EventFeed />
       </div>
     </div>
-    </PageLoaderWrapper>
   );
 }

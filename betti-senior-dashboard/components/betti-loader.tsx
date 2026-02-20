@@ -98,8 +98,8 @@ export function BettiLoader({ isLoading = true, minDisplayTime = 1000 }: BettiLo
   );
 }
 
-// Page loader hook for initial page loads
-export function usePageLoader(delay = 500) {
+// Page loader hook for initial page loads (faster: 300ms)
+export function usePageLoader(delay = 300) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -109,6 +109,19 @@ export function usePageLoader(delay = 500) {
 
     return () => clearTimeout(timer);
   }, [delay]);
+
+  return isLoading;
+}
+
+// Route-aware loader: shows on initial load and on every route change
+export function useRouteLoader(pathname: string, delay = 300) {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => setIsLoading(false), delay);
+    return () => clearTimeout(timer);
+  }, [pathname, delay]);
 
   return isLoading;
 }

@@ -1,17 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Clock,
   TrendingUp,
-  Filter,
   Droplets,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+
+const ITEMS_PER_PAGE = 5;
+
+const toDateStr = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const parseHour24 = (time: string) => {
+  const parts = time.split(":");
+  let hour = parseInt(parts[0] || "0", 10);
+  const isPM = time.toUpperCase().includes("PM");
+  if (isPM && hour !== 12) hour += 12;
+  if (!isPM && hour === 12) hour = 0;
+  return hour;
+};
 
 export default function HydrationPage() {
-  const [dateFilter, setDateFilter] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [timeFilter, setTimeFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(0);
   const hydrationLogs = [
     {
       id: 1,
@@ -86,16 +103,25 @@ export default function HydrationPage() {
     status: "Good",
   };
 
-  const filteredLogs = hydrationLogs.filter((log) => {
-    if (dateFilter && !log.date.includes(dateFilter)) return false;
-    if (timeFilter !== "all") {
-      const hour = Number.parseInt(log.time.split(":")[0]);
-      if (timeFilter === "morning" && (hour < 6 || hour >= 12)) return false;
-      if (timeFilter === "afternoon" && (hour < 12 || hour >= 18)) return false;
-      if (timeFilter === "evening" && (hour < 18 || hour >= 24)) return false;
-    }
-    return true;
-  });
+  const dateFilterStr = selectedDate ? toDateStr(selectedDate) : "";
+  const filteredLogs = useMemo(
+    () =>
+      hydrationLogs.filter((log) => {
+        if (selectedDate && log.date !== dateFilterStr) return false;
+        if (timeFilter !== "all") {
+          const h = parseHour24(log.time);
+          if (timeFilter === "morning" && (h < 6 || h >= 12)) return false;
+          if (timeFilter === "afternoon" && (h < 12 || h >= 18)) return false;
+          if (timeFilter === "evening" && (h < 18 || h >= 24)) return false;
+        }
+        return true;
+      }),
+    [hydrationLogs, selectedDate, dateFilterStr, timeFilter]
+  );
+  const sortedLogs = useMemo(() => [...filteredLogs].sort((a, b) => (a.date > b.date ? -1 : a.date < b.date ? 1 : 0)), [filteredLogs]);
+  const totalPages = Math.max(1, Math.ceil(sortedLogs.length / ITEMS_PER_PAGE));
+  const paginated = sortedLogs.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE);
+  const datesWithLogs = useMemo(() => new Set(hydrationLogs.map((l) => l.date)), [hydrationLogs]);
 
   const progressPercentage = Math.round(
     (performanceMetrics.currentIntake / performanceMetrics.dailyGoal) * 100
@@ -167,55 +193,67 @@ export default function HydrationPage() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <Filter className="h-5 w-5 text-[#233E7D]" />
-            <h2 className="font-serif text-lg font-semibold text-gray-900">Filters</h2>
+        {/* Calendar + Filter + Hydration History */}
+        <div className="rounded-xl border border-gray-200 bg-white p-5 min-h-[420px] flex flex-col">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2">
+              <Droplets className="h-5 w-5 text-[#233E7D]" />
+              <h2 className="font-serif text-lg font-semibold text-gray-900">Hydration History</h2>
+            </div>
+            <select
+              value={timeFilter}
+              onChange={(e) => {
+                setTimeFilter(e.target.value);
+                setCurrentPage(0);
+              }}
+              className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#233E7D] focus:border-transparent bg-white"
+            >
+              <option value="all">All Day</option>
+              <option value="morning">Morning (6 AM - 12 PM)</option>
+              <option value="afternoon">Afternoon (12 PM - 6 PM)</option>
+              <option value="evening">Evening (6 PM - 12 AM)</option>
+            </select>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-600 mb-2 block">Filter by Date</label>
-              <input
-                type="date"
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#233E7D] focus:border-transparent"
+          <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+            <div className="flex-shrink-0 rounded-lg border border-gray-200 p-4 bg-gray-50/50">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(d) => {
+                  setSelectedDate(d);
+                  setCurrentPage(0);
+                }}
+                captionLayout="dropdown"
+                fromYear={2020}
+                toYear={2030}
+                modifiers={{ hasLog: (date) => datesWithLogs.has(toDateStr(date)) }}
+                modifiersClassNames={{ hasLog: "bg-blue-500/10 font-semibold" }}
+                className="mx-auto"
               />
+              {selectedDate && (
+                <button
+                  onClick={() => setSelectedDate(undefined)}
+                  className="mt-3 w-full text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Clear selection
+                </button>
+              )}
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-600 mb-2 block">Filter by Time of Day</label>
-              <select
-                value={timeFilter}
-                onChange={(e) => setTimeFilter(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#233E7D] focus:border-transparent bg-white"
-              >
-                <option value="all">All Day</option>
-                <option value="morning">Morning (6 AM - 12 PM)</option>
-                <option value="afternoon">Afternoon (12 PM - 6 PM)</option>
-                <option value="evening">Evening (6 PM - 12 AM)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Hydration History */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <Droplets className="h-5 w-5 text-[#233E7D]" />
-            <h2 className="font-serif text-lg font-semibold text-gray-900">
-              Hydration History ({filteredLogs.length} entries)
-            </h2>
-          </div>
-          <div className="space-y-3">
-            {filteredLogs.map((log) => (
+            <div className="flex-1 flex flex-col min-w-0">
+              <p className="text-sm text-gray-600 mb-2">
+                {selectedDate
+                  ? `Logs on ${selectedDate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}`
+                  : "Click a date to filter by day"}
+              </p>
+              <div className="overflow-y-auto flex-1 space-y-3 pr-1">
+            {paginated.map((log) => (
               <div
                 key={log.id}
                 className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors gap-2"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <CalendarIcon className="h-4 w-4 text-gray-400" />
                     <span className="text-sm font-medium text-gray-900">{log.date}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -241,6 +279,32 @@ export default function HydrationPage() {
                 </div>
               </div>
             ))}
+              </div>
+              {sortedLogs.length > ITEMS_PER_PAGE && (
+                <div className="flex-shrink-0 flex items-center justify-between pt-4 mt-2 border-t border-gray-100">
+                  <span className="text-xs text-gray-500">
+                    Showing {currentPage * ITEMS_PER_PAGE + 1}–{Math.min((currentPage + 1) * ITEMS_PER_PAGE, sortedLogs.length)} of {sortedLogs.length}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(0, p - 1))}
+                      disabled={currentPage === 0}
+                      className="p-1.5 rounded border border-gray-200 hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </button>
+                    <span className="text-sm text-gray-600 px-2">{currentPage + 1} / {totalPages}</span>
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages - 1, p + 1))}
+                      disabled={currentPage >= totalPages - 1}
+                      className="p-1.5 rounded border border-gray-200 hover:bg-gray-100 disabled:opacity-50"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

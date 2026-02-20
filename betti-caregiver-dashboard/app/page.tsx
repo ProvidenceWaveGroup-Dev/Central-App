@@ -13,11 +13,13 @@ import { MentalHealthCard } from "@/components/mental-health-card";
 import { OccupancyCard } from "@/components/occupancy-card";
 import { FallAlertCard } from "@/components/fall-alert-card";
 import { EnvironmentCard } from "@/components/environment-card";
-import { BettiLoader, usePageLoader } from "@/components/betti-loader";
+import { CO2MonitoringCard } from "@/components/co2-monitoring-card";
+import { VOCHazardCard } from "@/components/voc-hazard-card";
+import { ThermalRiskCard } from "@/components/thermal-risk-card";
+import { HumidityRiskCard } from "@/components/humidity-risk-card";
 import SecurityPage from "./security/page";
 
 export default function Dashboard() {
-  const isPageLoading = usePageLoader(400);
   const [activeSection, setActiveSection] = useState("dashboard");
 
   const renderMainContent = () => {
@@ -33,6 +35,13 @@ export default function Dashboard() {
             <MentalHealthCard />
 
             <EnvironmentCard />
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              <CO2MonitoringCard />
+              <VOCHazardCard />
+              <ThermalRiskCard />
+              <HumidityRiskCard />
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
               {/* Top Row */}
@@ -75,9 +84,7 @@ export default function Dashboard() {
   };
 
   return (
-    <>
-      <BettiLoader isLoading={isPageLoading} minDisplayTime={300} />
-      <CaregiverLayoutShell
+    <CaregiverLayoutShell
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       >
@@ -85,6 +92,5 @@ export default function Dashboard() {
           <div className="mx-auto max-w-7xl">{renderMainContent()}</div>
         </div>
       </CaregiverLayoutShell>
-    </>
   );
 }

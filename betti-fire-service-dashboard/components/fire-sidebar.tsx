@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -279,37 +280,47 @@ export function FireSidebar({
         </Button>
       </div>
 
-      {/* Logout Confirmation Modal */}
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
-          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <LogOut className="h-6 w-6 text-red-600" />
+      {/* Logout Confirmation Modal - Portal with blurred background */}
+      {showLogoutConfirm &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] flex items-center justify-center"
+            style={{
+              background: "rgba(9, 16, 32, 0.35)",
+              backdropFilter: "blur(3px)",
+              WebkitBackdropFilter: "blur(3px)",
+            }}
+          >
+            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <LogOut className="h-6 w-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-semibold text-gray-900">Confirm Logout</h3>
+                  <p className="text-sm text-gray-500">Are you sure you want to logout?</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-serif text-lg font-semibold text-gray-900">Confirm Logout</h3>
-                <p className="text-sm text-gray-500">Are you sure you want to logout?</p>
+              <div className="flex gap-3 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={handleLogoutCancel}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleLogoutConfirm}
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                >
+                  Logout
+                </Button>
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                onClick={handleLogoutCancel}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleLogoutConfirm}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white"
-              >
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

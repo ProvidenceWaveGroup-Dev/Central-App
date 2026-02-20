@@ -92,16 +92,21 @@ export function BettiLoader({ isLoading = true, minDisplayTime = 1000 }: BettiLo
   );
 }
 
-export function usePageLoader(delay = 500) {
+export function usePageLoader(delay = 300) {
   const [isLoading, setIsLoading] = useState(true);
-
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, delay);
-
+    const timer = setTimeout(() => setIsLoading(false), delay);
     return () => clearTimeout(timer);
   }, [delay]);
+  return isLoading;
+}
 
+export function useTransitionLoader(key: string, delay = 300) {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => setIsLoading(false), delay);
+    return () => clearTimeout(timer);
+  }, [key, delay]);
   return isLoading;
 }
