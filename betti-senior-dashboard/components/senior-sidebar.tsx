@@ -163,8 +163,9 @@ export function SeniorSidebar({
     if (typeof window !== "undefined") {
       sessionStorage.clear();
       localStorage.clear();
-      // Redirect to central hub (main app on port 3000)
-      window.location.href = "http://localhost:3000";
+      // Redirect to central hub
+      const hubUrl = process.env.NEXT_PUBLIC_CENTRAL_HUB_URL?.trim() || "http://localhost:3000";
+      window.location.href = hubUrl;
     }
   };
 

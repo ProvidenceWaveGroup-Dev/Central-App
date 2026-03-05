@@ -53,6 +53,15 @@ export function BettiLoader({ isLoading = true, minDisplayTime = 1000 }: BettiLo
   );
 }
 
+export function usePageLoader(delay = 300) {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), delay);
+    return () => clearTimeout(timer);
+  }, [delay]);
+  return isLoading;
+}
+
 export function useRouteLoader(pathname: string, delay = 300) {
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {

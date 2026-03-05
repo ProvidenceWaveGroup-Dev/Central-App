@@ -5,7 +5,6 @@ import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { RouteLoaderWrapper } from "@/components/route-loader-wrapper"
-import BettiLoadingFallback from "@/components/BettiLoadingFallback"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -23,7 +22,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <ThemeProvider>
           <RouteLoaderWrapper>
-            <Suspense fallback={<BettiLoadingFallback />}>
+            <Suspense fallback={null}>
               {children}
               <Analytics />
             </Suspense>

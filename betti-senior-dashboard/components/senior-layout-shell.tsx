@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SeniorSidebar } from "@/components/senior-sidebar";
 import { AlertsProvider } from "@/components/alerts-context";
-import { BettiLoader, useRouteLoader } from "@/components/betti-loader";
+import { BettiLoader, usePageLoader } from "@/components/betti-loader";
 import type { NotificationAlert } from "@/components/alerts-context";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -46,17 +46,17 @@ export function SeniorLayoutShell({
   const pathname = usePathname();
   const router = useRouter();
 
-  // Prefetch all routes for instant navigation
+  // Prefetch all routes immediately for instant navigation (no spinner between pages)
   useEffect(() => {
     PREFETCH_ROUTES.forEach((route) => router.prefetch(route));
   }, [router]);
 
   const pageTitle = pageTitles[pathname] || "Dashboard";
-  const isPageLoading = useRouteLoader(pathname, 300);
+  const isInitialLoad = usePageLoader(120);
 
   return (
     <AlertsProvider alerts={NOTIFICATION_ALERTS}>
-      <BettiLoader isLoading={isPageLoading} minDisplayTime={400} />
+      <BettiLoader isLoading={isInitialLoad} minDisplayTime={80} />
       <div className="min-h-screen bg-white flex">
         {/* Desktop Sidebar */}
         <div className="hidden lg:block">

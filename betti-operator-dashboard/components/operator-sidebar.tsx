@@ -137,7 +137,8 @@ export function OperatorSidebar({
     if (typeof window !== "undefined") {
       sessionStorage.clear();
       localStorage.clear();
-      window.location.href = "http://localhost:3000";
+      const hubUrl = process.env.NEXT_PUBLIC_CENTRAL_HUB_URL?.trim() || "http://localhost:3000";
+      window.location.href = hubUrl;
     }
   };
 

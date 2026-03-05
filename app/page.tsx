@@ -7,16 +7,25 @@ import DashboardWarmup from "@/components/DashboardWarmup";
 import SignUpForm from "@/components/SignUpForm";
 
 /**
- * Safely resolve public URLs from env.
- * Prevents silent localhost usage in production.
+ * Resolve dashboard URLs for both development and production.
+ * - Individual env vars: NEXT_PUBLIC_BETTI_SENIOR_URL, etc.
+ * - Or NEXT_PUBLIC_DASHBOARD_BASE_URL for path-based deploys (e.g. https://app.com → https://app.com/senior)
+ * - On Vercel: uses VERCEL_URL (auto-injected) when no env vars set
+ * - Falls back to localhost for development.
  */
-const requireUrl = (key: string, fallback: string) => {
-  const value = process.env[key];
-  return value && value.trim().length > 0 ? value : fallback;
+const getDashboardUrl = (
+  envKey: string,
+  pathSuffix: string,
+  localhostPort: number
+) => {
+  const individual = process.env[envKey]?.trim();
+  if (individual) return individual;
+  const base = process.env.NEXT_PUBLIC_DASHBOARD_BASE_URL?.trim();
+  if (base) return `${base.replace(/\/$/, "")}/${pathSuffix}`;
+  const vercelUrl = process.env.VERCEL_URL;
+  if (vercelUrl) return `https://${vercelUrl}/${pathSuffix}`;
+  return `http://localhost:${localhostPort}`;
 };
-
-const buildHostUrl = (hostname: string, port: number) =>
-  `http://${hostname}:${port}`;
 
 export default function Home() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -24,30 +33,12 @@ export default function Home() {
   const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   const appUrls = {
-    senior: requireUrl(
-      "NEXT_PUBLIC_BETTI_SENIOR_URL",
-      buildHostUrl("localhost", 3001)
-    ),
-    caregiver: requireUrl(
-      "NEXT_PUBLIC_BETTI_CAREGIVER_URL",
-      buildHostUrl("localhost", 3002)
-    ),
-    ems: requireUrl(
-      "NEXT_PUBLIC_BETTI_EMS_URL",
-      buildHostUrl("localhost", 3003)
-    ),
-    security: requireUrl(
-      "NEXT_PUBLIC_BETTI_SECURITY_URL",
-      buildHostUrl("localhost", 3004)
-    ),
-    fire: requireUrl(
-      "NEXT_PUBLIC_BETTI_FIRE_URL",
-      buildHostUrl("localhost", 3005)
-    ),
-    operator: requireUrl(
-      "NEXT_PUBLIC_BETTI_OPERATOR_URL",
-      buildHostUrl("localhost", 3007)
-    ),
+    senior: getDashboardUrl("NEXT_PUBLIC_BETTI_SENIOR_URL", "senior", 3001),
+    caregiver: getDashboardUrl("NEXT_PUBLIC_BETTI_CAREGIVER_URL", "caregiver", 3002),
+    ems: getDashboardUrl("NEXT_PUBLIC_BETTI_EMS_URL", "ems", 3003),
+    security: getDashboardUrl("NEXT_PUBLIC_BETTI_SECURITY_URL", "security", 3004),
+    fire: getDashboardUrl("NEXT_PUBLIC_BETTI_FIRE_URL", "fire", 3005),
+    operator: getDashboardUrl("NEXT_PUBLIC_BETTI_OPERATOR_URL", "operator", 3007),
   };
 
   const apps = [

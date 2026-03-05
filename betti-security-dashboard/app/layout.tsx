@@ -3,7 +3,6 @@ import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { SecurityLayoutShell } from "@/components/security-layout-shell"
-import { BettiLoader } from "@/components/betti-loader"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -21,7 +20,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-sans antialiased">
         <SecurityLayoutShell>
-          <Suspense fallback={<BettiLoader isLoading={true} minDisplayTime={0} />}>{children}</Suspense>
+          <Suspense fallback={null}>{children}</Suspense>
         </SecurityLayoutShell>
         <Analytics />
       </body>

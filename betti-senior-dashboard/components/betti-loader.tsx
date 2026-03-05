@@ -114,7 +114,7 @@ export function usePageLoader(delay = 300) {
 }
 
 // Route-aware loader: shows on initial load and on every route change
-export function useRouteLoader(pathname: string, delay = 300) {
+export function useRouteLoader(pathname: string, delay = 80) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

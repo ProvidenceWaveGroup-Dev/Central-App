@@ -36,6 +36,39 @@ NEXT_PUBLIC_BETTI_FIRE_URL=http://localhost:3005
 
 Add these variables to your local environment (for example, via `.env.local`) before running `npm run dev`.
 
+## Production deployment
+
+For production, set the following environment variables so dashboard links and logout work correctly.
+
+### Central Hub (main app on port 3000)
+
+**Option A – Path-based URLs** (e.g. `https://app.example.com/senior`):
+
+```
+NEXT_PUBLIC_DASHBOARD_BASE_URL=https://app.example.com
+```
+
+**Option B – Individual dashboard URLs** (e.g. separate domains or subdomains):
+
+```
+NEXT_PUBLIC_BETTI_SENIOR_URL=https://senior.example.com
+NEXT_PUBLIC_BETTI_CAREGIVER_URL=https://caregiver.example.com
+NEXT_PUBLIC_BETTI_EMS_URL=https://ems.example.com
+NEXT_PUBLIC_BETTI_SECURITY_URL=https://security.example.com
+NEXT_PUBLIC_BETTI_FIRE_URL=https://fire.example.com
+NEXT_PUBLIC_BETTI_OPERATOR_URL=https://operator.example.com
+```
+
+### Each dashboard app (Senior, Caregiver, EMS, Security, Fire, Operator, Admin)
+
+So logout / "Back to Hub" goes to the correct URL:
+
+```
+NEXT_PUBLIC_CENTRAL_HUB_URL=https://app.example.com
+```
+
+Set this in each dashboard’s deployment environment (Vercel, etc.). Without it, dashboards fall back to `http://localhost:3000`, which will be wrong in production.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

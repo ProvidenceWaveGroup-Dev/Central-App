@@ -19,7 +19,7 @@ import { FacilitiesSection } from "@/components/sections/facilities-section";
 import { SecuritySection } from "@/components/sections/security-section";
 import { AdminManagementSection } from "@/components/sections/admin-management-section";
 import { SettingsSection } from "@/components/sections/settings-section";
-import { BettiLoader, useTransitionLoader } from "@/components/betti-loader";
+import { BettiLoader, usePageLoader } from "@/components/betti-loader";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
@@ -47,7 +47,7 @@ const sectionTitles: Record<string, string> = {
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("overview");
-  const isPageLoading = useTransitionLoader(activeSection, 300);
+  const isInitialLoad = usePageLoader(120);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -94,7 +94,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <BettiLoader isLoading={isPageLoading} minDisplayTime={400} />
+      <BettiLoader isLoading={isInitialLoad} minDisplayTime={80} />
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">

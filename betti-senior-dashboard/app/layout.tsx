@@ -4,7 +4,6 @@ import { Inter, Georama as Georgia } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { SeniorLayoutShell } from "@/components/senior-layout-shell"
-import Loading from "./loading"
 import "./globals.css"
 
 const inter = Inter({
@@ -35,7 +34,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${inter.variable} ${georgia.variable}`}>
         <SeniorLayoutShell>
-          <Suspense fallback={<Loading />}>{children}</Suspense>
+          <Suspense fallback={null}>{children}</Suspense>
         </SeniorLayoutShell>
         <Analytics />
       </body>

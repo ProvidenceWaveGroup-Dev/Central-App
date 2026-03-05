@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { EnvironmentCard } from "@/components/environment-card";
-import { CO2MonitoringCard } from "@/components/co2-monitoring-card";
-import { VOCHazardCard } from "@/components/voc-hazard-card";
-import { ThermalRiskCard } from "@/components/thermal-risk-card";
-import { HumidityRiskCard } from "@/components/humidity-risk-card";
-import { DailyWellbeingCard } from "@/components/daily-wellbeing-card";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useAlerts } from "@/components/alerts-context";
 import {
@@ -35,6 +30,43 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
+
+const CardPlaceholder = () => (
+  <div className="rounded-xl border border-gray-200 bg-white p-5 animate-pulse">
+    <div className="h-5 w-20 bg-gray-200 rounded mb-4" />
+    <div className="space-y-2">
+      <div className="h-4 bg-gray-100 rounded w-full" />
+      <div className="h-4 bg-gray-100 rounded w-4/5" />
+      <div className="h-4 bg-gray-100 rounded w-3/5" />
+    </div>
+  </div>
+);
+
+
+const DailyWellbeingCard = dynamic(() => import("@/components/daily-wellbeing-card").then((m) => ({ default: m.DailyWellbeingCard })), {
+  loading: () => <CardPlaceholder />,
+  ssr: true,
+});
+const EnvironmentCard = dynamic(() => import("@/components/environment-card").then((m) => ({ default: m.EnvironmentCard })), {
+  loading: () => <CardPlaceholder />,
+  ssr: true,
+});
+const CO2MonitoringCard = dynamic(() => import("@/components/co2-monitoring-card").then((m) => ({ default: m.CO2MonitoringCard })), {
+  loading: () => <CardPlaceholder />,
+  ssr: true,
+});
+const VOCHazardCard = dynamic(() => import("@/components/voc-hazard-card").then((m) => ({ default: m.VOCHazardCard })), {
+  loading: () => <CardPlaceholder />,
+  ssr: true,
+});
+const ThermalRiskCard = dynamic(() => import("@/components/thermal-risk-card").then((m) => ({ default: m.ThermalRiskCard })), {
+  loading: () => <CardPlaceholder />,
+  ssr: true,
+});
+const HumidityRiskCard = dynamic(() => import("@/components/humidity-risk-card").then((m) => ({ default: m.HumidityRiskCard })), {
+  loading: () => <CardPlaceholder />,
+  ssr: true,
+});
 
 export default function SeniorDashboard() {
   const [lastOkTime, setLastOkTime] = useState("2 hours ago");

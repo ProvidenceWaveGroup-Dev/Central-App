@@ -160,7 +160,8 @@ export function AdminSidebar({
   const handleLogoutClick = () => setShowLogoutConfirm(true);
   const handleLogoutConfirm = () => {
     if (typeof window !== "undefined") {
-      window.location.href = "http://localhost:3000";
+      const hubUrl = process.env.NEXT_PUBLIC_CENTRAL_HUB_URL?.trim() || "http://localhost:3000";
+      window.location.href = hubUrl;
     }
   };
   const handleLogoutCancel = () => setShowLogoutConfirm(false);
