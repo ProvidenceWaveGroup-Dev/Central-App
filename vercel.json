@@ -1,6 +1,5 @@
 {
   "env": {
-    "NEXT_PUBLIC_DASHBOARD_BASE_URL": "https://betti-o7dynq26e-patrick-6573s-projects.vercel.app",
     "NEXT_PUBLIC_BETTI_SENIOR_URL": "https://your-senior-dashboard.vercel.app",
     "NEXT_PUBLIC_BETTI_CAREGIVER_URL": "https://your-caregiver-dashboard.vercel.app",
     "NEXT_PUBLIC_BETTI_EMS_URL": "https://your-ems-dashboard.vercel.app",
