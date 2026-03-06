@@ -8,6 +8,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAlerts } from "@/components/alerts-context";
 import type { LucideIcon } from "lucide-react";
 import {
   Home,
@@ -102,6 +103,7 @@ export function FireSidebar({
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const pathname = usePathname();
+  const { unreadCount } = useAlerts();
 
   const collapsed = isMobile
     ? false
@@ -163,12 +165,12 @@ export function FireSidebar({
         {!collapsed && (
           <>
             <span className="flex-1 text-left">{item.label}</span>
-            {item.badge && (
+            {(item.id === "/incidents" ? unreadCount > 0 : !!item.badge) && (
               <Badge
                 variant={item.badgeVariant || "secondary"}
                 className="ml-auto text-xs"
               >
-                {item.badge}
+                {item.id === "/incidents" ? unreadCount : item.badge}
               </Badge>
             )}
           </>

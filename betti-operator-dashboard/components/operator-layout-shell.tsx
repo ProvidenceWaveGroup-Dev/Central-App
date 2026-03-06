@@ -3,9 +3,20 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { OperatorSidebar } from "@/components/operator-sidebar";
+import { AlertsProvider } from "@/components/alerts-context";
+import type { NotificationAlert } from "@/components/alerts-context";
 import { BettiLoader, usePageLoader } from "@/components/betti-loader";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Wind, Flame, Droplets, Thermometer, AlertTriangle } from "lucide-react";
+
+// Centralised alerts data -- replace with API fetch
+const NOTIFICATION_ALERTS: NotificationAlert[] = [
+  { id: "n1", icon: AlertTriangle, title: "Fall Detected \u2014 Room 204", description: "Margaret Collins \u2014 fall alert triggered 2 mins ago", time: "2 min ago", severity: "critical", iconBg: "bg-red-100", iconColor: "text-red-600" },
+  { id: "n2", icon: Wind, title: "CO\u2082 Level Critical", description: "Resident room CO\u2082 at 1,350 ppm \u2014 ventilation needed", time: "5 min ago", severity: "critical", iconBg: "bg-red-100", iconColor: "text-red-600" },
+  { id: "n3", icon: Flame, title: "VOC Trend Rising", description: "VOC levels increased 18.5% in the last 24 hours", time: "30 min ago", severity: "warning", iconBg: "bg-amber-100", iconColor: "text-amber-600" },
+  { id: "n4", icon: Droplets, title: "Mold Risk \u2014 Bathroom", description: "Humidity at 72% for 3h 45m. Mold growth risk elevated.", time: "1 hr ago", severity: "warning", iconBg: "bg-amber-100", iconColor: "text-amber-600" },
+  { id: "n5", icon: Thermometer, title: "Warm Zone Alert", description: "Room 310 temperature at 82\u00B0F \u2014 approaching heat risk", time: "2 hrs ago", severity: "info", iconBg: "bg-orange-100", iconColor: "text-orange-600" },
+];
 
 const pageTitles: Record<string, string> = {
   "/": "Dashboard",
@@ -31,6 +42,7 @@ export function OperatorLayoutShell({
   const isInitialLoad = usePageLoader(120);
 
   return (
+    <AlertsProvider alerts={NOTIFICATION_ALERTS}>
     <div className="min-h-screen bg-white flex">
       <BettiLoader isLoading={isInitialLoad} minDisplayTime={80} />
       {/* Desktop Sidebar */}
@@ -100,5 +112,6 @@ export function OperatorLayoutShell({
         {children}
       </main>
     </div>
+    </AlertsProvider>
   );
 }

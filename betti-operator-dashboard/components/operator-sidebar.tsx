@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useAlerts } from "@/components/alerts-context";
 import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
@@ -109,6 +110,7 @@ export function OperatorSidebar({
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const pathname = usePathname();
+  const { unreadCount } = useAlerts();
 
   const collapsed = isMobile
     ? false
@@ -170,7 +172,7 @@ export function OperatorSidebar({
         {!collapsed && (
           <>
             <span className="flex-1">{item.label}</span>
-            {item.badge && (
+            {(item.id === "/alerts" ? unreadCount > 0 : !!item.badge) && (
               <span
                 className={cn(
                   "ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold",
@@ -179,7 +181,7 @@ export function OperatorSidebar({
                     : "bg-gray-100 text-gray-600"
                 )}
               >
-                {item.badge}
+                {item.id === "/alerts" ? unreadCount : item.badge}
               </span>
             )}
           </>
