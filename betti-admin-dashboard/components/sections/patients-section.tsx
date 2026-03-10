@@ -377,7 +377,9 @@ export function PatientsSection() {
         caregiversRes = null;
       }
 
-      if (!patientsRes.ok || !alertsRes.ok || !facilitiesRes.ok) {
+      // Patients + alerts are required for this screen. Facilities are optional and
+      // can degrade gracefully on unstable networks.
+      if (!patientsRes.ok || !alertsRes.ok) {
         throw new Error("Failed to load patient data");
       }
 
@@ -388,7 +390,7 @@ export function PatientsSection() {
       ]);
       const patientsData = toArray<ApiPatient>(patientsPayload);
       const alertsData = toArray<ApiAlert>(alertsPayload);
-      const facilitiesData = toArray<ApiFacility>(facilitiesPayload);
+      const facilitiesData = facilitiesRes.ok ? toArray<ApiFacility>(facilitiesPayload) : [];
       const caregiversData: ApiCaregiver[] = caregiversRes?.ok
         ? toArray<ApiCaregiver>(await caregiversRes.json().catch(() => []))
         : [];

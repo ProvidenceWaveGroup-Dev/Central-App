@@ -265,22 +265,26 @@ export function AppointmentsSection() {
             : "Login session not found. Please sign in again.",
         );
       }
-      const [appointmentsRes, patientsRes] = await Promise.all([
+      const [appointmentsPrimaryRes, patientsPrimaryRes] = await Promise.all([
         fetch(`${apiUrl}/api/appointments?home_only=true&limit=${APPOINTMENTS_LIMIT}`, { headers }),
         fetch(`${apiUrl}/api/patients?home_only=true`, { headers }),
       ]);
-      if (!appointmentsRes.ok || !patientsRes.ok) {
+      const appointmentsRes = appointmentsPrimaryRes.ok
+        ? appointmentsPrimaryRes
+        : await fetch(`${apiUrl}/api/appointments?limit=${APPOINTMENTS_LIMIT}`, { headers });
+      const patientsRes = patientsPrimaryRes.ok
+        ? patientsPrimaryRes
+        : await fetch(`${apiUrl}/api/patients`, { headers });
+
+      if (!appointmentsRes.ok) {
         if (appointmentsRes.status === 401 || patientsRes.status === 401) {
           throw new Error("Login session not found. Please sign in again.");
         }
-        const detail = !appointmentsRes.ok
-          ? await parseApiError(appointmentsRes, "Failed to load appointments")
-          : await parseApiError(patientsRes, "Failed to load patient list");
-        throw new Error(detail);
+        throw new Error(await parseApiError(appointmentsRes, "Failed to load appointments"));
       }
       const [appointmentsPayload, patientsPayload] = await Promise.all([
         appointmentsRes.json().catch(() => []),
-        patientsRes.json().catch(() => []),
+        patientsRes.ok ? patientsRes.json().catch(() => []) : Promise.resolve([]),
       ]);
       const nextAppointments = toArray<ApiAppointment>(appointmentsPayload);
       const nextPatients = toArray<ApiPatient>(patientsPayload);
@@ -290,6 +294,9 @@ export function AppointmentsSection() {
         appointments: nextAppointments,
         patients: nextPatients,
       });
+      if (!patientsRes.ok) {
+        setError("Partial live data loaded. Patient directory unavailable.");
+      }
     } catch (err) {
       const fallback = hasCachedData
         ? "Live refresh timed out. Showing recently loaded appointments."

@@ -140,16 +140,28 @@ export function AIRulesSection() {
       if (!headers.Authorization) {
         throw new Error("Login session not found. Please sign in again.");
       }
-      const [inferencesRes, rulesRes] = await Promise.all([
+      const [inferencesPrimaryRes, rulesPrimaryRes] = await Promise.all([
         fetch(`${apiUrl}/api/ai/inferences?limit=200&home_only=true`, { headers }),
         fetch(`${apiUrl}/api/rules?limit=500`, { headers }),
       ]);
-      if (!inferencesRes.ok || !rulesRes.ok) {
+      const inferencesRes = inferencesPrimaryRes.ok
+        ? inferencesPrimaryRes
+        : await fetch(`${apiUrl}/api/ai/inferences?limit=200`, { headers });
+      const rulesRes = rulesPrimaryRes.ok
+        ? rulesPrimaryRes
+        : await fetch(`${apiUrl}/api/rules?limit=500`, { headers });
+      if (!inferencesRes.ok && !rulesRes.ok) {
         throw new Error("Failed to load AI/rules data");
       }
-      const [inferencesPayload, rulesPayload] = await Promise.all([inferencesRes.json(), rulesRes.json()]);
+      const [inferencesPayload, rulesPayload] = await Promise.all([
+        inferencesRes.ok ? inferencesRes.json().catch(() => []) : Promise.resolve([]),
+        rulesRes.ok ? rulesRes.json().catch(() => []) : Promise.resolve([]),
+      ]);
       setInferences(toArray<AIInference>(inferencesPayload));
       setRules(toArray<RuleDefinition>(rulesPayload));
+      if (!inferencesRes.ok || !rulesRes.ok) {
+        setActionMessage("Partial live data loaded in AI & Rules.");
+      }
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unable to load AI/rules data");
       setInferences([]);
