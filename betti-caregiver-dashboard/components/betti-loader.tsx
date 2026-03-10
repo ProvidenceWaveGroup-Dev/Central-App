@@ -42,6 +42,8 @@ export function BettiLoader({ isLoading = true, minDisplayTime = 1000 }: BettiLo
         alignItems: "center",
         justifyContent: "center",
         zIndex: 3000,
+        // Keep UI actionable on very slow links before hydration completes.
+        pointerEvents: "none",
         transition: "opacity 0.4s ease, visibility 0.4s ease",
         opacity: visible ? 1 : 0,
         visibility: visible ? "visible" : "hidden",
@@ -98,27 +100,33 @@ export function BettiLoader({ isLoading = true, minDisplayTime = 1000 }: BettiLo
   );
 }
 
-// Page loader hook for initial page loads (faster: 300ms)
-export function usePageLoader(delay = 300) {
+// Page loader hook for initial page loads
+export function usePageLoader(delay = 500) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), delay);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, delay);
+
     return () => clearTimeout(timer);
   }, [delay]);
 
   return isLoading;
 }
 
-// Transition loader: shows on initial load and when key (pathname/section) changes
-export function useTransitionLoader(key: string, delay = 300) {
+// Route transition loader hook
+export function useTransitionLoader(trigger: string, delay = 300) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), delay);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, delay);
+
     return () => clearTimeout(timer);
-  }, [key, delay]);
+  }, [trigger, delay]);
 
   return isLoading;
 }

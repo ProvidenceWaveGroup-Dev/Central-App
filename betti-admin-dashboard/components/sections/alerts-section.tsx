@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ interface Alert {
   };
   description: string;
   status: "active" | "acknowledged" | "resolved" | "escalated";
-  feedback_status: "unreviewed" | "confirmed" | "false_positive";
+  feedback_status: "unreviewed" | "confirmed" | "true_positive" | "false_positive" | "false_alarm";
   event_time: string;
   // From alert_details
   details: { key: string; value: string; confidence: number }[];
@@ -44,11 +44,43 @@ interface Alert {
   assigned_caregiver: string;
 }
 
+type AlertRow = {
+  alert_id: number;
+  patient_id: number;
+  alert_type_id: number;
+  severity_level_id: number;
+  description?: string;
+  status?: Alert["status"];
+  feedback_status?: Alert["feedback_status"];
+  event_time: string;
+};
+
+type PatientRow = {
+  patient_id: number;
+  first_name?: string;
+  last_name?: string;
+};
+
+type ProfileRow = {
+  patient_id: number;
+  facility_name?: string;
+  primary_caregiver?: string;
+};
+
 const severityLevels = {
   1: { level_name: "Critical" as const, priority: 1, color_code: "#FF0000" },
   2: { level_name: "High" as const, priority: 2, color_code: "#FF9900" },
   3: { level_name: "Medium" as const, priority: 3, color_code: "#FFCC00" },
   4: { level_name: "Low" as const, priority: 4, color_code: "#00CC00" },
+};
+
+const alertTypeById: Record<number, Alert["alert_type"]> = {
+  1: "panic",
+  2: "medication",
+  3: "fall",
+  4: "inactivity",
+  5: "vital",
+  6: "wandering",
 };
 
 const getAlertIcon = (type: Alert["alert_type"]) => {
@@ -85,138 +117,157 @@ const formatTimeAgo = (dateStr: string): string => {
 
 const ITEMS_PER_PAGE = 4;
 
-const initialAlerts: Alert[] = [
-  {
-    alert_id: 9021,
-    patient_id: 501,
-    patient_name: "Margaret Johnson",
-    alert_type_id: 3,
-    alert_type: "fall",
-    severity_level_id: 1,
-    severity: severityLevels[1],
-    description: "Possible fall detected in bathroom",
-    status: "active",
-    feedback_status: "unreviewed",
-    event_time: "2026-02-01T06:47:30Z",
-    details: [
-      { key: "impact_force", value: "2.1g", confidence: 0.89 },
-      { key: "position_change", value: "vertical_to_horizontal", confidence: 0.92 },
-    ],
-    location: "Room 214 - Bathroom",
-    assigned_caregiver: "Angela Reyes"
-  },
-  {
-    alert_id: 9018,
-    patient_id: 502,
-    patient_name: "Robert Smith",
-    alert_type_id: 2,
-    alert_type: "medication",
-    severity_level_id: 3,
-    severity: severityLevels[3],
-    description: "Missed afternoon medication - Metformin 500mg",
-    status: "resolved",
-    feedback_status: "confirmed",
-    event_time: "2026-02-01T06:32:00Z",
-    details: [
-      { key: "medication", value: "Metformin 500mg", confidence: 1.0 },
-      { key: "scheduled_time", value: "14:00", confidence: 1.0 },
-    ],
-    location: "Room 118",
-    assigned_caregiver: "John Davis"
-  },
-  {
-    alert_id: 9015,
-    patient_id: 503,
-    patient_name: "Helen Davis",
-    alert_type_id: 4,
-    alert_type: "inactivity",
-    severity_level_id: 2,
-    severity: severityLevels[2],
-    description: "No movement detected for 3 hours in monitored zone",
-    status: "acknowledged",
-    feedback_status: "unreviewed",
-    event_time: "2026-02-01T06:15:00Z",
-    details: [
-      { key: "last_motion", value: "03:15:00", confidence: 1.0 },
-      { key: "zone", value: "bedroom", confidence: 0.95 },
-    ],
-    location: "Room 305 - Bedroom",
-    assigned_caregiver: "Emily Brown"
-  },
-  {
-    alert_id: 9012,
-    patient_id: 504,
-    patient_name: "James Wilson",
-    alert_type_id: 5,
-    alert_type: "vital",
-    severity_level_id: 4,
-    severity: severityLevels[4],
-    description: "Slightly elevated heart rate detected during rest",
-    status: "resolved",
-    feedback_status: "false_positive",
-    event_time: "2026-02-01T05:45:00Z",
-    details: [
-      { key: "heart_rate", value: "95 bpm", confidence: 0.88 },
-      { key: "baseline", value: "72 bpm", confidence: 0.95 },
-    ],
-    location: "Room 122",
-    assigned_caregiver: "Michael Lee"
-  },
-  {
-    alert_id: 9008,
-    patient_id: 505,
-    patient_name: "Patricia Brown",
-    alert_type_id: 1,
-    alert_type: "panic",
-    severity_level_id: 1,
-    severity: severityLevels[1],
-    description: "Panic button activated - patient requesting assistance",
-    status: "resolved",
-    feedback_status: "confirmed",
-    event_time: "2026-02-01T05:30:00Z",
-    details: [
-      { key: "button_type", value: "wearable", confidence: 1.0 },
-      { key: "resolution", value: "assistance_provided", confidence: 1.0 },
-    ],
-    location: "Room 210 - Bathroom",
-    assigned_caregiver: "Angela Reyes"
-  },
-  {
-    alert_id: 9005,
-    patient_id: 503,
-    patient_name: "Helen Davis",
-    alert_type_id: 6,
-    alert_type: "wandering",
-    severity_level_id: 2,
-    severity: severityLevels[2],
-    description: "Patient detected outside designated area during night hours",
-    status: "escalated",
-    feedback_status: "confirmed",
-    event_time: "2026-02-01T02:15:00Z",
-    details: [
-      { key: "zone_exit", value: "floor_3_boundary", confidence: 0.97 },
-      { key: "time_outside", value: "8 minutes", confidence: 0.90 },
-    ],
-    location: "Floor 3 - Hallway",
-    assigned_caregiver: "Emily Brown"
-  },
-];
-
 export function AlertsSection() {
+  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [alertsData, setAlertsData] = useState<Alert[]>(initialAlerts);
+  const [alertsData, setAlertsData] = useState<Alert[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleResolveAlert = (alertId: number) => {
-    setAlertsData(prev => prev.map(alert =>
-      alert.alert_id === alertId
-        ? { ...alert, status: "resolved" as const, feedback_status: "confirmed" as const }
-        : alert
-    ));
-    toast.success("Alert Resolved", {
-      description: `Alert #${alertId} has been marked as resolved.`,
-    });
+  const authHeaders = (): Record<string, string> => {
+    const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return headers;
+  };
+
+  const toArray = <T,>(payload: unknown): T[] => {
+    if (Array.isArray(payload)) {
+      return payload as T[];
+    }
+    if (payload && typeof payload === "object") {
+      const objectPayload = payload as { value?: unknown; items?: unknown; data?: unknown };
+      if (Array.isArray(objectPayload.value)) {
+        return objectPayload.value as T[];
+      }
+      if (Array.isArray(objectPayload.items)) {
+        return objectPayload.items as T[];
+      }
+      if (Array.isArray(objectPayload.data)) {
+        return objectPayload.data as T[];
+      }
+    }
+    return [];
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadAlerts = async () => {
+      try {
+        const headers = authHeaders();
+        if (!headers.Authorization) {
+          throw new Error("Login session not found. Please sign in again.");
+        }
+        const [alertsRes, patientsRes, profileRes] = await Promise.all([
+          fetch(`${apiUrl}/api/alerts?limit=50&home_only=true`, { headers }),
+          fetch(`${apiUrl}/api/patients?home_only=true`, { headers }),
+          fetch(`${apiUrl}/api/patient-profiles?limit=500&home_only=true`, { headers }),
+        ]);
+
+        if (!alertsRes.ok) {
+          throw new Error("Failed to load alerts");
+        }
+
+        const alerts = toArray<AlertRow>(await alertsRes.json().catch(() => []));
+        const patients = patientsRes.ok
+          ? toArray<PatientRow>(await patientsRes.json().catch(() => []))
+          : [];
+        const profiles = profileRes.ok
+          ? toArray<ProfileRow>(await profileRes.json().catch(() => []))
+          : [];
+        const patientMap = new Map(
+          (patients || []).map((p) => [p.patient_id, `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim()])
+        );
+        const profileMap = new Map(
+          (profiles || []).map((profile) => [profile.patient_id, profile]),
+        );
+
+        const mapped: Alert[] = (alerts || []).map((alert) => {
+          const severity = severityLevels[alert.severity_level_id as keyof typeof severityLevels] || severityLevels[3];
+          const alertType = alertTypeById[alert.alert_type_id] || "vital";
+          const profile = profileMap.get(alert.patient_id);
+          return {
+            alert_id: alert.alert_id,
+            patient_id: alert.patient_id,
+            patient_name: patientMap.get(alert.patient_id) || `Patient ${alert.patient_id}`,
+            alert_type_id: alert.alert_type_id,
+            alert_type: alertType,
+            severity_level_id: alert.severity_level_id,
+            severity,
+            description: alert.description || "Alert",
+            status: alert.status || "active",
+            feedback_status: alert.feedback_status || "unreviewed",
+            event_time: alert.event_time,
+            details: [],
+            location: profile?.facility_name || "N/A",
+            assigned_caregiver: profile?.primary_caregiver || "Unassigned",
+          };
+        });
+
+        if (isMounted) setAlertsData(mapped);
+        if (isMounted && (!patientsRes.ok || !profileRes.ok)) {
+          const missing: string[] = [];
+          if (!patientsRes.ok) missing.push("patients");
+          if (!profileRes.ok) missing.push("profiles");
+          setLoadError(`Partial alert context loaded. Missing: ${missing.join(", ")}.`);
+        } else if (isMounted) {
+          setLoadError("");
+        }
+      } catch (error) {
+        if (isMounted) {
+          setLoadError("Unable to load alerts.");
+          setAlertsData([]);
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadAlerts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [apiUrl]);
+
+  const handleResolveAlert = async (alertId: number) => {
+    setIsSaving(true);
+    try {
+      const response = await fetch(`${apiUrl}/api/alerts/${alertId}`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          status: "resolved",
+          feedback_status: "true_positive",
+        }),
+      });
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || "Failed to update alert");
+      }
+      setAlertsData((prev) =>
+        prev.map((alert) =>
+          alert.alert_id === alertId
+            ? { ...alert, status: "resolved" as const, feedback_status: "true_positive" as const }
+            : alert,
+        ),
+      );
+      toast.success("Alert updated", {
+        description: `Alert #${alertId} marked as resolved.`,
+      });
+    } catch (error) {
+      toast.error("Failed to update alert", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleViewAlert = (alert: Alert) => {
@@ -259,6 +310,16 @@ export function AlertsSection() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)]">
+      {loadError && (
+        <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          {loadError}
+        </div>
+      )}
+      {isLoading && !loadError && (
+        <div className="mb-4 rounded-lg border border-border/60 bg-muted/40 px-4 py-2 text-sm text-muted-foreground">
+          Loading alerts...
+        </div>
+      )}
       {/* Fixed Header Section */}
       <div className="flex-shrink-0 space-y-6 pb-4">
         {/* Header */}
@@ -433,8 +494,19 @@ export function AlertsSection() {
                           {alert.severity.level_name}
                         </Badge>
                         {alert.feedback_status !== "unreviewed" && (
-                          <Badge variant={alert.feedback_status === "confirmed" ? "default" : "secondary"} className="text-xs">
-                            {alert.feedback_status === "confirmed" ? "Confirmed" : "False Positive"}
+                          <Badge
+                            variant={
+                              alert.feedback_status === "confirmed" || alert.feedback_status === "true_positive"
+                                ? "default"
+                                : "secondary"
+                            }
+                            className="text-xs"
+                          >
+                            {alert.feedback_status === "confirmed" || alert.feedback_status === "true_positive"
+                              ? "Confirmed"
+                              : alert.feedback_status === "false_alarm"
+                              ? "False Alarm"
+                              : "False Positive"}
                           </Badge>
                         )}
                       </div>
@@ -463,7 +535,12 @@ export function AlertsSection() {
                       View
                     </Button>
                     {alert.status !== "resolved" && (
-                      <Button size="sm" className="gap-1" onClick={() => handleResolveAlert(alert.alert_id)}>
+                      <Button
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => void handleResolveAlert(alert.alert_id)}
+                        disabled={isSaving}
+                      >
                         <CheckCircle className="h-3 w-3" />
                         Resolve
                       </Button>

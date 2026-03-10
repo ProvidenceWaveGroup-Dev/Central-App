@@ -4,7 +4,9 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
-import { RouteLoaderWrapper } from "@/components/route-loader-wrapper"
+import { SidebarNavigation } from "@/components/sidebar-navigation"
+import { AiAssistantFab } from "@/components/ai-assistant-fab"
+import { AuthBootstrap } from "@/components/auth-bootstrap"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -20,13 +22,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased">
+        <AuthBootstrap />
         <ThemeProvider>
-          <RouteLoaderWrapper>
-            <Suspense fallback={null}>
-              {children}
-              <Analytics />
-            </Suspense>
-          </RouteLoaderWrapper>
+          <Suspense fallback={<div>Loading...</div>}>
+            {children}
+            <Analytics />
+          </Suspense>
+          <AiAssistantFab />
           <Toaster />
         </ThemeProvider>
       </body>

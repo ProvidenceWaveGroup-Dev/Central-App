@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useAlerts } from "@/components/alerts-context";
 import type { LucideIcon } from "lucide-react";
 import {
   Home,
@@ -69,7 +67,7 @@ const menuItems: MenuItem[] = [
     id: "alerts",
     label: "Alerts & Safety",
     icon: Shield,
-    badge: "2",
+    badge: null,
     badgeVariant: "destructive" as const,
   },
 ];
@@ -101,6 +99,9 @@ const toolItems: MenuItem[] = [
   },
 ];
 
+const SIDEBAR_BADGE_POLL_MS = Number(process.env.NEXT_PUBLIC_CAREGIVER_BADGE_POLL_MS || "30000");
+const SIDEBAR_ALERTS_LIMIT = 50;
+
 export function CaregiverSidebar({
   collapsed: controlledCollapsed,
   onCollapsedChange,
@@ -111,7 +112,81 @@ export function CaregiverSidebar({
 }: CaregiverSidebarProps) {
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const { unreadCount } = useAlerts();
+  const [dynamicBadges, setDynamicBadges] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let mounted = true;
+    const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+    const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("betti_token") || params?.get("betti_token") || params?.get("token")
+      : null;
+    const userId = typeof window !== "undefined"
+      ? localStorage.getItem("betti_user_id") || params?.get("betti_user_id") || params?.get("user_id")
+      : null;
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+      if (typeof window !== "undefined" && !localStorage.getItem("betti_token")) {
+        localStorage.setItem("betti_token", token);
+      }
+    }
+    if (userId && typeof window !== "undefined" && !localStorage.getItem("betti_user_id")) {
+      localStorage.setItem("betti_user_id", userId);
+    }
+
+    const loadBadges = async () => {
+      try {
+        let alertCount = 0;
+        let assignedPatientIds = new Set<number>();
+        if (userId) {
+          const assignedRes = await fetch(`${apiUrl}/api/users/${userId}/assigned-patients?active_only=true`, { headers });
+          if (assignedRes.ok) {
+            const assignedRows = (await assignedRes.json()) as Array<{ active_alerts?: number; patient_id?: number }>;
+            alertCount = (assignedRows || []).reduce((sum, row) => sum + Number(row?.active_alerts || 0), 0);
+            assignedPatientIds = new Set(
+              (assignedRows || [])
+                .map((row) => Number(row?.patient_id || 0))
+                .filter((id) => id > 0),
+            );
+          }
+        }
+
+        if (alertCount === 0) {
+          const alertsRes = await fetch(`${apiUrl}/api/alerts?limit=${SIDEBAR_ALERTS_LIMIT}`, { headers });
+          if (alertsRes.ok) {
+            const alertRows = (await alertsRes.json()) as Array<{ status?: string | null; patient_id?: number | null }>;
+            alertCount = (alertRows || []).filter(
+              (row) =>
+                String(row?.status || "active").toLowerCase() === "active" &&
+                (assignedPatientIds.size === 0 || assignedPatientIds.has(Number(row?.patient_id || 0))),
+            ).length;
+          }
+        }
+
+        if (mounted) {
+          if (alertCount > 0) {
+            setDynamicBadges({ alerts: String(alertCount) });
+          } else {
+            setDynamicBadges({});
+          }
+        }
+      } catch {
+        if (mounted) {
+          setDynamicBadges({});
+        }
+      }
+    };
+
+    void loadBadges();
+    const intervalId = window.setInterval(() => {
+      void loadBadges();
+    }, SIDEBAR_BADGE_POLL_MS);
+    return () => {
+      mounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const collapsed = isMobile
     ? false
@@ -140,8 +215,7 @@ export function CaregiverSidebar({
     if (typeof window !== "undefined") {
       sessionStorage.clear();
       localStorage.clear();
-      const hubUrl = process.env.NEXT_PUBLIC_CENTRAL_HUB_URL?.trim() || "http://localhost:3000";
-      window.location.href = hubUrl;
+      window.location.href = `${window.location.origin}/`;
     }
   };
 
@@ -170,12 +244,12 @@ export function CaregiverSidebar({
         {!collapsed && (
           <>
             <span className="flex-1 text-left">{item.label}</span>
-            {(item.id === "alerts" ? unreadCount > 0 : !!item.badge) && (
+            {(dynamicBadges[item.id] || item.badge) && (
               <Badge
                 variant={item.badgeVariant || "secondary"}
                 className="ml-auto text-xs"
               >
-                {item.id === "alerts" ? unreadCount : item.badge}
+                {dynamicBadges[item.id] || item.badge}
               </Badge>
             )}
           </>
@@ -287,47 +361,37 @@ export function CaregiverSidebar({
         </Button>
       </div>
 
-      {/* Logout Confirmation Modal - Portal with blurred background */}
-      {showLogoutConfirm &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center"
-            style={{
-              background: "rgba(9, 16, 32, 0.35)",
-              backdropFilter: "blur(3px)",
-              WebkitBackdropFilter: "blur(3px)",
-            }}
-          >
-            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                  <LogOut className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="font-serif text-lg font-semibold text-gray-900">Confirm Logout</h3>
-                  <p className="text-sm text-gray-500">Are you sure you want to logout?</p>
-                </div>
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-lg">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <LogOut className="h-6 w-6 text-red-600" />
               </div>
-              <div className="flex gap-3 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={handleLogoutCancel}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleLogoutConfirm}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white"
-                >
-                  Logout
-                </Button>
+              <div>
+                <h3 className="font-serif text-lg font-semibold text-gray-900">Confirm Logout</h3>
+                <p className="text-sm text-gray-500">Are you sure you want to logout?</p>
               </div>
             </div>
-          </div>,
-          document.body
-        )}
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={handleLogoutCancel}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleLogoutConfirm}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+              >
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

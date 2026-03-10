@@ -160,7 +160,7 @@ export function RemindersScheduling() {
           </div>
 
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-foreground">Today's Reminders</h4>
+            <h4 className="text-sm font-medium text-foreground">Today&apos;s Reminders</h4>
             {reminders
               .filter((r) => r.type !== "appointment")
               .map((reminder) => (
@@ -186,7 +186,7 @@ export function RemindersScheduling() {
           </div>
 
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-foreground">Today's Schedule</h4>
+            <h4 className="text-sm font-medium text-foreground">Today&apos;s Schedule</h4>
             <div className="space-y-2 max-h-32 overflow-y-auto">
               {schedule.map((item, index) => (
                 <div

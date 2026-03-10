@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { OverviewSection } from "@/components/sections/overview-section";
 import { PatientsSection } from "@/components/sections/patients-section";
+import { AppointmentsSection } from "@/components/sections/appointments-section";
 import { CaregiversSection } from "@/components/sections/caregivers-section";
 import { AlertsSection } from "@/components/sections/alerts-section";
 import { DevicesSection } from "@/components/sections/devices-section";
@@ -28,6 +30,7 @@ import Image from "next/image";
 const sectionTitles: Record<string, string> = {
   overview: "Overview",
   patients: "Patients",
+  appointments: "Appointments",
   caregivers: "Caregivers",
   alerts: "Alerts & Incidents",
   devices: "Devices & Sensors",
@@ -45,56 +48,120 @@ const sectionTitles: Record<string, string> = {
   settings: "Settings",
 };
 
+const decodeJwtPayload = (token: string): Record<string, unknown> | null => {
+  try {
+    const payloadPart = token.split(".")[1];
+    if (!payloadPart) return null;
+    const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, "=");
+    const decoded = atob(padded);
+    const parsed = JSON.parse(decoded);
+    if (!parsed || typeof parsed !== "object") return null;
+    return parsed as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+};
+
+const tokenExpired = (token: string): boolean => {
+  const payload = decodeJwtPayload(token);
+  const exp = Number(payload?.exp);
+  if (!Number.isFinite(exp) || exp <= 0) {
+    return false;
+  }
+  return Date.now() >= exp * 1000;
+};
+
 export default function AdminDashboard() {
+  const router = useRouter();
+  const isPageLoading = usePageLoader(1500);
   const [activeSection, setActiveSection] = useState("overview");
-  const isInitialLoad = usePageLoader(120);
+  const [mountedSections, setMountedSections] = useState<Record<string, boolean>>({ overview: true });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
 
-  const renderSection = () => {
-    switch (activeSection) {
-      case "overview":
-        return <OverviewSection onNavigate={setActiveSection} />;
-      case "patients":
-        return <PatientsSection />;
-      case "caregivers":
-        return <CaregiversSection />;
-      case "alerts":
-        return <AlertsSection />;
-      case "devices":
-        return <DevicesSection />;
-      case "fall-monitoring":
-        return <FallMonitoringSection />;
-      case "ai-rules":
-        return <AIRulesSection />;
-      case "emergency":
-        return <EmergencySection />;
-      case "security-agencies":
-        return <SecurityAgenciesSection />;
-      case "fire-service":
-        return <FireServiceSection />;
-      case "communications":
-        return <CommunicationsSection />;
-      case "reports":
-        return <ReportsSection />;
-      case "billing":
-        return <BillingSection />;
-      case "facilities":
-        return <FacilitiesSection />;
-      case "security":
-        return <SecuritySection />;
-      case "admin-management":
-        return <AdminManagementSection />;
-      case "settings":
-        return <SettingsSection />;
-      default:
-        return <OverviewSection />;
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
     }
+    const params = new URLSearchParams(window.location.search);
+    const queryToken = params.get("betti_token") || params.get("token");
+    const queryRole = params.get("betti_role") || params.get("role");
+    const queryUserId = params.get("betti_user_id") || params.get("user_id");
+    const queryEmail = params.get("betti_email") || params.get("email");
+    // Query bootstrap values are authoritative for role-launch flows.
+    // This prevents stale role/token state from blocking admin navigation.
+    if (queryToken) {
+      localStorage.setItem("betti_token", queryToken);
+    }
+    if (queryRole) {
+      localStorage.setItem("betti_user_role", queryRole);
+    }
+    if (queryUserId) {
+      localStorage.setItem("betti_user_id", queryUserId);
+    }
+    if (queryEmail) {
+      localStorage.setItem("betti_user_email", queryEmail);
+    }
+
+    const token = localStorage.getItem("betti_token") || "";
+    const roleFromStorage = String(localStorage.getItem("betti_user_role") || "").toLowerCase();
+    const decodedRole = String(decodeJwtPayload(token)?.role || "").toLowerCase();
+    const role = roleFromStorage || decodedRole;
+    if (role && !roleFromStorage) {
+      localStorage.setItem("betti_user_role", role);
+    }
+    const authenticated = token && role === "admin" && !tokenExpired(token);
+    if (!authenticated) {
+      localStorage.removeItem("betti_token");
+      localStorage.removeItem("betti_user_id");
+      localStorage.removeItem("betti_user_role");
+      localStorage.removeItem("betti_user_email");
+      sessionStorage.removeItem("betti_admin_authenticated");
+      sessionStorage.removeItem("betti_admin_email");
+      router.replace("/login");
+      return;
+    }
+    setAuthReady(true);
+  }, [router]);
+
+  useEffect(() => {
+    setMountedSections((prev) => (prev[activeSection] ? prev : { ...prev, [activeSection]: true }));
+  }, [activeSection]);
+
+  const sectionViews: Record<string, JSX.Element> = {
+    overview: <OverviewSection onNavigate={setActiveSection} />,
+    patients: <PatientsSection />,
+    appointments: <AppointmentsSection />,
+    caregivers: <CaregiversSection />,
+    alerts: <AlertsSection />,
+    devices: <DevicesSection />,
+    "fall-monitoring": <FallMonitoringSection />,
+    "ai-rules": <AIRulesSection />,
+    emergency: <EmergencySection />,
+    "security-agencies": <SecurityAgenciesSection />,
+    "fire-service": <FireServiceSection />,
+    communications: <CommunicationsSection />,
+    reports: <ReportsSection />,
+    billing: <BillingSection />,
+    facilities: <FacilitiesSection />,
+    security: <SecuritySection />,
+    "admin-management": <AdminManagementSection />,
+    settings: <SettingsSection />,
   };
+
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground">
+        Validating admin session...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
-      <BettiLoader isLoading={isInitialLoad} minDisplayTime={80} />
+      <BettiLoader isLoading={isPageLoading} />
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
@@ -167,7 +234,20 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <main className="flex-1 overflow-auto pt-16 lg:pt-0">
         <div className="container mx-auto p-4 md:p-6 lg:p-8">
-          {renderSection()}
+          {Object.entries(sectionViews).map(([sectionKey, sectionComponent]) => {
+            if (!mountedSections[sectionKey]) {
+              return null;
+            }
+            return (
+              <div
+                key={sectionKey}
+                className={activeSection === sectionKey ? "block" : "hidden"}
+                aria-hidden={activeSection !== sectionKey}
+              >
+                {sectionComponent}
+              </div>
+            );
+          })}
         </div>
       </main>
     </div>

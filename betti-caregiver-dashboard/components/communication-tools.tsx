@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { MessageSquare, Video, Phone, Users, Send, Mic } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 
 const recentMessages = [
@@ -41,12 +41,65 @@ const recentMessages = [
 export function CommunicationTools() {
   const [newMessage, setNewMessage] = useState("")
   const [messages, setMessages] = useState(recentMessages)
+  const [patientName, setPatientName] = useState("Linked Senior")
   const { toast } = useToast()
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+    const userId = localStorage.getItem("betti_user_id")
+    const token = localStorage.getItem("betti_token")
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+    if (!userId) {
+      return
+    }
+    const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000"
+    fetch(`${apiUrl}/api/users/${userId}/assigned-patients?active_only=true&home_only=false`, { headers })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("assignment fetch failed")
+        }
+        return res.json()
+      })
+      .then((rows: Array<{ patient_name?: string }>) => {
+        if (rows && rows.length > 0 && rows[0].patient_name) {
+          setPatientName(rows[0].patient_name)
+          return
+        }
+        throw new Error("no assigned patient")
+      })
+      .catch(async () => {
+        try {
+          const fallbackRes = await fetch(`${apiUrl}/api/patients?home_only=false`, { headers })
+          if (!fallbackRes.ok) {
+            setPatientName("Linked Senior")
+            return
+          }
+          const payload = (await fallbackRes.json()) as
+            | Array<{ first_name?: string; last_name?: string; patient_id?: number }>
+            | { value?: Array<{ first_name?: string; last_name?: string; patient_id?: number }> }
+          const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.value) ? payload.value : []
+          if (rows.length > 0) {
+            const first = rows[0].first_name || ""
+            const last = rows[0].last_name || ""
+            setPatientName(`${first} ${last}`.trim() || `Patient #${rows[0].patient_id || ""}`.trim())
+          } else {
+            setPatientName("Linked Senior")
+          }
+        } catch {
+          setPatientName("Linked Senior")
+        }
+      })
+  }, [])
 
   const handleVideoCall = () => {
     toast({
       title: "Starting Video Call...",
-      description: "Connecting to Margaret Johnson's device",
+      description: `Connecting to ${patientName}'s device`,
     })
     console.log("[v0] Video call initiated")
   }
@@ -54,7 +107,7 @@ export function CommunicationTools() {
   const handleVoiceCall = () => {
     toast({
       title: "Starting Voice Call...",
-      description: "Dialing Margaret Johnson",
+      description: `Dialing ${patientName}`,
     })
     console.log("[v0] Voice call initiated")
   }

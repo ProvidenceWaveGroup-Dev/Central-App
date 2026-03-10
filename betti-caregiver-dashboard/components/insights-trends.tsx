@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { TrendingUp, TrendingDown, BarChart3, Download, Activity, Heart, Moon, Pill } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { generateHealthReport } from "@/lib/pdf-generator"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { CustomDateRangeDialog } from "@/components/custom-date-range-dialog"
 
 const weeklyTrends = [
@@ -62,6 +62,75 @@ const monthlyInsights = [
 export function InsightsTrends() {
   const { toast } = useToast()
   const [isCustomRangeOpen, setIsCustomRangeOpen] = useState(false)
+  const [patientName, setPatientName] = useState("Linked Senior")
+  const [caregiverName, setCaregiverName] = useState("Care Team")
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+    const userId = localStorage.getItem("betti_user_id")
+    const token = localStorage.getItem("betti_token")
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+    if (!userId) {
+      return
+    }
+    const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000"
+
+    fetch(`${apiUrl}/api/users/${userId}`, { headers })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("user fetch failed")
+        }
+        return res.json()
+      })
+      .then((user: { first_name?: string; last_name?: string; email?: string }) => {
+        const fullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim()
+        if (fullName) {
+          setCaregiverName(fullName)
+        } else if (user?.email) {
+          setCaregiverName(user.email)
+        }
+      })
+      .catch(() => null)
+
+    fetch(`${apiUrl}/api/users/${userId}/assigned-patients?active_only=true&home_only=false`, { headers })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("assignment fetch failed")
+        }
+        return res.json()
+      })
+      .then((rows: Array<{ patient_name?: string }>) => {
+        if (rows && rows.length > 0 && rows[0].patient_name) {
+          setPatientName(rows[0].patient_name)
+          return
+        }
+        throw new Error("no assigned patient")
+      })
+      .catch(async () => {
+        try {
+          const fallbackRes = await fetch(`${apiUrl}/api/patients?home_only=false`, { headers })
+          if (!fallbackRes.ok) {
+            return
+          }
+          const payload = (await fallbackRes.json()) as
+            | Array<{ first_name?: string; last_name?: string; patient_id?: number }>
+            | { value?: Array<{ first_name?: string; last_name?: string; patient_id?: number }> }
+          const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.value) ? payload.value : []
+          if (rows.length > 0) {
+            const first = rows[0].first_name || ""
+            const last = rows[0].last_name || ""
+            setPatientName(`${first} ${last}`.trim() || `Patient #${rows[0].patient_id || ""}`.trim())
+          }
+        } catch {
+          return
+        }
+      })
+  }, [])
 
   const handleDownloadPDF = () => {
     toast({
@@ -72,8 +141,8 @@ export function InsightsTrends() {
     setTimeout(() => {
       generateHealthReport(
         {
-          name: "Margaret Thompson",
-          caregiverName: "Sarah Johnson",
+          name: patientName,
+          caregiverName,
           reportType: "daily",
         },
         {
@@ -114,8 +183,8 @@ export function InsightsTrends() {
     setTimeout(() => {
       generateHealthReport(
         {
-          name: "Margaret Thompson",
-          caregiverName: "Sarah Johnson",
+          name: patientName,
+          caregiverName,
           reportType: "weekly",
         },
         {
@@ -156,8 +225,8 @@ export function InsightsTrends() {
     setTimeout(() => {
       generateHealthReport(
         {
-          name: "Margaret Thompson",
-          caregiverName: "Sarah Johnson",
+          name: patientName,
+          caregiverName,
           reportType: "monthly",
         },
         {
@@ -198,8 +267,8 @@ export function InsightsTrends() {
     setTimeout(() => {
       generateHealthReport(
         {
-          name: "Margaret Thompson",
-          caregiverName: "Sarah Johnson",
+          name: patientName,
+          caregiverName,
           reportType: "custom",
           startDate,
           endDate,

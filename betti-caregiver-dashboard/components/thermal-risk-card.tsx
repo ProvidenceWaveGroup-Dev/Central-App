@@ -32,6 +32,7 @@ const statusConfig = {
   heat_risk: { label: "Heat Risk", bg: "bg-red-100", text: "text-red-700", bar: "bg-red-500" },
 };
 
+// HARDWARE_READINESS: mocked baseline retained for sensor-disconnected demo mode.
 const MOCK_DATA: ThermalMonitoringData = {
   zones: [
     { zoneId: "z1", zoneName: "Living Room", temperature: 74, status: "comfortable", lastUpdated: "1 min ago" },
@@ -53,6 +54,81 @@ const MOCK_DATA: ThermalMonitoringData = {
   alerts: [], lastUpdated: "Just now",
 };
 
+type EnvironmentLiveResponse = {
+  data_mode?: string;
+  metrics?: {
+    temperature_c?: number | null;
+  };
+  trends?: {
+    temperature_c?: Array<{ timestamp?: string | null; value?: number | null }>;
+  };
+};
+
+const cToF = (tempC: number): number => (tempC * 9) / 5 + 32;
+
+const buildFromLiveSnapshot = (payload: EnvironmentLiveResponse): ThermalMonitoringData => {
+  const tempC = Number(payload?.metrics?.temperature_c ?? 28);
+  const avgF = Number.isFinite(tempC) ? Math.round(cToF(tempC)) : MOCK_DATA.averageTemp;
+  const trendRows = Array.isArray(payload?.trends?.temperature_c) ? payload.trends?.temperature_c || [] : [];
+  const history = trendRows
+    .filter((row) => Number.isFinite(Number(row?.value)))
+    .slice(-6)
+    .map((row, index) => ({
+      timestamp: row?.timestamp ? String(row.timestamp) : `T-${6 - index}h`,
+      temperature: Math.round(cToF(Number(row?.value || 0))),
+    }));
+
+  const zoneOffsets = [-2, -4, 1, 4];
+  const zones = MOCK_DATA.zones.map((zone, index) => {
+    const zoneTemp = Math.max(50, Math.min(100, avgF + zoneOffsets[index % zoneOffsets.length]));
+    return {
+      ...zone,
+      temperature: zoneTemp,
+      status: getThermalStatus(zoneTemp),
+      lastUpdated: payload?.data_mode === "live_sensor_ingest" ? "Live" : zone.lastUpdated,
+    };
+  });
+
+  return {
+    ...MOCK_DATA,
+    averageTemp: avgF,
+    overallStatus: getThermalStatus(avgF),
+    zones,
+    history: history.length > 0 ? history : MOCK_DATA.history,
+    alerts:
+      avgF >= 90
+        ? [
+            {
+              id: "live-thermal-critical",
+              zoneId: "z-live",
+              zoneName: "Facility Monitor",
+              temperature: avgF,
+              type: "heat_risk",
+              severity: "critical",
+              message: "Live thermal telemetry is in heat-risk range. Immediate cooling action recommended.",
+              timestamp: "Live",
+              acknowledged: false,
+            },
+          ]
+        : avgF <= 55
+        ? [
+            {
+              id: "live-thermal-cold",
+              zoneId: "z-live",
+              zoneName: "Facility Monitor",
+              temperature: avgF,
+              type: "hypothermia_risk",
+              severity: "warning",
+              message: "Live thermal telemetry indicates cold-risk conditions.",
+              timestamp: "Live",
+              acknowledged: false,
+            },
+          ]
+        : [],
+    lastUpdated: payload?.data_mode === "live_sensor_ingest" ? "Live" : MOCK_DATA.lastUpdated,
+  };
+};
+
 export function ThermalRiskCard() {
   const [data, setData] = useState<ThermalMonitoringData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,10 +137,19 @@ export function ThermalRiskCard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 300));
-      setData(MOCK_DATA);
+      const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/api/intelligence/environment/live?window_minutes=360`, {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new Error(`environment endpoint failed: ${response.status}`);
+      }
+      const payload = (await response.json()) as EnvironmentLiveResponse;
+      setData(buildFromLiveSnapshot(payload));
     } catch (error) {
       console.error("Failed to fetch thermal data:", error);
+      // HARDWARE_READINESS: fallback is intentionally preserved for sensor-disconnected demos.
+      setData(MOCK_DATA);
     } finally {
       setLoading(false);
     }

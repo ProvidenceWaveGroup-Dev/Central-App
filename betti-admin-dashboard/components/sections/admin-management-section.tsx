@@ -1,19 +1,20 @@
-"use client";
+﻿"use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -23,34 +24,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { PaginationControlled } from "@/components/ui/pagination";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  UserCog,
-  Plus,
-  Search,
-  Mail,
-  Phone,
-  Building2,
-  Shield,
-  Calendar,
-  MoreVertical,
-  Edit,
-  Trash2,
-  Key,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Building2,
+  Calendar,
+  CheckCircle,
+  Mail,
+  MoreVertical,
+  Phone,
+  Plus,
+  Search,
+  Shield,
+  Trash2,
+  UserCog,
+  UserRoundPen,
+  XCircle,
+} from "lucide-react";
 
-// Schema-aligned interfaces based on database tables
-// users table + user_credentials + facility_memberships
-interface Admin {
+type FacilityOption = {
+  facility_id: number;
+  name: string;
+};
+
+type Admin = {
   user_id: number;
   first_name: string;
   last_name: string;
@@ -58,295 +60,485 @@ interface Admin {
   phone: string | null;
   status: "active" | "suspended";
   created_at: string;
-  is_active: boolean;
-  // From user_credentials
-  login_type: "email" | "username" | "social";
+  role_name: string | null;
+  facility_id: number | null;
+  facility_name: string | null;
+  facility_role: "admin" | "staff" | "security" | "ems" | "fire_service" | "caregiver" | "senior" | null;
   last_login_at: string | null;
-  // From facility_memberships
+  is_active: boolean | number | null;
+};
+
+type ApiAdmin = {
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  status: string;
+  created_at: string;
+  role_name: string | null;
+  facility_id: number | null;
+  facility_name: string | null;
+  facility_role: Admin["facility_role"];
+  last_login_at: string | null;
+  is_active: boolean | number | null;
+};
+
+type ApiFacility = {
   facility_id: number;
-  facility_name: string;
-  facility_role: "admin" | "staff" | "security" | "ems" | "fire_service";
-}
+  name: string;
+};
 
-// Mock data based on database schema
-const admins: Admin[] = [
-  {
-    user_id: 1,
-    first_name: "Sarah",
-    last_name: "Williams",
-    email: "sarah.williams@betti.com",
-    phone: "+1-561-555-0101",
-    status: "active",
-    created_at: "2024-06-15T09:00:00Z",
-    is_active: true,
-    login_type: "email",
-    last_login_at: "2026-02-01T08:30:00Z",
-    facility_id: 12,
-    facility_name: "Sunrise Assisted Living – Delray",
-    facility_role: "admin",
-  },
-  {
-    user_id: 2,
-    first_name: "Michael",
-    last_name: "Chen",
-    email: "michael.chen@betti.com",
-    phone: "+1-561-555-0102",
-    status: "active",
-    created_at: "2024-07-20T10:30:00Z",
-    is_active: true,
-    login_type: "email",
-    last_login_at: "2026-02-01T07:45:00Z",
-    facility_id: 12,
-    facility_name: "Sunrise Assisted Living – Delray",
-    facility_role: "admin",
-  },
-  {
-    user_id: 3,
-    first_name: "Emily",
-    last_name: "Rodriguez",
-    email: "emily.rodriguez@betti.com",
-    phone: "+1-561-555-0103",
-    status: "active",
-    created_at: "2024-08-10T14:15:00Z",
-    is_active: true,
-    login_type: "email",
-    last_login_at: "2026-01-31T16:20:00Z",
-    facility_id: 15,
-    facility_name: "Golden Oaks Senior Living",
-    facility_role: "admin",
-  },
-  {
-    user_id: 4,
-    first_name: "David",
-    last_name: "Thompson",
-    email: "david.thompson@betti.com",
-    phone: "+1-561-555-0104",
-    status: "suspended",
-    created_at: "2024-09-05T11:00:00Z",
-    is_active: false,
-    login_type: "email",
-    last_login_at: "2026-01-15T09:30:00Z",
-    facility_id: 12,
-    facility_name: "Sunrise Assisted Living – Delray",
-    facility_role: "admin",
-  },
-  {
-    user_id: 5,
-    first_name: "Jennifer",
-    last_name: "Martinez",
-    email: "jennifer.martinez@betti.com",
-    phone: "+1-561-555-0105",
-    status: "active",
-    created_at: "2024-10-12T08:45:00Z",
-    is_active: true,
-    login_type: "email",
-    last_login_at: "2026-02-01T06:15:00Z",
-    facility_id: 15,
-    facility_name: "Golden Oaks Senior Living",
-    facility_role: "admin",
-  },
-  {
-    user_id: 6,
-    first_name: "Robert",
-    last_name: "Anderson",
-    email: "robert.anderson@betti.com",
-    phone: "+1-561-555-0106",
-    status: "active",
-    created_at: "2024-11-18T13:30:00Z",
-    is_active: true,
-    login_type: "email",
-    last_login_at: "2026-01-30T14:45:00Z",
-    facility_id: 12,
-    facility_name: "Sunrise Assisted Living – Delray",
-    facility_role: "admin",
-  },
-  {
-    user_id: 7,
-    first_name: "Amanda",
-    last_name: "Taylor",
-    email: "amanda.taylor@betti.com",
-    phone: null,
-    status: "active",
-    created_at: "2024-12-01T10:00:00Z",
-    is_active: true,
-    login_type: "email",
-    last_login_at: "2026-02-01T05:30:00Z",
-    facility_id: 18,
-    facility_name: "Palm Gardens Memory Care",
-    facility_role: "admin",
-  },
-  {
-    user_id: 8,
-    first_name: "Christopher",
-    last_name: "Lee",
-    email: "christopher.lee@betti.com",
-    phone: "+1-561-555-0108",
-    status: "active",
-    created_at: "2025-01-08T09:15:00Z",
-    is_active: true,
-    login_type: "email",
-    last_login_at: "2026-01-29T11:20:00Z",
-    facility_id: 15,
-    facility_name: "Golden Oaks Senior Living",
-    facility_role: "admin",
-  },
-];
-
-// Mock facilities for the dropdown
-const facilities = [
-  { facility_id: 12, name: "Sunrise Assisted Living – Delray" },
-  { facility_id: 15, name: "Golden Oaks Senior Living" },
-  { facility_id: 18, name: "Palm Gardens Memory Care" },
-  { facility_id: 21, name: "Oceanview Senior Residence" },
-];
-
-// Roles based on facility_memberships.facility_role enum
-const roles = [
+const facilityRoles = [
   { value: "admin", label: "Administrator", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" },
   { value: "staff", label: "Staff", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" },
   { value: "security", label: "Security", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
   { value: "ems", label: "EMS", color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" },
   { value: "fire_service", label: "Fire Service", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" },
-];
+  { value: "caregiver", label: "Caregiver", color: "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400" },
+  { value: "senior", label: "Senior", color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" },
+] as const;
 
-const getRoleConfig = (role: string) => {
-  return roles.find(r => r.value === role) || roles[0];
-};
+const getRoleConfig = (role: string | null | undefined) =>
+  facilityRoles.find((item) => item.value === role) || facilityRoles[0];
 
-const ADMINS_PER_PAGE = 5;
-
+const ADMINS_PER_PAGE = 6;
 type StatusFilterType = "all" | "active" | "suspended";
 
+const emptyCreateForm = {
+  first_name: "",
+  last_name: "",
+  email: "",
+  phone: "",
+  facility_id: "",
+  facility_role: "admin",
+  password: "",
+  confirm_password: "",
+};
+
+const emptyEditForm = {
+  first_name: "",
+  last_name: "",
+  email: "",
+  phone: "",
+  facility_id: "",
+  facility_role: "admin",
+};
+
 export function AdminManagementSection() {
+  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [facilityOptions, setFacilityOptions] = useState<FacilityOption[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<StatusFilterType>("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMutating, setIsMutating] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [successAdminName, setSuccessAdminName] = useState("");
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
+  const [newAdmin, setNewAdmin] = useState(emptyCreateForm);
+  const [editForm, setEditForm] = useState(emptyEditForm);
 
-  // Form state for new admin
-  const [newAdmin, setNewAdmin] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    facility_id: "",
-    role: "",
-    password: "",
-    confirm_password: "",
-  });
+  const getAuthHeaders = (withJsonContentType = true): Record<string, string> => {
+    const headers: Record<string, string> = {};
+    const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
+    if (withJsonContentType) {
+      headers["Content-Type"] = "application/json";
+    }
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return headers;
+  };
 
-  // Filter admins
-  const filteredAdmins = admins.filter((admin) => {
-    const query = searchQuery.toLowerCase();
-    const matchesSearch =
-      admin.first_name.toLowerCase().includes(query) ||
-      admin.last_name.toLowerCase().includes(query) ||
-      admin.email.toLowerCase().includes(query) ||
-      admin.facility_name.toLowerCase().includes(query);
+  const parseApiError = async (response: Response) => {
+    try {
+      const payload = await response.json();
+      return payload?.detail || "Request failed";
+    } catch {
+      return "Request failed";
+    }
+  };
 
-    if (!matchesSearch) return false;
+  const toArray = <T,>(payload: unknown): T[] => {
+    if (Array.isArray(payload)) {
+      return payload as T[];
+    }
+    if (payload && typeof payload === "object") {
+      const objectPayload = payload as { value?: unknown; items?: unknown; data?: unknown };
+      if (Array.isArray(objectPayload.value)) {
+        return objectPayload.value as T[];
+      }
+      if (Array.isArray(objectPayload.items)) {
+        return objectPayload.items as T[];
+      }
+      if (Array.isArray(objectPayload.data)) {
+        return objectPayload.data as T[];
+      }
+    }
+    return [];
+  };
 
-    if (activeFilter === "all") return true;
-    return admin.status === activeFilter;
-  });
+  const fetchWithTimeout = async (
+    url: string,
+    init: RequestInit,
+    timeoutMs = 12000,
+  ): Promise<Response> => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  };
 
-  // Pagination
-  const totalPages = Math.ceil(filteredAdmins.length / ADMINS_PER_PAGE);
-  const paginatedAdmins = filteredAdmins.slice(
-    (currentPage - 1) * ADMINS_PER_PAGE,
-    currentPage * ADMINS_PER_PAGE
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    setLoadError("");
+    try {
+      const headers = getAuthHeaders(false);
+      if (!headers.Authorization) {
+        setLoadError("Login session not found. Please sign in again.");
+        setAdmins([]);
+        setFacilityOptions([]);
+        setIsLoading(false);
+        return;
+      }
+      const [usersRes, facilitiesRes] = await Promise.all([
+        fetchWithTimeout(`${apiUrl}/api/users?role=admin`, { headers }),
+        fetchWithTimeout(`${apiUrl}/api/facilities`, { headers }),
+      ]);
+
+      const effectiveUsersRes = usersRes.ok
+        ? usersRes
+        : await fetchWithTimeout(`${apiUrl}/api/users`, { headers });
+      const effectiveFacilitiesRes = facilitiesRes.ok
+        ? facilitiesRes
+        : await fetchWithTimeout(`${apiUrl}/api/facilities?home_only=true`, { headers });
+
+      if (!effectiveUsersRes.ok) {
+        throw new Error("Failed to load admin data");
+      }
+
+      const [usersPayload, facilitiesPayload] = await Promise.all([
+        effectiveUsersRes.json().catch(() => []),
+        effectiveFacilitiesRes.ok
+          ? effectiveFacilitiesRes.json().catch(() => [])
+          : Promise.resolve([]),
+      ]);
+      const users = toArray<ApiAdmin>(usersPayload);
+      const facilities = toArray<ApiFacility>(facilitiesPayload);
+      const mappedAdmins: Admin[] = (users || [])
+        .filter((item) => String(item.role_name || "admin").toLowerCase() === "admin")
+        .map((item) => ({
+        user_id: Number(item.user_id),
+        first_name: item.first_name || "",
+        last_name: item.last_name || "",
+        email: item.email || "",
+        phone: item.phone || null,
+        status: item.status === "suspended" ? "suspended" : "active",
+        created_at: item.created_at || new Date().toISOString(),
+        role_name: item.role_name || "admin",
+        facility_id: item.facility_id ?? null,
+        facility_name: item.facility_name || null,
+        facility_role: item.facility_role || "admin",
+        last_login_at: item.last_login_at || null,
+        is_active: item.is_active ?? 1,
+      }));
+
+      const mappedFacilities: FacilityOption[] = (facilities || []).map((facility) => ({
+        facility_id: Number(facility.facility_id),
+        name: facility.name || `Facility ${facility.facility_id}`,
+      }));
+
+      setAdmins(mappedAdmins);
+      setFacilityOptions(mappedFacilities);
+      if (!effectiveFacilitiesRes.ok) {
+        setLoadError("Admin accounts loaded with partial context (facility list unavailable).");
+      }
+    } catch {
+      setLoadError("Unable to load admin data.");
+      setAdmins([]);
+      setFacilityOptions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiUrl]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const filteredAdmins = useMemo(
+    () =>
+      admins.filter((admin) => {
+        const query = searchQuery.trim().toLowerCase();
+        const matchesSearch =
+          !query ||
+          admin.first_name.toLowerCase().includes(query) ||
+          admin.last_name.toLowerCase().includes(query) ||
+          admin.email.toLowerCase().includes(query) ||
+          (admin.facility_name || "").toLowerCase().includes(query);
+
+        if (!matchesSearch) {
+          return false;
+        }
+
+        if (activeFilter === "all") {
+          return true;
+        }
+        return admin.status === activeFilter;
+      }),
+    [admins, searchQuery, activeFilter],
   );
 
-  const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    setCurrentPage(1);
-  };
+  const totalPages = Math.max(1, Math.ceil(filteredAdmins.length / ADMINS_PER_PAGE));
+  const paginatedAdmins = filteredAdmins.slice(
+    (currentPage - 1) * ADMINS_PER_PAGE,
+    currentPage * ADMINS_PER_PAGE,
+  );
 
-  const handleFilterChange = (filter: StatusFilterType) => {
-    setActiveFilter(filter);
-    setCurrentPage(1);
-  };
+  const activeAdmins = admins.filter((admin) => admin.status === "active").length;
+  const suspendedAdmins = admins.filter((admin) => admin.status === "suspended").length;
 
-  const handleAddAdmin = () => {
-    // In production, this would make an API call to create the admin
-    // Inserting into users, user_credentials, and facility_memberships tables
-    console.log("Creating admin:", newAdmin);
-
-    // Store the name for success message
-    const adminName = `${newAdmin.first_name} ${newAdmin.last_name}`;
-    setSuccessAdminName(adminName);
-
-    // Close dialog and show success message
-    setIsAddDialogOpen(false);
-    setShowSuccessMessage(true);
-
-    // Auto-hide success message after 5 seconds
-    setTimeout(() => {
-      setShowSuccessMessage(false);
-    }, 5000);
-
-    // Reset form
-    setNewAdmin({
-      first_name: "",
-      last_name: "",
-      email: "",
-      phone: "",
-      facility_id: "",
-      role: "",
-      password: "",
-      confirm_password: "",
-    });
-  };
-
-  const formatDate = (dateStr: string): string => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
+  const formatDate = (dateStr: string): string =>
+    new Date(dateStr).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
 
   const formatLastLogin = (dateStr: string | null): string => {
-    if (!dateStr) return "Never";
+    if (!dateStr) {
+      return "Never";
+    }
     const date = new Date(dateStr);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffHours / 24);
-
-    if (diffHours < 1) return "Just now";
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffHours < 1) {
+      return "Just now";
+    }
+    if (diffHours < 24) {
+      return `${diffHours} hours ago`;
+    }
+    if (diffDays === 1) {
+      return "Yesterday";
+    }
+    if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    }
     return formatDate(dateStr);
   };
 
-  const activeAdmins = admins.filter((a) => a.status === "active");
-  const suspendedAdmins = admins.filter((a) => a.status === "suspended");
+  const resetCreateForm = () => {
+    setNewAdmin(emptyCreateForm);
+  };
+
+  const resetEditForm = () => {
+    setEditingAdmin(null);
+    setEditForm(emptyEditForm);
+  };
+
+  const handleAddAdmin = async () => {
+    if (!newAdmin.first_name.trim() || !newAdmin.last_name.trim()) {
+      setLoadError("First and last name are required.");
+      return;
+    }
+    if (!newAdmin.email.trim()) {
+      setLoadError("Email is required.");
+      return;
+    }
+    if (!newAdmin.password || newAdmin.password.length < 8) {
+      setLoadError("Password must be at least 8 characters.");
+      return;
+    }
+    if (newAdmin.password !== newAdmin.confirm_password) {
+      setLoadError("Password and confirm password do not match.");
+      return;
+    }
+
+    setIsMutating(true);
+    setLoadError("");
+    setActionMessage("");
+    try {
+      const response = await fetch(`${apiUrl}/api/users`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          first_name: newAdmin.first_name.trim(),
+          last_name: newAdmin.last_name.trim(),
+          email: newAdmin.email.trim(),
+          phone: newAdmin.phone.trim() || null,
+          password: newAdmin.password,
+          role: "admin",
+          facility_id: newAdmin.facility_id ? Number(newAdmin.facility_id) : null,
+          facility_role: newAdmin.facility_role,
+        }),
+      });
+
+      if (!response.ok) {
+        setLoadError(await parseApiError(response));
+        return;
+      }
+
+      setIsAddDialogOpen(false);
+      resetCreateForm();
+      setActionMessage("Administrator created successfully.");
+      await loadData();
+    } catch {
+      setLoadError("Unable to create administrator.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const openEditDialog = (admin: Admin) => {
+    setEditingAdmin(admin);
+    setEditForm({
+      first_name: admin.first_name,
+      last_name: admin.last_name,
+      email: admin.email,
+      phone: admin.phone || "",
+      facility_id: admin.facility_id ? String(admin.facility_id) : "",
+      facility_role: admin.facility_role || "admin",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateAdmin = async () => {
+    if (!editingAdmin) {
+      return;
+    }
+    if (!editForm.first_name.trim() || !editForm.last_name.trim()) {
+      setLoadError("First and last name are required.");
+      return;
+    }
+    if (!editForm.email.trim()) {
+      setLoadError("Email is required.");
+      return;
+    }
+
+    setIsMutating(true);
+    setLoadError("");
+    setActionMessage("");
+    try {
+      const response = await fetch(`${apiUrl}/api/users/${editingAdmin.user_id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          first_name: editForm.first_name.trim(),
+          last_name: editForm.last_name.trim(),
+          email: editForm.email.trim(),
+          phone: editForm.phone.trim() || null,
+          role: "admin",
+          facility_id: editForm.facility_id ? Number(editForm.facility_id) : null,
+          facility_role: editForm.facility_role,
+        }),
+      });
+
+      if (!response.ok) {
+        setLoadError(await parseApiError(response));
+        return;
+      }
+
+      setIsEditDialogOpen(false);
+      resetEditForm();
+      setActionMessage("Administrator updated successfully.");
+      await loadData();
+    } catch {
+      setLoadError("Unable to update administrator.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const handleStatusToggle = async (admin: Admin) => {
+    const targetStatus = admin.status === "active" ? "suspended" : "active";
+    setIsMutating(true);
+    setLoadError("");
+    setActionMessage("");
+    try {
+      const response = await fetch(`${apiUrl}/api/users/${admin.user_id}/status`, {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status: targetStatus }),
+      });
+      if (!response.ok) {
+        setLoadError(await parseApiError(response));
+        return;
+      }
+      setActionMessage(
+        `Administrator ${admin.first_name} ${admin.last_name} ${
+          targetStatus === "active" ? "activated" : "suspended"
+        }.`,
+      );
+      await loadData();
+    } catch {
+      setLoadError("Unable to update administrator status.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const handleDeleteAdmin = async (admin: Admin) => {
+    const confirmed = window.confirm(
+      `Delete administrator ${admin.first_name} ${admin.last_name}? This action cannot be undone.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    setIsMutating(true);
+    setLoadError("");
+    setActionMessage("");
+    try {
+      const response = await fetch(`${apiUrl}/api/users/${admin.user_id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(false),
+      });
+      if (!response.ok) {
+        setLoadError(await parseApiError(response));
+        return;
+      }
+      setActionMessage("Administrator deleted successfully.");
+      await loadData();
+    } catch {
+      setLoadError("Unable to delete administrator.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)]">
-      {/* Success Message */}
-      {showSuccessMessage && (
-        <Alert className="mb-4 border-green-300 bg-white/70 backdrop-blur-md dark:bg-white/10 dark:border-green-500">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-600 dark:text-green-400">
-            Administrator <span className="font-semibold">{successAdminName}</span> has been successfully created.
-            Login credentials have been sent to their email address.
-          </AlertDescription>
+    <div className="flex h-[calc(100vh-120px)] flex-col">
+      {actionMessage && (
+        <Alert className="mb-4 border-emerald-200 bg-emerald-50/60 text-emerald-700">
+          <AlertDescription>{actionMessage}</AlertDescription>
         </Alert>
       )}
 
-      {/* Fixed Header Section */}
+      {loadError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{loadError}</AlertDescription>
+        </Alert>
+      )}
+
+      {isLoading && (
+        <Alert className="mb-4">
+          <AlertDescription>Loading admin data...</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex-shrink-0 space-y-6 pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Admin Management</h1>
-            <p className="text-muted-foreground">
-              Manage administrator accounts and access permissions
-            </p>
+            <p className="text-muted-foreground">Manage administrator accounts with live API actions</p>
           </div>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
@@ -355,80 +547,67 @@ export function AdminManagementSection() {
                 Add Admin
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[560px]">
               <DialogHeader>
                 <DialogTitle>Add New Administrator</DialogTitle>
-                <DialogDescription>
-                  Create a new admin account. They will receive login credentials via email.
-                </DialogDescription>
+                <DialogDescription>Create and provision an admin account in the database.</DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
+              <div className="grid gap-4 py-2">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="first_name">First Name *</Label>
+                    <Label htmlFor="new-admin-first-name">First Name</Label>
                     <Input
-                      id="first_name"
-                      placeholder="John"
+                      id="new-admin-first-name"
                       value={newAdmin.first_name}
-                      onChange={(e) =>
-                        setNewAdmin({ ...newAdmin, first_name: e.target.value })
-                      }
+                      onChange={(event) => setNewAdmin((prev) => ({ ...prev, first_name: event.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="last_name">Last Name *</Label>
+                    <Label htmlFor="new-admin-last-name">Last Name</Label>
                     <Input
-                      id="last_name"
-                      placeholder="Doe"
+                      id="new-admin-last-name"
                       value={newAdmin.last_name}
-                      onChange={(e) =>
-                        setNewAdmin({ ...newAdmin, last_name: e.target.value })
-                      }
+                      onChange={(event) => setNewAdmin((prev) => ({ ...prev, last_name: event.target.value }))}
                     />
                   </div>
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address *</Label>
+                  <Label htmlFor="new-admin-email">Email</Label>
                   <Input
-                    id="email"
+                    id="new-admin-email"
                     type="email"
-                    placeholder="john.doe@betti.com"
                     value={newAdmin.email}
-                    onChange={(e) =>
-                      setNewAdmin({ ...newAdmin, email: e.target.value })
-                    }
+                    onChange={(event) => setNewAdmin((prev) => ({ ...prev, email: event.target.value }))}
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="new-admin-phone">Phone</Label>
                   <Input
-                    id="phone"
+                    id="new-admin-phone"
                     type="tel"
-                    placeholder="+1-561-555-0000"
                     value={newAdmin.phone}
-                    onChange={(e) =>
-                      setNewAdmin({ ...newAdmin, phone: e.target.value })
-                    }
+                    onChange={(event) => setNewAdmin((prev) => ({ ...prev, phone: event.target.value }))}
                   />
                 </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="facility">Assigned Facility *</Label>
+                    <Label htmlFor="new-admin-facility">Facility</Label>
                     <Select
-                      value={newAdmin.facility_id}
+                      value={newAdmin.facility_id || "none"}
                       onValueChange={(value) =>
-                        setNewAdmin({ ...newAdmin, facility_id: value })
+                        setNewAdmin((prev) => ({ ...prev, facility_id: value === "none" ? "" : value }))
                       }
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a facility" />
+                      <SelectTrigger id="new-admin-facility">
+                        <SelectValue placeholder="Select facility" />
                       </SelectTrigger>
                       <SelectContent>
-                        {facilities.map((facility) => (
-                          <SelectItem
-                            key={facility.facility_id}
-                            value={facility.facility_id.toString()}
-                          >
+                        <SelectItem value="none">Unassigned</SelectItem>
+                        {facilityOptions.map((facility) => (
+                          <SelectItem key={facility.facility_id} value={String(facility.facility_id)}>
                             {facility.name}
                           </SelectItem>
                         ))}
@@ -436,18 +615,18 @@ export function AdminManagementSection() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="role">Role *</Label>
+                    <Label htmlFor="new-admin-facility-role">Facility Role</Label>
                     <Select
-                      value={newAdmin.role}
+                      value={newAdmin.facility_role}
                       onValueChange={(value) =>
-                        setNewAdmin({ ...newAdmin, role: value })
+                        setNewAdmin((prev) => ({ ...prev, facility_role: value as typeof emptyCreateForm.facility_role }))
                       }
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
+                      <SelectTrigger id="new-admin-facility-role">
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {roles.map((role) => (
+                        {facilityRoles.map((role) => (
                           <SelectItem key={role.value} value={role.value}>
                             {role.label}
                           </SelectItem>
@@ -456,70 +635,66 @@ export function AdminManagementSection() {
                     </Select>
                   </div>
                 </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password *</Label>
+                    <Label htmlFor="new-admin-password">Password</Label>
                     <Input
-                      id="password"
+                      id="new-admin-password"
                       type="password"
-                      placeholder="••••••••"
                       value={newAdmin.password}
-                      onChange={(e) =>
-                        setNewAdmin({ ...newAdmin, password: e.target.value })
-                      }
+                      onChange={(event) => setNewAdmin((prev) => ({ ...prev, password: event.target.value }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirm_password">Confirm Password *</Label>
+                    <Label htmlFor="new-admin-confirm-password">Confirm Password</Label>
                     <Input
-                      id="confirm_password"
+                      id="new-admin-confirm-password"
                       type="password"
-                      placeholder="••••••••"
                       value={newAdmin.confirm_password}
-                      onChange={(e) =>
-                        setNewAdmin({
-                          ...newAdmin,
-                          confirm_password: e.target.value,
-                        })
+                      onChange={(event) =>
+                        setNewAdmin((prev) => ({ ...prev, confirm_password: event.target.value }))
                       }
                     />
                   </div>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isMutating}>
                   Cancel
                 </Button>
-                <Button onClick={handleAddAdmin}>Create Admin</Button>
+                <Button onClick={handleAddAdmin} disabled={isMutating}>
+                  {isMutating ? "Creating..." : "Create Admin"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Search */}
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search admins by name, email, or facility..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
+            placeholder="Search admins..."
+            value={searchQuery}
+            onChange={(event) => {
+              setSearchQuery(event.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              activeFilter === "all"
-                ? "ring-2 ring-primary border-primary"
-                : "hover:border-primary/50"
-            }`}
-            onClick={() => handleFilterChange("all")}
+            className={`cursor-pointer transition-all ${activeFilter === "all" ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"}`}
+            onClick={() => {
+              setActiveFilter("all");
+              setCurrentPage(1);
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
                   <UserCog className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
@@ -530,40 +705,38 @@ export function AdminManagementSection() {
             </CardContent>
           </Card>
           <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              activeFilter === "active"
-                ? "ring-2 ring-primary border-primary"
-                : "hover:border-primary/50"
-            }`}
-            onClick={() => handleFilterChange("active")}
+            className={`cursor-pointer transition-all ${activeFilter === "active" ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"}`}
+            onClick={() => {
+              setActiveFilter("active");
+              setCurrentPage(1);
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{activeAdmins.length}</div>
+                  <div className="text-2xl font-bold">{activeAdmins}</div>
                   <div className="text-xs text-muted-foreground">Active</div>
                 </div>
               </div>
             </CardContent>
           </Card>
           <Card
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              activeFilter === "suspended"
-                ? "ring-2 ring-primary border-primary"
-                : "hover:border-primary/50"
-            }`}
-            onClick={() => handleFilterChange("suspended")}
+            className={`cursor-pointer transition-all ${activeFilter === "suspended" ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"}`}
+            onClick={() => {
+              setActiveFilter("suspended");
+              setCurrentPage(1);
+            }}
           >
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                <div className="rounded-lg bg-red-100 p-2 dark:bg-red-900/30">
                   <XCircle className="h-5 w-5 text-red-600" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{suspendedAdmins.length}</div>
+                  <div className="text-2xl font-bold">{suspendedAdmins}</div>
                   <div className="text-xs text-muted-foreground">Suspended</div>
                 </div>
               </div>
@@ -572,85 +745,74 @@ export function AdminManagementSection() {
         </div>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 pr-2">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-2">
         <Card className="mb-4">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
               Administrator Accounts ({filteredAdmins.length})
             </CardTitle>
-            <CardDescription>
-              View and manage all administrator accounts in the system
-            </CardDescription>
+            <CardDescription>Create, update, suspend, and delete admin accounts</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {paginatedAdmins.map((admin) => (
                 <div
                   key={admin.user_id}
-                  className={`p-4 border rounded-lg ${
+                  className={`rounded-lg border p-4 ${
                     admin.status === "suspended"
-                      ? "border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10"
+                      ? "border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-900/10"
                       : ""
                   }`}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${
-                          admin.status === "active"
-                            ? "bg-primary"
-                            : "bg-muted-foreground"
+                        className={`flex h-12 w-12 items-center justify-center rounded-full text-white ${
+                          admin.status === "active" ? "bg-primary" : "bg-muted-foreground"
                         }`}
                       >
-                        {admin.first_name[0]}
-                        {admin.last_name[0]}
+                        {admin.first_name.charAt(0)}
+                        {admin.last_name.charAt(0)}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex flex-wrap items-center gap-2">
                           <h3 className="font-semibold">
                             {admin.first_name} {admin.last_name}
                           </h3>
-                          <Badge
-                            variant={
-                              admin.status === "active" ? "default" : "destructive"
-                            }
-                          >
+                          <Badge variant={admin.status === "active" ? "default" : "destructive"}>
                             {admin.status}
                           </Badge>
                           <Badge className={getRoleConfig(admin.facility_role).color}>
                             {getRoleConfig(admin.facility_role).label}
                           </Badge>
                         </div>
-                        <div className="flex flex-wrap items-center gap-4 mt-1 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
+                        <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                          <span className="inline-flex items-center gap-1">
                             <Mail className="h-3 w-3" />
                             {admin.email}
                           </span>
                           {admin.phone && (
-                            <span className="flex items-center gap-1">
+                            <span className="inline-flex items-center gap-1">
                               <Phone className="h-3 w-3" />
                               {admin.phone}
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
+                        <div className="mt-2 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1">
                             <Building2 className="h-3 w-3" />
-                            {admin.facility_name}
+                            {admin.facility_name || "Unassigned"}
                           </span>
-                          <span className="flex items-center gap-1">
+                          <span className="inline-flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
                             Joined {formatDate(admin.created_at)}
                           </span>
-                          <span className="flex items-center gap-1">
-                            <Key className="h-3 w-3" />
-                            Last login: {formatLastLogin(admin.last_login_at)}
-                          </span>
+                          <span>Last login: {formatLastLogin(admin.last_login_at)}</span>
                         </div>
                       </div>
                     </div>
+
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
@@ -658,42 +820,48 @@ export function AdminManagementSection() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem className="gap-2">
-                          <Edit className="h-4 w-4" />
-                          Edit Details
+                        <DropdownMenuItem className="gap-2" onClick={() => openEditDialog(admin)}>
+                          <UserRoundPen className="h-4 w-4" />
+                          Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-2">
-                          <Key className="h-4 w-4" />
-                          Reset Password
+                        <DropdownMenuItem className="gap-2" onClick={() => handleStatusToggle(admin)}>
+                          {admin.status === "active" ? (
+                            <>
+                              <XCircle className="h-4 w-4 text-orange-600" />
+                              Suspend
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="h-4 w-4 text-emerald-600" />
+                              Activate
+                            </>
+                          )}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        {admin.status === "active" ? (
-                          <DropdownMenuItem className="gap-2 text-orange-600">
-                            <XCircle className="h-4 w-4" />
-                            Suspend Account
-                          </DropdownMenuItem>
-                        ) : (
-                          <DropdownMenuItem className="gap-2 text-green-600">
-                            <CheckCircle className="h-4 w-4" />
-                            Activate Account
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem className="gap-2 text-destructive">
+                        <DropdownMenuItem
+                          className="gap-2 text-destructive"
+                          onClick={() => handleDeleteAdmin(admin)}
+                        >
                           <Trash2 className="h-4 w-4" />
-                          Delete Admin
+                          Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
                 </div>
               ))}
+
+              {paginatedAdmins.length === 0 && (
+                <div className="rounded-lg border p-6 text-center text-sm text-muted-foreground">
+                  No admin users found.
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Fixed Pagination at Bottom */}
-      <div className="flex-shrink-0 pt-4 border-t bg-background">
+      <div className="flex-shrink-0 border-t bg-background pt-4">
         <PaginationControlled
           currentPage={currentPage}
           totalPages={totalPages}
@@ -702,6 +870,111 @@ export function AdminManagementSection() {
           itemsPerPage={ADMINS_PER_PAGE}
         />
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[560px]">
+          <DialogHeader>
+            <DialogTitle>Edit Administrator</DialogTitle>
+            <DialogDescription>Update account details and save to database.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-admin-first-name">First Name</Label>
+                <Input
+                  id="edit-admin-first-name"
+                  value={editForm.first_name}
+                  onChange={(event) => setEditForm((prev) => ({ ...prev, first_name: event.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-admin-last-name">Last Name</Label>
+                <Input
+                  id="edit-admin-last-name"
+                  value={editForm.last_name}
+                  onChange={(event) => setEditForm((prev) => ({ ...prev, last_name: event.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-admin-email">Email</Label>
+              <Input
+                id="edit-admin-email"
+                type="email"
+                value={editForm.email}
+                onChange={(event) => setEditForm((prev) => ({ ...prev, email: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-admin-phone">Phone</Label>
+              <Input
+                id="edit-admin-phone"
+                type="tel"
+                value={editForm.phone}
+                onChange={(event) => setEditForm((prev) => ({ ...prev, phone: event.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-admin-facility">Facility</Label>
+                <Select
+                  value={editForm.facility_id || "none"}
+                  onValueChange={(value) =>
+                    setEditForm((prev) => ({ ...prev, facility_id: value === "none" ? "" : value }))
+                  }
+                >
+                  <SelectTrigger id="edit-admin-facility">
+                    <SelectValue placeholder="Select facility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Unassigned</SelectItem>
+                    {facilityOptions.map((facility) => (
+                      <SelectItem key={facility.facility_id} value={String(facility.facility_id)}>
+                        {facility.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-admin-facility-role">Facility Role</Label>
+                <Select
+                  value={editForm.facility_role}
+                  onValueChange={(value) =>
+                    setEditForm((prev) => ({ ...prev, facility_role: value as typeof emptyEditForm.facility_role }))
+                  }
+                >
+                  <SelectTrigger id="edit-admin-facility-role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {facilityRoles.map((role) => (
+                      <SelectItem key={role.value} value={role.value}>
+                        {role.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditDialogOpen(false);
+                resetEditForm();
+              }}
+              disabled={isMutating}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateAdmin} disabled={isMutating}>
+              {isMutating ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

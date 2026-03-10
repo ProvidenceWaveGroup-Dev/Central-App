@@ -3,43 +3,30 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 
+import { AiAssistantFab } from "@/components/ai-assistant-fab";
 import DashboardWarmup from "@/components/DashboardWarmup";
 import SignUpForm from "@/components/SignUpForm";
 
-/**
- * Resolve dashboard URLs for both development and production.
- * - Individual env vars: NEXT_PUBLIC_BETTI_SENIOR_URL, etc.
- * - Or NEXT_PUBLIC_DASHBOARD_BASE_URL for path-based deploys (e.g. https://app.com → https://app.com/senior)
- * - On Vercel: uses VERCEL_URL (auto-injected) when no env vars set
- * - Falls back to localhost for development.
- */
-const getDashboardUrl = (
-  envKey: string,
-  pathSuffix: string,
-  localhostPort: number
-) => {
-  const individual = process.env[envKey]?.trim();
-  if (individual) return individual;
-  const base = process.env.NEXT_PUBLIC_DASHBOARD_BASE_URL?.trim();
-  if (base) return `${base.replace(/\/$/, "")}/${pathSuffix}`;
-  const vercelUrl = process.env.VERCEL_URL;
-  if (vercelUrl) return `https://${vercelUrl}/${pathSuffix}`;
-  return `http://localhost:${localhostPort}`;
-};
+const buildHostUrl = (hostname: string, port: number) =>
+  `http://${hostname}:${port}`;
 
 export default function Home() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authView, setAuthView] = useState<"login" | "signup">("login");
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [loginIdentifier, setLoginIdentifier] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
 
   const appUrls = {
-    senior: getDashboardUrl("NEXT_PUBLIC_BETTI_SENIOR_URL", "senior", 3001),
-    caregiver: getDashboardUrl("NEXT_PUBLIC_BETTI_CAREGIVER_URL", "caregiver", 3002),
-    ems: getDashboardUrl("NEXT_PUBLIC_BETTI_EMS_URL", "ems", 3003),
-    security: getDashboardUrl("NEXT_PUBLIC_BETTI_SECURITY_URL", "security", 3004),
-    fire: getDashboardUrl("NEXT_PUBLIC_BETTI_FIRE_URL", "fire", 3005),
-    operator: getDashboardUrl("NEXT_PUBLIC_BETTI_OPERATOR_URL", "operator", 3007),
+    senior: process.env.NEXT_PUBLIC_BETTI_SENIOR_URL || buildHostUrl("localhost", 3001),
+    caregiver: process.env.NEXT_PUBLIC_BETTI_CAREGIVER_URL || buildHostUrl("localhost", 3002),
+    ems: process.env.NEXT_PUBLIC_BETTI_EMS_URL || buildHostUrl("localhost", 3003),
+    security: process.env.NEXT_PUBLIC_BETTI_SECURITY_URL || buildHostUrl("localhost", 3004),
+    fire: process.env.NEXT_PUBLIC_BETTI_FIRE_URL || buildHostUrl("localhost", 3005),
+    admin: process.env.NEXT_PUBLIC_BETTI_ADMIN_URL || buildHostUrl("localhost", 3006),
   };
+  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || buildHostUrl("localhost", 8000);
 
   const apps = [
     {
@@ -64,13 +51,13 @@ export default function Home() {
     },
     {
       title: "Betti Fire Service",
-      description: "Fire service entry that points to the caregiver app.",
+      description: "Betti Fire Service dashboard for responder operations.",
       href: appUrls.fire,
     },
     {
-      title: "Betti Operator",
-      description: "Facility operator dashboard for day-to-day resident monitoring and care response.",
-      href: appUrls.operator,
+      title: "Betti Admin",
+      description: "Betti admin dashboard for full operations and management.",
+      href: appUrls.admin,
     },
   ];
 
@@ -78,14 +65,105 @@ export default function Home() {
     setPendingHref(href);
     setAuthView("login");
     setIsAuthOpen(true);
+    setLoginIdentifier("");
+    setLoginPassword("");
+    setLoginError("");
   };
 
-  const handleContinue = () => {
-    if (!pendingHref) {
+  const handleLogin = async () => {
+    setLoginError("");
+
+    if (!loginIdentifier || !loginPassword) {
+      setLoginError("Please enter both Email/Username and Password.");
       return;
     }
 
-    window.location.href = pendingHref;
+    try {
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          identifier: loginIdentifier,
+          password: loginPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const detail = typeof data?.detail === "string" ? data.detail : "";
+        if (/invalid credentials/i.test(detail)) {
+          setLoginError("Invalid credentials. Use your email or username (not numeric user ID).");
+        } else {
+          setLoginError(detail || "Login failed. Please check your credentials.");
+        }
+        return;
+      }
+
+      // Store the JWT token
+      if (data.access_token) {
+        localStorage.setItem("betti_token", data.access_token);
+        localStorage.setItem("betti_user_id", data.user_id);
+        localStorage.setItem("betti_user_role", data.role || "");
+        localStorage.setItem("betti_user_email", data.email || loginIdentifier);
+        localStorage.setItem("betti_user_first_name", data.first_name || "");
+        localStorage.setItem("betti_user_last_name", data.last_name || "");
+      }
+
+      // Map role to dashboard URL
+      const roleToDashboard: Record<string, string> = {
+        senior: appUrls.senior,
+        caregiver: appUrls.caregiver,
+        ems: appUrls.ems,
+        security: appUrls.security,
+        fire_service: appUrls.fire,
+        admin: appUrls.admin,
+      };
+
+      const roleToPath: Record<string, string> = {
+        senior: "",
+        caregiver: "",
+        ems: "",
+        security: "",
+        fire_service: "/admin-dashboard",
+        admin: "/admin-dashboard",
+      };
+
+      // Redirect to the dashboard matching user's role
+      const userRole = data.role;
+      const dashboardUrl = userRole && roleToDashboard[userRole]
+        ? roleToDashboard[userRole]
+        : pendingHref; // Fallback to selected dashboard if role not found
+      const dashboardPath = userRole && roleToPath[userRole] ? roleToPath[userRole] : "";
+
+      if (dashboardUrl) {
+        const target = new URL(`${dashboardUrl}${dashboardPath}`);
+        if (data.access_token) {
+          target.searchParams.set("betti_token", String(data.access_token));
+        }
+        if (data.user_id) {
+          target.searchParams.set("betti_user_id", String(data.user_id));
+        }
+        if (data.role) {
+          target.searchParams.set("betti_role", String(data.role));
+        }
+        if (data.email || loginIdentifier) {
+          target.searchParams.set("betti_email", String(data.email || loginIdentifier));
+        }
+        if (data.first_name) {
+          target.searchParams.set("betti_first_name", String(data.first_name));
+        }
+        if (data.last_name) {
+          target.searchParams.set("betti_last_name", String(data.last_name));
+        }
+        window.location.href = target.toString();
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setLoginError("Network error. Please check if the backend is running.");
+    }
   };
 
   const authTitle = useMemo(
@@ -177,13 +255,20 @@ export default function Home() {
 
             {authView === "login" ? (
               <div className="space-y-5">
+                {loginError && (
+                  <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                    {loginError}
+                  </div>
+                )}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold text-[#59595B]">
-                    User ID
+                    Email or Username
                   </label>
                   <input
                     className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
-                    placeholder="User ID"
+                    placeholder="Email or Username"
+                    value={loginIdentifier}
+                    onChange={(e) => setLoginIdentifier(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -194,11 +279,18 @@ export default function Home() {
                     className="w-full rounded-lg border border-[#DADADA] px-3 py-2 text-sm text-[#59595B]"
                     placeholder="Password"
                     type="password"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        handleLogin();
+                      }
+                    }}
                   />
                 </div>
                 <button
                   type="button"
-                  onClick={handleContinue}
+                  onClick={handleLogin}
                   className="inline-flex w-full items-center justify-center rounded-lg bg-[#5C7F39] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4f6b32]"
                 >
                   Sign in
@@ -232,6 +324,7 @@ export default function Home() {
           </div>
         </div>
       ) : null}
+      <AiAssistantFab />
     </div>
   );
 }

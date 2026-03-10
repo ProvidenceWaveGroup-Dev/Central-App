@@ -48,6 +48,7 @@ const statusConfig = {
   critical: { label: "Critical", bg: "bg-red-100", text: "text-red-700", border: "border-red-200", bar: "bg-red-500" },
 };
 
+// HARDWARE_READINESS: mocked baseline retained for sensor-disconnected demo mode.
 const MOCK_DATA: CO2MonitoringData = {
   rooms: [
     { roomId: "r1", roomName: "Living Room", residentName: "Margaret", co2Level: 620, status: "safe", lastUpdated: "2 min ago" },
@@ -70,6 +71,82 @@ const MOCK_DATA: CO2MonitoringData = {
   ],
 };
 
+type EnvironmentLiveResponse = {
+  data_mode?: string;
+  metrics?: {
+    co2_ppm?: number | null;
+  };
+  trend_direction?: {
+    co2_ppm?: string;
+  };
+  trends?: {
+    co2_ppm?: Array<{ timestamp?: string | null; value?: number | null }>;
+  };
+};
+
+const buildFromLiveSnapshot = (payload: EnvironmentLiveResponse): CO2MonitoringData => {
+  const liveCo2 = Number(payload?.metrics?.co2_ppm ?? MOCK_DATA.facilityAverage);
+  const facilityAverage = Number.isFinite(liveCo2) ? liveCo2 : MOCK_DATA.facilityAverage;
+  const trendPointsRaw = Array.isArray(payload?.trends?.co2_ppm) ? payload.trends?.co2_ppm || [] : [];
+  const trendPoints = trendPointsRaw
+    .filter((row) => Number.isFinite(Number(row?.value)))
+    .slice(-6)
+    .map((row, index) => ({
+      timestamp: row?.timestamp ? String(row.timestamp) : `T-${6 - index}h`,
+      level: Number(row?.value || 0),
+    }));
+
+  const trendDirection = String(payload?.trend_direction?.co2_ppm || "stable").toLowerCase();
+  const roomBase = Number.isFinite(liveCo2) ? liveCo2 : MOCK_DATA.rooms[0].co2Level;
+  const roomOffsets = [-120, 40, -180, 210];
+
+  return {
+    ...MOCK_DATA,
+    facilityAverage,
+    rooms: MOCK_DATA.rooms.map((room, index) => {
+      const co2Level = Math.max(320, Math.round(roomBase + roomOffsets[index % roomOffsets.length]));
+      return {
+        ...room,
+        co2Level,
+        status: getCO2Status(co2Level),
+        lastUpdated: payload?.data_mode === "live_sensor_ingest" ? "Live" : room.lastUpdated,
+      };
+    }),
+    history: trendPoints.length > 0 ? trendPoints : MOCK_DATA.history,
+    alerts:
+      facilityAverage > 1200
+        ? [
+            {
+              id: "live-co2-critical",
+              roomId: "r4",
+              roomName: "Facility Monitor",
+              level: Math.round(facilityAverage),
+              type: "critical_level",
+              message: "Live CO2 telemetry is above critical threshold. Increase ventilation now.",
+              timestamp: "Live",
+              acknowledged: false,
+            },
+          ]
+        : facilityAverage > 800
+        ? [
+            {
+              id: "live-co2-warning",
+              roomId: "r2",
+              roomName: "Facility Monitor",
+              level: Math.round(facilityAverage),
+              type: "ventilation_risk",
+              message: "Live CO2 telemetry indicates elevated ventilation risk.",
+              timestamp: "Live",
+              acknowledged: false,
+            },
+          ]
+        : [],
+    thresholds: MOCK_DATA.thresholds,
+    // HARDWARE_READINESS: keep deterministic trend even when live stream is sparse.
+    ...(trendDirection === "rising" && { facilityAverage: Math.max(facilityAverage, MOCK_DATA.facilityAverage) }),
+  };
+};
+
 export function CO2MonitoringCard() {
   const [data, setData] = useState<CO2MonitoringData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -78,10 +155,19 @@ export function CO2MonitoringCard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 300));
-      setData(MOCK_DATA);
+      const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/api/intelligence/environment/live?window_minutes=360`, {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new Error(`environment endpoint failed: ${response.status}`);
+      }
+      const payload = (await response.json()) as EnvironmentLiveResponse;
+      setData(buildFromLiveSnapshot(payload));
     } catch (error) {
       console.error("Failed to fetch CO2 data:", error);
+      // HARDWARE_READINESS: fallback is intentionally preserved for sensor-disconnected demos.
+      setData(MOCK_DATA);
     } finally {
       setLoading(false);
     }

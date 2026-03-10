@@ -11,6 +11,7 @@ import Image from "next/image";
 import { Eye, EyeOff, Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
+  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,27 +31,37 @@ export default function LoginPage() {
       return;
     }
 
-    // Simulate API call for authentication
-    // In production, this would call your authentication API
     try {
-      // Simulated delay for demo purposes
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Demo credentials check (replace with actual API call)
-      // This is just for demonstration - in production, validate against user_credentials table
-      if (email === "admin@betti.com" && password === "admin123") {
-        // Store auth token/session (in production, use secure methods)
-        if (typeof window !== "undefined") {
-          sessionStorage.setItem("betti_admin_authenticated", "true");
-          sessionStorage.setItem("betti_admin_email", email);
-          // Use window.location for reliable redirect
-          window.location.href = "/admin-dashboard";
-        }
-      } else {
-        setError("Invalid email or password. Please try again.");
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identifier: email,
+          password,
+        }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setError(payload?.detail || "Invalid email or password. Please try again.");
+        return;
+      }
+      if (payload?.role !== "admin") {
+        setError("This account does not have admin access.");
+        return;
+      }
+      if (typeof window !== "undefined") {
+        localStorage.setItem("betti_token", payload.access_token || "");
+        localStorage.setItem("betti_user_id", String(payload.user_id || ""));
+        localStorage.setItem("betti_user_role", payload.role || "");
+        localStorage.setItem("betti_user_email", payload.email || email);
+        localStorage.setItem("betti_user_first_name", payload.first_name || "");
+        localStorage.setItem("betti_user_last_name", payload.last_name || "");
+        sessionStorage.setItem("betti_admin_authenticated", "true");
+        sessionStorage.setItem("betti_admin_email", email);
+        window.location.href = "/admin-dashboard";
       }
     } catch {
-      setError("An error occurred during login. Please try again.");
+      setError("Unable to reach API. Check backend connectivity and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +111,7 @@ export default function LoginPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@betti.com"
+                    placeholder="name@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10"
@@ -173,11 +184,9 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* Demo Credentials Note */}
             <div className="mt-6 p-3 bg-muted/50 rounded-lg">
               <p className="text-xs text-muted-foreground text-center">
-                <span className="font-medium">Demo credentials:</span><br />
-                Email: admin@betti.com | Password: admin123
+                Authentication uses Betti API (`/api/auth/login`).
               </p>
             </div>
           </CardContent>

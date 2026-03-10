@@ -54,7 +54,7 @@ const notifications = [
   {
     id: 3,
     title: "Caregiver Confirmed",
-    message: "Sarah Johnson acknowledged alert",
+    message: "Assigned caregiver acknowledged alert",
     time: "20 min ago",
     type: "info",
   },

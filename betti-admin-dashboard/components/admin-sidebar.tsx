@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -28,6 +28,8 @@ import {
   MessageSquare,
   ShieldCheck,
   Flame,
+  Calendar,
+  type LucideIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -39,7 +41,15 @@ interface AdminSidebarProps {
   isMobile?: boolean;
 }
 
-const menuItems = [
+type MenuItem = {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  badge?: string | null;
+  badgeVariant?: "destructive" | "secondary";
+};
+
+const menuItems: MenuItem[] = [
   {
     id: "overview",
     label: "Overview",
@@ -50,19 +60,25 @@ const menuItems = [
     id: "patients",
     label: "Patients",
     icon: Users,
-    badge: "156",
+    badge: null,
+  },
+  {
+    id: "appointments",
+    label: "Appointments",
+    icon: Calendar,
+    badge: null,
   },
   {
     id: "caregivers",
     label: "Caregivers",
     icon: UserCog,
-    badge: "24",
+    badge: null,
   },
   {
     id: "alerts",
     label: "Alerts & Incidents",
     icon: Bell,
-    badge: "8",
+    badge: null,
     badgeVariant: "destructive" as const,
   },
   {
@@ -75,7 +91,7 @@ const menuItems = [
     id: "fall-monitoring",
     label: "Fall Monitoring",
     icon: Activity,
-    badge: "3",
+    badge: null,
     badgeVariant: "destructive" as const,
   },
   {
@@ -94,19 +110,19 @@ const menuItems = [
     id: "security-agencies",
     label: "Security Agencies",
     icon: ShieldCheck,
-    badge: "5",
+    badge: null,
   },
   {
     id: "fire-service",
     label: "Fire Service Units",
     icon: Flame,
-    badge: "5",
+    badge: null,
   },
   {
     id: "communications",
     label: "Communications",
     icon: MessageSquare,
-    badge: "2",
+    badge: null,
   },
   {
     id: "reports",
@@ -153,18 +169,65 @@ export function AdminSidebar({
   onCollapsedChange,
   isMobile = false
 }: AdminSidebarProps) {
+  const router = useRouter();
   const [internalCollapsed, setInternalCollapsed] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [dynamicBadges, setDynamicBadges] = useState<Record<string, string>>({});
   const { theme, setTheme } = useTheme();
 
-  const handleLogoutClick = () => setShowLogoutConfirm(true);
-  const handleLogoutConfirm = () => {
-    if (typeof window !== "undefined") {
-      const hubUrl = process.env.NEXT_PUBLIC_CENTRAL_HUB_URL?.trim() || "http://localhost:3000";
-      window.location.href = hubUrl;
+  useEffect(() => {
+    let mounted = true;
+    const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+    const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
-  };
-  const handleLogoutCancel = () => setShowLogoutConfirm(false);
+
+    const loadBadges = async () => {
+      try {
+        const [patientsRes, caregiversRes, alertsRes, fallsRes] = await Promise.all([
+          fetch(`${apiUrl}/api/patients?home_only=true`, { headers }),
+          fetch(`${apiUrl}/api/caregivers?home_only=true`, { headers }),
+          fetch(`${apiUrl}/api/alerts?limit=200&home_only=true`, { headers }),
+          fetch(`${apiUrl}/api/fall-incidents?limit=200&home_only=true`, { headers }),
+        ]);
+
+        const badgeMap: Record<string, string> = {};
+        if (patientsRes.ok) {
+          const rows = (await patientsRes.json()) as Array<unknown>;
+          badgeMap.patients = String((rows || []).length);
+        }
+        if (caregiversRes.ok) {
+          const rows = (await caregiversRes.json()) as Array<unknown>;
+          badgeMap.caregivers = String((rows || []).length);
+        }
+        if (alertsRes.ok) {
+          const rows = (await alertsRes.json()) as Array<{ status?: string | null }>;
+          const active = (rows || []).filter(
+            (row) => String(row?.status || "active").toLowerCase() === "active",
+          ).length;
+          badgeMap.alerts = String(active);
+        }
+        if (fallsRes.ok) {
+          const rows = (await fallsRes.json()) as Array<unknown>;
+          badgeMap["fall-monitoring"] = String((rows || []).length);
+        }
+
+        if (mounted) {
+          setDynamicBadges(badgeMap);
+        }
+      } catch {
+        if (mounted) {
+          setDynamicBadges({});
+        }
+      }
+    };
+
+    void loadBadges();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   // Use controlled state if provided, otherwise use internal state
   // On mobile, sidebar is never collapsed (always shows full menu)
@@ -175,6 +238,19 @@ export function AdminSidebar({
     } else {
       setInternalCollapsed(value);
     }
+  };
+
+  const handleLogout = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    localStorage.removeItem("betti_token");
+    localStorage.removeItem("betti_user_id");
+    localStorage.removeItem("betti_user_role");
+    localStorage.removeItem("betti_user_email");
+    sessionStorage.removeItem("betti_admin_authenticated");
+    sessionStorage.removeItem("betti_admin_email");
+    router.replace("/login");
   };
 
   return (
@@ -247,12 +323,12 @@ export function AdminSidebar({
               {!collapsed && (
                 <>
                   <span className="flex-1 text-left">{item.label}</span>
-                  {item.badge && (
+                  {(dynamicBadges[item.id] || item.badge) && (
                     <Badge
                       variant={item.badgeVariant || "secondary"}
                       className="ml-auto text-xs"
                     >
-                      {item.badge}
+                      {dynamicBadges[item.id] || item.badge}
                     </Badge>
                   )}
                 </>
@@ -281,54 +357,12 @@ export function AdminSidebar({
           variant="ghost"
           size={collapsed ? "icon" : "default"}
           className={cn("w-full text-destructive hover:text-destructive", !collapsed && "justify-start gap-3")}
-          onClick={handleLogoutClick}
+          onClick={handleLogout}
         >
           <LogOut className="h-5 w-5" />
           {!collapsed && <span>Logout</span>}
         </Button>
       </div>
-
-      {/* Logout Confirmation Modal - Portal with blurred background */}
-      {showLogoutConfirm &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[9999] flex items-center justify-center"
-            style={{
-              background: "rgba(9, 16, 32, 0.35)",
-              backdropFilter: "blur(3px)",
-              WebkitBackdropFilter: "blur(3px)",
-            }}
-          >
-            <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                  <LogOut className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="font-serif text-lg font-semibold text-gray-900">Confirm Logout</h3>
-                  <p className="text-sm text-gray-500">Are you sure you want to logout?</p>
-                </div>
-              </div>
-              <div className="flex gap-3 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={handleLogoutCancel}
-                  className="flex-1"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleLogoutConfirm}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white"
-                >
-                  Logout
-                </Button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
     </div>
   );
 }

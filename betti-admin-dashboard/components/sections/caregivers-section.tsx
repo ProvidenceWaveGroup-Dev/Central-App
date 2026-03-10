@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaginationControlled } from "@/components/ui/pagination";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   UserCog,
   Search,
@@ -32,7 +33,15 @@ interface Caregiver {
   role_name: string;
   // From facility_memberships
   facility_id: number;
-  facility_role: "staff" | "admin" | "supervisor";
+  facility_role:
+    | "staff"
+    | "admin"
+    | "supervisor"
+    | "caregiver"
+    | "senior"
+    | "security"
+    | "ems"
+    | "fire_service";
   // Computed from caregiver_patient_assignments
   assigned_patients: number;
   primary_patients: number;
@@ -42,7 +51,28 @@ interface Caregiver {
   avg_response_time: string;
 }
 
-const caregivers: Caregiver[] = [
+type ApiCaregiver = {
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  status: string;
+  is_active: boolean;
+  created_at: string;
+  last_login_at: string;
+  role_name: string;
+  facility_id: number;
+  facility_role: string;
+  assigned_patients: number;
+  primary_patients: number;
+  duty_status: string;
+  current_shift: string;
+  avg_response_time: string;
+};
+
+// HARDWARE_READINESS: frontend fallback for demo continuity when live caregiver API fails.
+const fallbackCaregivers: Caregiver[] = [
   {
     user_id: 340,
     first_name: "Angela",
@@ -409,7 +439,12 @@ const caregivers: Caregiver[] = [
 const facilityRoleLabels: Record<Caregiver["facility_role"], string> = {
   staff: "Staff",
   admin: "Administrator",
-  supervisor: "Supervisor"
+  supervisor: "Supervisor",
+  caregiver: "Caregiver",
+  senior: "Senior",
+  security: "Security",
+  ems: "EMS",
+  fire_service: "Fire Service",
 };
 
 const ITEMS_PER_PAGE = 9;
@@ -417,9 +452,62 @@ const ITEMS_PER_PAGE = 9;
 type FilterType = "all" | "active" | "on-duty" | "with-patients";
 
 export function CaregiversSection() {
+  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadCaregivers = async () => {
+      try {
+        setLoadError("");
+        const response = await fetch(`${apiUrl}/api/caregivers?home_only=true`);
+        if (!response.ok) {
+          throw new Error("Failed to load caregivers");
+        }
+        const payload: ApiCaregiver[] = await response.json();
+        const mapped: Caregiver[] = (payload || []).map((row) => ({
+          user_id: Number(row.user_id),
+          first_name: row.first_name || "",
+          last_name: row.last_name || "",
+          email: row.email || "",
+          phone: row.phone || "",
+          status: row.status === "active" ? "active" : "inactive",
+          is_active: Boolean(row.is_active),
+          created_at: row.created_at || new Date().toISOString(),
+          last_login_at: row.last_login_at || "",
+          role_name: row.role_name || "caregiver",
+          facility_id: Number(row.facility_id || 0),
+          facility_role: (row.facility_role || "staff") as Caregiver["facility_role"],
+          assigned_patients: Number(row.assigned_patients || 0),
+          primary_patients: Number(row.primary_patients || 0),
+          duty_status: row.duty_status === "on-duty" || row.duty_status === "break" ? row.duty_status : "off-duty",
+          current_shift: row.current_shift || "7AM - 3PM",
+          avg_response_time: row.avg_response_time || "N/A",
+        }));
+        if (isMounted) {
+          setCaregivers(mapped);
+        }
+      } catch {
+        if (isMounted) {
+          setLoadError("Unable to load live caregiver data.");
+          setCaregivers([]);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+    loadCaregivers();
+    return () => {
+      isMounted = false;
+    };
+  }, [apiUrl]);
 
   const filteredCaregivers = caregivers.filter((caregiver) => {
     const fullName = `${caregiver.first_name} ${caregiver.last_name}`.toLowerCase();
@@ -490,6 +578,18 @@ export function CaregiversSection() {
             className="pl-10"
           />
         </div>
+
+        {loadError && (
+          <Alert variant="destructive">
+            <AlertDescription>{loadError}</AlertDescription>
+          </Alert>
+        )}
+
+        {isLoading && (
+          <Alert>
+            <AlertDescription>Loading caregivers...</AlertDescription>
+          </Alert>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">

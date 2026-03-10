@@ -1,13 +1,15 @@
 "use client";
 
-import { BettiLoader, usePageLoader } from "@/components/betti-loader";
+import { usePathname } from "next/navigation";
+import { BettiLoader, useTransitionLoader } from "@/components/betti-loader";
 
 export function RouteLoaderWrapper({ children }: { children: React.ReactNode }) {
-  const isInitialLoad = usePageLoader(120);
+  const pathname = usePathname();
+  const isPageLoading = useTransitionLoader(pathname, 300);
 
   return (
     <>
-      <BettiLoader isLoading={isInitialLoad} minDisplayTime={80} />
+      <BettiLoader isLoading={isPageLoading} minDisplayTime={400} />
       {children}
     </>
   );

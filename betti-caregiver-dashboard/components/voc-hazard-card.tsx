@@ -33,6 +33,7 @@ const statusConfig = {
   hazardous: { label: "Hazardous", bg: "bg-red-100", text: "text-red-700", bar: "bg-red-500" },
 };
 
+// HARDWARE_READINESS: mocked baseline retained for sensor-disconnected demo mode.
 const MOCK_DATA: VOCMonitoringData = {
   currentLevel: 310, unit: "ppb", status: "elevated",
   thresholds: { safe: 250, elevated: 500, hazardous: 750 },
@@ -50,6 +51,89 @@ const MOCK_DATA: VOCMonitoringData = {
   exposureDuration: "2h 15m", lastUpdated: "Just now",
 };
 
+type EnvironmentLiveResponse = {
+  data_mode?: string;
+  metrics?: {
+    voc_ppb?: number | null;
+  };
+  trend_direction?: {
+    voc_ppb?: string;
+  };
+  trends?: {
+    voc_ppb?: Array<{ timestamp?: string | null; value?: number | null }>;
+  };
+};
+
+const buildFromLiveSnapshot = (payload: EnvironmentLiveResponse): VOCMonitoringData => {
+  const voc = Number(payload?.metrics?.voc_ppb ?? MOCK_DATA.currentLevel);
+  const currentLevel = Number.isFinite(voc) ? Math.max(50, Math.round(voc)) : MOCK_DATA.currentLevel;
+  const trendDirection = String(payload?.trend_direction?.voc_ppb || "stable").toLowerCase();
+  const trendRows = Array.isArray(payload?.trends?.voc_ppb) ? payload.trends?.voc_ppb || [] : [];
+  const trend = trendRows
+    .filter((row) => Number.isFinite(Number(row?.value)))
+    .slice(-6)
+    .map((row, index) => {
+      const level = Math.max(0, Math.round(Number(row?.value || 0)));
+      return {
+        timestamp: row?.timestamp ? String(row.timestamp) : `T-${6 - index}h`,
+        level,
+        status: getVOCStatus(level),
+      } as VOCReading;
+    });
+
+  const previous = trend.length > 1 ? trend[0].level : currentLevel;
+  const percentChange24h = previous > 0 ? Number((((currentLevel - previous) / previous) * 100).toFixed(1)) : 0;
+  const status = getVOCStatus(currentLevel);
+
+  return {
+    ...MOCK_DATA,
+    currentLevel,
+    status,
+    trendDirection: trendDirection === "rising" || trendDirection === "falling" ? trendDirection : "stable",
+    percentChange24h,
+    trend: trend.length > 0 ? trend : MOCK_DATA.trend,
+    alerts:
+      status === "hazardous"
+        ? [
+            {
+              id: "live-voc-critical",
+              type: "threshold_exceeded",
+              severity: "critical",
+              message: "Live VOC telemetry is in hazardous range. Immediate ventilation and responder check advised.",
+              timestamp: "Live",
+              acknowledged: false,
+            },
+          ]
+        : status === "elevated"
+        ? [
+            {
+              id: "live-voc-warning",
+              type: "trend_spike",
+              severity: "warning",
+              message: "Live VOC telemetry is elevated. Continue close monitoring.",
+              timestamp: "Live",
+              acknowledged: false,
+            },
+          ]
+        : [],
+    notifications:
+      status === "safe"
+        ? []
+        : [
+            {
+              id: "live-voc-notif",
+              type: "hazard_warning",
+              title: "Live VOC Alert",
+              message: "Environmental VOC trend requires attention.",
+              timestamp: "Live",
+              read: false,
+            },
+          ],
+    exposureDuration: status === "safe" ? "0m" : "Live trend",
+    lastUpdated: payload?.data_mode === "live_sensor_ingest" ? "Live" : MOCK_DATA.lastUpdated,
+  };
+};
+
 export function VOCHazardCard() {
   const [data, setData] = useState<VOCMonitoringData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,10 +143,19 @@ export function VOCHazardCard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 300));
-      setData(MOCK_DATA);
+      const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/api/intelligence/environment/live?window_minutes=360`, {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new Error(`environment endpoint failed: ${response.status}`);
+      }
+      const payload = (await response.json()) as EnvironmentLiveResponse;
+      setData(buildFromLiveSnapshot(payload));
     } catch (error) {
       console.error("Failed to fetch VOC data:", error);
+      // HARDWARE_READINESS: fallback is intentionally preserved for sensor-disconnected demos.
+      setData(MOCK_DATA);
     } finally {
       setLoading(false);
     }

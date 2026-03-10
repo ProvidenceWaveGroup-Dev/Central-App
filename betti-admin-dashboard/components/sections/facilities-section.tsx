@@ -1,364 +1,573 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PaginationControlled } from "@/components/ui/pagination";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Building2,
-  Plus,
   MapPin,
-  Users,
-  Activity,
-  Settings,
+  MoreVertical,
+  Plus,
   Search,
+  Trash2,
+  UserRoundPen,
+  Users,
 } from "lucide-react";
 
-// Schema-aligned: facilities table
-interface Facility {
+type FacilityType = "assisted_living" | "hospital" | "senior_living" | "home_care";
+type FacilityStatus = "active" | "inactive" | "pending";
+
+type ApiFacility = {
   facility_id: number;
   name: string;
-  address: string;
-  facility_type: "assisted_living" | "hospital" | "senior_living" | "home_care";
-  status: "active" | "inactive" | "pending";
-  is_active: boolean;
+  address: string | null;
+  facility_type: FacilityType;
+  status: FacilityStatus;
+  is_active: boolean | number;
   archived_at: string | null;
-  // Computed from related tables
+};
+
+type FacilityRow = ApiFacility & {
   patient_count: number;
-  capacity: number;
-  hub_count: number;
-  staff_count: number;
-}
+};
 
-const facilities: Facility[] = [
-  {
-    facility_id: 12,
-    name: "Sunrise Assisted Living – Delray",
-    address: "245 Atlantic Ave, Delray Beach, FL",
-    facility_type: "assisted_living",
-    status: "active",
-    is_active: true,
-    archived_at: null,
-    patient_count: 45,
-    capacity: 50,
-    hub_count: 48,
-    staff_count: 22
-  },
-  {
-    facility_id: 15,
-    name: "Golden Oaks Senior Living",
-    address: "890 Oak Street, Boca Raton, FL",
-    facility_type: "senior_living",
-    status: "active",
-    is_active: true,
-    archived_at: null,
-    patient_count: 38,
-    capacity: 40,
-    hub_count: 42,
-    staff_count: 18
-  },
-  {
-    facility_id: 23,
-    name: "Palm Beach Regional Hospital",
-    address: "1200 Medical Center Dr, West Palm Beach, FL",
-    facility_type: "hospital",
-    status: "active",
-    is_active: true,
-    archived_at: null,
-    patient_count: 128,
-    capacity: 150,
-    hub_count: 156,
-    staff_count: 85
-  },
-  {
-    facility_id: 31,
-    name: "Coastal Home Care Services",
-    address: "567 Coastal Blvd, Fort Lauderdale, FL",
-    facility_type: "home_care",
-    status: "active",
-    is_active: true,
-    archived_at: null,
-    patient_count: 72,
-    capacity: 100,
-    hub_count: 72,
-    staff_count: 15
-  },
-  {
-    facility_id: 8,
-    name: "Heritage Care Center",
-    address: "432 Heritage Lane, Miami, FL",
-    facility_type: "assisted_living",
-    status: "inactive",
-    is_active: false,
-    archived_at: "2025-12-01",
-    patient_count: 0,
-    capacity: 35,
-    hub_count: 0,
-    staff_count: 0
-  },
-];
+type ApiPatient = {
+  patient_id: number;
+  facility_id: number | null;
+};
 
-const facilityTypeLabels: Record<Facility["facility_type"], string> = {
+const ITEMS_PER_PAGE = 6;
+
+const facilityTypeLabels: Record<FacilityType, string> = {
   assisted_living: "Assisted Living",
   hospital: "Hospital",
   senior_living: "Senior Living",
-  home_care: "Home Care"
+  home_care: "Home Care",
 };
 
-const ITEMS_PER_PAGE = 4;
-
-type FilterType = "all" | "active" | "with-patients" | "with-hubs" | "with-staff" | "high-occupancy";
+const emptyForm = {
+  name: "",
+  address: "",
+  facility_type: "senior_living" as FacilityType,
+  status: "active" as FacilityStatus,
+  is_active: true,
+};
 
 export function FacilitiesSection() {
+  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  const [facilities, setFacilities] = useState<FacilityRow[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMutating, setIsMutating] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingFacility, setEditingFacility] = useState<FacilityRow | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
-  const activeFacilities = facilities.filter(f => f.is_active);
-  const totalPatients = activeFacilities.reduce((sum, f) => sum + f.patient_count, 0);
-  const totalCapacity = activeFacilities.reduce((sum, f) => sum + f.capacity, 0);
-  const totalHubs = activeFacilities.reduce((sum, f) => sum + f.hub_count, 0);
-  const totalStaff = activeFacilities.reduce((sum, f) => sum + f.staff_count, 0);
-
-  const filteredFacilities = facilities.filter((facility) => {
-    const matchesSearch = facility.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           facility.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           facilityTypeLabels[facility.facility_type].toLowerCase().includes(searchQuery.toLowerCase());
-
-    if (!matchesSearch) return false;
-
-    const occupancy = facility.capacity > 0 ? (facility.patient_count / facility.capacity) * 100 : 0;
-
-    switch (activeFilter) {
-      case "active":
-        return facility.is_active;
-      case "with-patients":
-        return facility.patient_count > 0;
-      case "with-hubs":
-        return facility.hub_count > 0;
-      case "with-staff":
-        return facility.staff_count > 0;
-      case "high-occupancy":
-        return occupancy >= 80;
-      default:
-        return true;
+  const getAuthHeaders = (withJsonContentType = true): Record<string, string> => {
+    const headers: Record<string, string> = {};
+    const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
+    if (withJsonContentType) {
+      headers["Content-Type"] = "application/json";
     }
-  });
-
-  const handleSearch = (value: string) => {
-    setSearchQuery(value);
-    setCurrentPage(1);
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    return headers;
   };
 
-  const handleFilterChange = (filter: FilterType) => {
-    setActiveFilter(filter);
-    setCurrentPage(1);
+  const toArray = <T,>(payload: unknown): T[] => {
+    if (Array.isArray(payload)) {
+      return payload as T[];
+    }
+    if (payload && typeof payload === "object") {
+      const objectPayload = payload as { value?: unknown; items?: unknown; data?: unknown };
+      if (Array.isArray(objectPayload.value)) {
+        return objectPayload.value as T[];
+      }
+      if (Array.isArray(objectPayload.items)) {
+        return objectPayload.items as T[];
+      }
+      if (Array.isArray(objectPayload.data)) {
+        return objectPayload.data as T[];
+      }
+    }
+    return [];
   };
 
-  const totalPages = Math.ceil(filteredFacilities.length / ITEMS_PER_PAGE);
+  const loadFacilities = useCallback(async () => {
+    setLoadError("");
+    try {
+      const headers = getAuthHeaders(false);
+      if (!headers.Authorization) {
+        setLoadError("Login session not found. Please sign in again.");
+        setFacilities([]);
+        setIsLoading(false);
+        return;
+      }
+      const [facilitiesRes, patientsRes] = await Promise.all([
+        fetch(`${apiUrl}/api/facilities?home_only=true`, { headers }),
+        fetch(`${apiUrl}/api/patients?home_only=true`, { headers }),
+      ]);
+
+      if (!facilitiesRes.ok) {
+        throw new Error("Failed to load facilities");
+      }
+
+      const facilitiesData = toArray<ApiFacility>(await facilitiesRes.json().catch(() => []));
+      const patientsData = patientsRes.ok
+        ? toArray<ApiPatient>(await patientsRes.json().catch(() => []))
+        : [];
+
+      const counts = new Map<number, number>();
+      (patientsData as ApiPatient[]).forEach((patient) => {
+        if (patient.facility_id == null) {
+          return;
+        }
+        counts.set(patient.facility_id, (counts.get(patient.facility_id) || 0) + 1);
+      });
+
+      const mapped: FacilityRow[] = (facilitiesData || []).map((item) => ({
+        ...item,
+        patient_count: counts.get(item.facility_id) || 0,
+      }));
+
+      setFacilities(mapped);
+      if (!patientsRes.ok) {
+        setLoadError("Facilities loaded with partial context (patient counts unavailable).");
+      }
+    } catch {
+      setLoadError("Unable to load facilities from API.");
+      setFacilities([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiUrl]);
+
+  useEffect(() => {
+    loadFacilities();
+  }, [loadFacilities]);
+
+  const filteredFacilities = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return facilities.filter((facility) => {
+      if (!query) {
+        return true;
+      }
+      return (
+        facility.name.toLowerCase().includes(query) ||
+        (facility.address || "").toLowerCase().includes(query) ||
+        facilityTypeLabels[facility.facility_type].toLowerCase().includes(query)
+      );
+    });
+  }, [facilities, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredFacilities.length / ITEMS_PER_PAGE));
   const paginatedFacilities = filteredFacilities.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
+  const totalPatients = facilities.reduce((sum, facility) => sum + facility.patient_count, 0);
+  const activeFacilities = facilities.filter((facility) => Boolean(facility.is_active)).length;
+
+  const resetForm = () => {
+    setForm(emptyForm);
+    setEditingFacility(null);
+  };
+
+  const parseApiError = async (response: Response) => {
+    try {
+      const payload = await response.json();
+      return payload?.detail || "Request failed";
+    } catch {
+      return "Request failed";
+    }
+  };
+
+  const handleCreateFacility = async () => {
+    if (!form.name.trim()) {
+      setLoadError("Facility name is required.");
+      return;
+    }
+    setIsMutating(true);
+    setLoadError("");
+    setActionMessage("");
+    try {
+      const response = await fetch(`${apiUrl}/api/facilities`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          name: form.name.trim(),
+          address: form.address.trim() || null,
+          facility_type: form.facility_type,
+          status: form.status,
+          is_active: form.is_active,
+        }),
+      });
+      if (!response.ok) {
+        setLoadError(await parseApiError(response));
+        return;
+      }
+      setIsCreateOpen(false);
+      resetForm();
+      setActionMessage("Facility created successfully.");
+      await loadFacilities();
+    } catch {
+      setLoadError("Unable to create facility.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const openEditDialog = (facility: FacilityRow) => {
+    setEditingFacility(facility);
+    setForm({
+      name: facility.name,
+      address: facility.address || "",
+      facility_type: facility.facility_type,
+      status: facility.status,
+      is_active: Boolean(facility.is_active),
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateFacility = async () => {
+    if (!editingFacility) {
+      return;
+    }
+    if (!form.name.trim()) {
+      setLoadError("Facility name is required.");
+      return;
+    }
+    setIsMutating(true);
+    setLoadError("");
+    setActionMessage("");
+    try {
+      const response = await fetch(`${apiUrl}/api/facilities/${editingFacility.facility_id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          name: form.name.trim(),
+          address: form.address.trim() || null,
+          facility_type: form.facility_type,
+          status: form.status,
+          is_active: form.is_active,
+        }),
+      });
+      if (!response.ok) {
+        setLoadError(await parseApiError(response));
+        return;
+      }
+      setIsEditOpen(false);
+      resetForm();
+      setActionMessage("Facility updated successfully.");
+      await loadFacilities();
+    } catch {
+      setLoadError("Unable to update facility.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
+  const handleDeleteFacility = async (facility: FacilityRow) => {
+    const confirmed = window.confirm(
+      `Delete facility "${facility.name}"? This action cannot be undone.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    setIsMutating(true);
+    setLoadError("");
+    setActionMessage("");
+    try {
+      const response = await fetch(`${apiUrl}/api/facilities/${facility.facility_id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(false),
+      });
+      if (!response.ok) {
+        setLoadError(await parseApiError(response));
+        return;
+      }
+      setActionMessage("Facility deleted successfully.");
+      await loadFacilities();
+    } catch {
+      setLoadError("Unable to delete facility.");
+    } finally {
+      setIsMutating(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)]">
-      {/* Fixed Header Section */}
+    <div className="flex h-[calc(100vh-120px)] flex-col">
+      {actionMessage && (
+        <Alert className="mb-4 border-emerald-200 bg-emerald-50/60 text-emerald-700">
+          <AlertDescription>{actionMessage}</AlertDescription>
+        </Alert>
+      )}
+
+      {loadError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{loadError}</AlertDescription>
+        </Alert>
+      )}
+
+      {isLoading && (
+        <Alert className="mb-4">
+          <AlertDescription>Loading facilities...</AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex-shrink-0 space-y-6 pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Facilities</h1>
-            <p className="text-muted-foreground">Manage care facilities and locations</p>
+            <p className="text-muted-foreground">Manage facilities from live database records</p>
           </div>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Facility
-          </Button>
+
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Facility
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[520px]">
+              <DialogHeader>
+                <DialogTitle>Add Facility</DialogTitle>
+                <DialogDescription>Create a new facility record.</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-2">
+                <div className="space-y-2">
+                  <Label htmlFor="facility-name">Name</Label>
+                  <Input
+                    id="facility-name"
+                    value={form.name}
+                    onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+                    placeholder="Providence Wave Group"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="facility-address">Address</Label>
+                  <Input
+                    id="facility-address"
+                    value={form.address}
+                    onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))}
+                    placeholder="1200 Health Ave, Seattle, WA"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="facility-type">Type</Label>
+                    <Select
+                      value={form.facility_type}
+                      onValueChange={(value) => setForm((prev) => ({ ...prev, facility_type: value as FacilityType }))}
+                    >
+                      <SelectTrigger id="facility-type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(facilityTypeLabels).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="facility-status">Status</Label>
+                    <Select
+                      value={form.status}
+                      onValueChange={(value) => setForm((prev) => ({ ...prev, status: value as FacilityStatus }))}
+                    >
+                      <SelectTrigger id="facility-status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="facility-active">Operational</Label>
+                  <Select
+                    value={form.is_active ? "yes" : "no"}
+                    onValueChange={(value) => setForm((prev) => ({ ...prev, is_active: value === "yes" }))}
+                  >
+                    <SelectTrigger id="facility-active">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">Yes</SelectItem>
+                      <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreateOpen(false)} disabled={isMutating}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateFacility} disabled={isMutating}>
+                  {isMutating ? "Creating..." : "Create Facility"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            className="pl-10"
             placeholder="Search facilities..."
             value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10"
+            onChange={(event) => {
+              setSearchQuery(event.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "all" ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"}`}
-          onClick={() => handleFilterChange("all")}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <Building2 className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{facilities.length}</div>
-                <div className="text-xs text-muted-foreground">All Facilities</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "active" ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"}`}
-          onClick={() => handleFilterChange(activeFilter === "active" ? "all" : "active")}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <Building2 className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{activeFacilities.length}</div>
-                <div className="text-xs text-muted-foreground">Active Facilities</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "with-patients" ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"}`}
-          onClick={() => handleFilterChange(activeFilter === "with-patients" ? "all" : "with-patients")}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                <Users className="h-5 w-5 text-purple-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{facilities.filter(f => f.patient_count > 0).length}</div>
-                <div className="text-xs text-muted-foreground">With Patients</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "with-hubs" ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"}`}
-          onClick={() => handleFilterChange(activeFilter === "with-hubs" ? "all" : "with-hubs")}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
-                <Activity className="h-5 w-5 text-cyan-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{facilities.filter(f => f.hub_count > 0).length}</div>
-                <div className="text-xs text-muted-foreground">With Hubs</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "with-staff" ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"}`}
-          onClick={() => handleFilterChange(activeFilter === "with-staff" ? "all" : "with-staff")}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                <Users className="h-5 w-5 text-indigo-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{facilities.filter(f => f.staff_count > 0).length}</div>
-                <div className="text-xs text-muted-foreground">With Staff</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card
-          className={`cursor-pointer transition-all hover:shadow-md ${activeFilter === "high-occupancy" ? "ring-2 ring-primary border-primary" : "hover:border-primary/50"}`}
-          onClick={() => handleFilterChange(activeFilter === "high-occupancy" ? "all" : "high-occupancy")}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                <Activity className="h-5 w-5 text-orange-600" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold">{facilities.filter(f => f.capacity > 0 && (f.patient_count / f.capacity) * 100 >= 80).length}</div>
-                <div className="text-xs text-muted-foreground">High Occupancy</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        </div>
-      </div>
-
-      {/* Scrollable Facilities Grid */}
-      <div className="flex-1 overflow-y-auto min-h-0 pr-2">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
-        {paginatedFacilities.map((facility) => {
-          const occupancy = facility.capacity > 0
-            ? Math.round((facility.patient_count / facility.capacity) * 100)
-            : 0;
-          return (
-          <Card key={facility.facility_id} className={!facility.is_active ? "opacity-60" : ""}>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Card>
             <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="font-medium text-lg">{facility.name}</h3>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    {facility.address}
-                  </div>
-                  <Badge variant="outline" className="mt-1 text-xs">
-                    {facilityTypeLabels[facility.facility_type]}
-                  </Badge>
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-900/30">
+                  <Building2 className="h-5 w-5 text-blue-600" />
                 </div>
-                <Badge variant={facility.is_active ? "default" : "secondary"}>
-                  {facility.status}
-                </Badge>
-              </div>
-
-              <div className="space-y-4">
-                <div className="grid grid-cols-4 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Patients</span>
-                    <div className="font-medium">{facility.patient_count}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Capacity</span>
-                    <div className="font-medium">{facility.capacity}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Hubs</span>
-                    <div className="font-medium">{facility.hub_count}</div>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Staff</span>
-                    <div className="font-medium">{facility.staff_count}</div>
-                  </div>
-                </div>
-
                 <div>
-                  <div className="flex justify-between mb-1 text-sm">
-                    <span>Occupancy</span>
-                    <span className="font-medium">{occupancy}%</span>
-                  </div>
-                  <Progress value={occupancy} className={`h-2 ${occupancy > 90 ? "[&>div]:bg-orange-500" : ""}`} />
+                  <div className="text-2xl font-bold">{facilities.length}</div>
+                  <div className="text-xs text-muted-foreground">Facilities</div>
                 </div>
               </div>
-
-              <Button variant="outline" size="sm" className="w-full mt-4 gap-1" disabled={!facility.is_active}>
-                <Settings className="h-3 w-3" />
-                Manage Facility
-              </Button>
             </CardContent>
           </Card>
-          );
-        })}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-emerald-100 p-2 dark:bg-emerald-900/30">
+                  <Users className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{totalPatients}</div>
+                  <div className="text-xs text-muted-foreground">Patients</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-violet-100 p-2 dark:bg-violet-900/30">
+                  <MapPin className="h-5 w-5 text-violet-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{activeFacilities}</div>
+                  <div className="text-xs text-muted-foreground">Operational</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
-      {/* Fixed Pagination at Bottom */}
-      <div className="flex-shrink-0 pt-4 border-t bg-background">
+      <div className="min-h-0 flex-1 overflow-y-auto pr-2">
+        <Card className="mb-4">
+          <CardHeader>
+            <CardTitle>Facility List ({filteredFacilities.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {paginatedFacilities.map((facility) => (
+                <div key={facility.facility_id} className="rounded-lg border p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{facility.name}</h3>
+                        <Badge variant={facility.status === "active" ? "default" : "secondary"}>
+                          {facility.status}
+                        </Badge>
+                        <Badge variant={facility.is_active ? "outline" : "secondary"}>
+                          {facility.is_active ? "Operational" : "Offline"}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{facility.address || "No address provided"}</p>
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                        <span>Type: {facilityTypeLabels[facility.facility_type]}</span>
+                        <span>Patients: {facility.patient_count}</span>
+                        <span>ID: {facility.facility_id}</span>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem className="gap-2" onClick={() => openEditDialog(facility)}>
+                          <UserRoundPen className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="gap-2 text-destructive"
+                          onClick={() => handleDeleteFacility(facility)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))}
+
+              {paginatedFacilities.length === 0 && (
+                <div className="rounded-lg border p-6 text-center text-sm text-muted-foreground">
+                  No facilities found.
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="flex-shrink-0 border-t bg-background pt-4">
         <PaginationControlled
           currentPage={currentPage}
           totalPages={totalPages}
@@ -367,6 +576,99 @@ export function FacilitiesSection() {
           itemsPerPage={ITEMS_PER_PAGE}
         />
       </div>
+
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-[520px]">
+          <DialogHeader>
+            <DialogTitle>Edit Facility</DialogTitle>
+            <DialogDescription>Update facility details in the database.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="edit-facility-name">Name</Label>
+              <Input
+                id="edit-facility-name"
+                value={form.name}
+                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-facility-address">Address</Label>
+              <Input
+                id="edit-facility-address"
+                value={form.address}
+                onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-facility-type">Type</Label>
+                <Select
+                  value={form.facility_type}
+                  onValueChange={(value) => setForm((prev) => ({ ...prev, facility_type: value as FacilityType }))}
+                >
+                  <SelectTrigger id="edit-facility-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(facilityTypeLabels).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-facility-status">Status</Label>
+                <Select
+                  value={form.status}
+                  onValueChange={(value) => setForm((prev) => ({ ...prev, status: value as FacilityStatus }))}
+                >
+                  <SelectTrigger id="edit-facility-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-facility-active">Operational</Label>
+              <Select
+                value={form.is_active ? "yes" : "no"}
+                onValueChange={(value) => setForm((prev) => ({ ...prev, is_active: value === "yes" }))}
+              >
+                <SelectTrigger id="edit-facility-active">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsEditOpen(false);
+                resetForm();
+              }}
+              disabled={isMutating}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateFacility} disabled={isMutating}>
+              {isMutating ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

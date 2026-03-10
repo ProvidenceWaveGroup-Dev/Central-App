@@ -34,7 +34,70 @@ export function FallAlertCard() {
   const [currentFall, setCurrentFall] = useState<FallEvent | null>(null)
   const [responseCountdown, setResponseCountdown] = useState(30)
   const [showFallModal, setShowFallModal] = useState(false)
+  const [patientName, setPatientName] = useState("Linked Senior")
+  const [linkedPatientId, setLinkedPatientId] = useState<number | null>(null)
+  const [linkedFacilityId, setLinkedFacilityId] = useState<number | null>(null)
   const { toast } = useToast()
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return
+    }
+    const userId = localStorage.getItem("betti_user_id")
+    const token = localStorage.getItem("betti_token")
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+    if (!userId) {
+      return
+    }
+    const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000"
+    fetch(`${apiUrl}/api/users/${userId}/assigned-patients?active_only=true&home_only=false`, { headers })
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error("assignment fetch failed")
+        }
+        return res.json()
+      })
+      .then((rows: Array<{ patient_id?: number; facility_id?: number; patient_name?: string }>) => {
+        if (rows && rows.length > 0 && rows[0].patient_name) {
+          setPatientName(rows[0].patient_name)
+          setLinkedPatientId(Number(rows[0].patient_id || 0) || null)
+          setLinkedFacilityId(Number(rows[0].facility_id || 0) || null)
+          return
+        }
+        throw new Error("no assigned patient")
+      })
+      .catch(async () => {
+        try {
+          const fallbackRes = await fetch(`${apiUrl}/api/patients?home_only=false`, { headers })
+          if (!fallbackRes.ok) {
+            setPatientName("Linked Senior")
+            return
+          }
+          const payload = (await fallbackRes.json()) as
+            | Array<{ first_name?: string; last_name?: string; patient_id?: number; facility_id?: number }>
+            | { value?: Array<{ first_name?: string; last_name?: string; patient_id?: number; facility_id?: number }> }
+          const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.value) ? payload.value : []
+          if (rows.length > 0) {
+            const first = rows[0].first_name || ""
+            const last = rows[0].last_name || ""
+            setPatientName(`${first} ${last}`.trim() || `Patient #${rows[0].patient_id || ""}`.trim())
+            setLinkedPatientId(Number(rows[0].patient_id || 0) || null)
+            setLinkedFacilityId(Number(rows[0].facility_id || 0) || null)
+          } else {
+            setPatientName("Linked Senior")
+            setLinkedPatientId(null)
+            setLinkedFacilityId(null)
+          }
+        } catch {
+          setPatientName("Linked Senior")
+          setLinkedPatientId(null)
+          setLinkedFacilityId(null)
+        }
+      })
+  }, [])
 
   // Countdown effect when fall is detected
   useEffect(() => {
@@ -57,11 +120,11 @@ export function FallAlertCard() {
     }
   }, [fallStatus, responseCountdown])
 
-  // Simulate fall detection for demo
-  const simulateFallDetection = () => {
+  // HARDWARE_READINESS: simulate button now posts through open-ingest so demo follows real pipeline.
+  const simulateFallDetection = async () => {
     const newFall: FallEvent = {
       id: Date.now(),
-      patientName: "Margaret Johnson",
+      patientName,
       location: "Living Room",
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       status: "fall_detected",
@@ -70,6 +133,35 @@ export function FallAlertCard() {
     setFallStatus("fall_detected")
     setResponseCountdown(30)
     setShowFallModal(true)
+
+    try {
+      const patientId = linkedPatientId || 1
+      const facilityId = linkedFacilityId || 1
+      const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000"
+      const headers: Record<string, string> = { "Content-Type": "application/json" }
+      const ingestKey = process.env.NEXT_PUBLIC_OPEN_INGEST_KEY || ""
+      if (ingestKey) {
+        headers["x-open-ingest-key"] = ingestKey
+      }
+      await fetch(`${apiUrl}/api/intelligence/open-ingest?source=caregiver_simulator&run_ai=false`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          event_type: "fall_suspected",
+          patient_id: patientId,
+          facility_id: facilityId,
+          confidence: 0.86,
+          source_sensor_id: 7001,
+          attributes: {
+            no_motion_after_fall_duration_seconds: 32,
+            impact_g: 2.7,
+            velocity_change_m_s: 1.9,
+          },
+        }),
+      })
+    } catch {
+      // keep local UI flow even when ingest endpoint is unavailable
+    }
   }
 
   // Handle caregiver response
@@ -302,7 +394,7 @@ export function FallAlertCard() {
                 className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-5"
               >
                 <ThumbsUp className="mr-2 h-5 w-5" />
-                I'm Responding
+                I&apos;m Responding
               </Button>
 
               <Button

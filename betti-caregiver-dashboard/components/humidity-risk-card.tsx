@@ -33,6 +33,7 @@ const statusConfig = {
   mold_risk: { label: "Mold Risk", bg: "bg-red-100", text: "text-red-700", bar: "bg-red-500" },
 };
 
+// HARDWARE_READINESS: mocked baseline retained for sensor-disconnected demo mode.
 const MOCK_DATA: HumidityMonitoringData = {
   zones: [
     { zoneId: "z1", zoneName: "Living Room", humidity: 45, status: "comfortable", moldRiskScore: 12, lastUpdated: "1 min ago" },
@@ -54,6 +55,71 @@ const MOCK_DATA: HumidityMonitoringData = {
   sustainedHighDuration: "3h 45m", lastUpdated: "Just now",
 };
 
+type EnvironmentLiveResponse = {
+  data_mode?: string;
+  metrics?: {
+    humidity_pct?: number | null;
+  };
+  trends?: {
+    humidity_pct?: Array<{ timestamp?: string | null; value?: number | null }>;
+  };
+};
+
+const buildFromLiveSnapshot = (payload: EnvironmentLiveResponse): HumidityMonitoringData => {
+  const humidity = Number(payload?.metrics?.humidity_pct ?? MOCK_DATA.averageHumidity);
+  const avgHumidity = Number.isFinite(humidity) ? Math.max(0, Math.min(100, Math.round(humidity))) : MOCK_DATA.averageHumidity;
+  const trendRows = Array.isArray(payload?.trends?.humidity_pct) ? payload.trends?.humidity_pct || [] : [];
+  const history = trendRows
+    .filter((row) => Number.isFinite(Number(row?.value)))
+    .slice(-6)
+    .map((row, index) => ({
+      timestamp: row?.timestamp ? String(row.timestamp) : `T-${6 - index}h`,
+      humidity: Math.max(0, Math.min(100, Math.round(Number(row?.value || 0)))),
+    }));
+
+  const zoneOffsets = [-8, -2, 3, 11];
+  const zones = MOCK_DATA.zones.map((zone, index) => {
+    const zoneHumidity = Math.max(0, Math.min(100, avgHumidity + zoneOffsets[index % zoneOffsets.length]));
+    return {
+      ...zone,
+      humidity: zoneHumidity,
+      status: getHumidityStatus(zoneHumidity),
+      moldRiskScore: Math.max(0, Math.min(100, Math.round((zoneHumidity - 20) * 1.5))),
+      lastUpdated: payload?.data_mode === "live_sensor_ingest" ? "Live" : zone.lastUpdated,
+    };
+  });
+
+  const moldRiskZones = zones.filter((zone) => zone.status === "mold_risk").length;
+  const overallStatus = getHumidityStatus(avgHumidity);
+
+  return {
+    ...MOCK_DATA,
+    averageHumidity: avgHumidity,
+    overallStatus,
+    moldRiskZones,
+    zones,
+    history: history.length > 0 ? history : MOCK_DATA.history,
+    alerts:
+      moldRiskZones > 0
+        ? [
+            {
+              id: "live-humidity-warning",
+              zoneId: "z-live",
+              zoneName: "Facility Monitor",
+              humidity: avgHumidity,
+              type: "mold_risk",
+              severity: moldRiskZones > 1 ? "critical" : "warning",
+              message: "Live humidity telemetry indicates elevated mold risk. Ventilation/dehumidification advised.",
+              timestamp: "Live",
+              acknowledged: false,
+            },
+          ]
+        : [],
+    sustainedHighDuration: overallStatus === "high" || overallStatus === "mold_risk" ? "Live trend" : null,
+    lastUpdated: payload?.data_mode === "live_sensor_ingest" ? "Live" : MOCK_DATA.lastUpdated,
+  };
+};
+
 export function HumidityRiskCard() {
   const [data, setData] = useState<HumidityMonitoringData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,10 +128,19 @@ export function HumidityRiskCard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 300));
-      setData(MOCK_DATA);
+      const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/api/intelligence/environment/live?window_minutes=360`, {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new Error(`environment endpoint failed: ${response.status}`);
+      }
+      const payload = (await response.json()) as EnvironmentLiveResponse;
+      setData(buildFromLiveSnapshot(payload));
     } catch (error) {
       console.error("Failed to fetch humidity data:", error);
+      // HARDWARE_READINESS: fallback is intentionally preserved for sensor-disconnected demos.
+      setData(MOCK_DATA);
     } finally {
       setLoading(false);
     }

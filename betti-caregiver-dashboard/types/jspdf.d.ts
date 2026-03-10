@@ -1,6 +1,6 @@
 declare module "jspdf" {
   export default class jsPDF {
-    constructor(options?: any)
+    constructor(options?: Record<string, unknown>)
     internal: {
       pageSize: {
         getWidth(): number
