@@ -314,7 +314,27 @@ Dark Gray:       #59595B  (body text)
 White:           #FFFFFF  (card backgrounds)
 
 
-8. CURRENT STATUS
+8. TYPOGRAPHY / FONTS
+================================================================================
+
+Primary Font:    Inter (Google Fonts via next/font/google)
+                 Used across all dashboards as the main UI typeface.
+                 Loaded with latin subset; applied via Tailwind's font-sans class.
+
+Accent Font:     Georama (Google Fonts, aliased as "Georgia")
+                 Used in the Senior Dashboard for heading accents.
+                 CSS variable: --font-georgia
+
+Monospace Font:  Geist Mono (next/font/local, via geist package)
+                 Used for code/monospace contexts in Senior, Caregiver, and EMS.
+                 CSS variable: --font-geist-mono
+
+Central Hub:     Arial, "Segoe UI", sans-serif (system stack, set in globals.css)
+
+All body text uses antialiased rendering (font-smooth: antialiased).
+
+
+9. CURRENT STATUS
 ================================================================================
 
 The application is a HIGH-FIDELITY FRONTEND PROTOTYPE. All six dashboards
