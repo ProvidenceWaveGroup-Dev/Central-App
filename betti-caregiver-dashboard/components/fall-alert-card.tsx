@@ -43,6 +43,8 @@ export function FallAlertCard() {
     if (typeof window === "undefined") {
       return
     }
+    // TODO: re-enable when backend is available
+    /*
     const userId = localStorage.getItem("betti_user_id")
     const token = localStorage.getItem("betti_token")
     const headers: Record<string, string> = {}
@@ -97,6 +99,7 @@ export function FallAlertCard() {
           setLinkedFacilityId(null)
         }
       })
+    */
   }, [])
 
   // Countdown effect when fall is detected
@@ -134,6 +137,8 @@ export function FallAlertCard() {
     setResponseCountdown(30)
     setShowFallModal(true)
 
+    // TODO: re-enable when backend is available
+    /*
     try {
       const patientId = linkedPatientId || 1
       const facilityId = linkedFacilityId || 1
@@ -162,6 +167,7 @@ export function FallAlertCard() {
     } catch {
       // keep local UI flow even when ingest endpoint is unavailable
     }
+    */
   }
 
   // Handle caregiver response

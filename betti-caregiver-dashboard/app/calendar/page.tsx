@@ -111,11 +111,12 @@ const formatDateTime = (value: string | null): string => {
 };
 
 export default function CalendarPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [appointments, setAppointments] = useState<AppointmentRow[]>([]);
   const [currentPatient, setCurrentPatient] = useState<AssignedPatient | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
@@ -128,6 +129,8 @@ export default function CalendarPage() {
   const [endTime, setEndTime] = useState("");
   const [notes, setNotes] = useState("");
 
+  // TODO: re-enable when backend is available
+  /*
   const authHeaders = (): Record<string, string> => {
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -139,8 +142,11 @@ export default function CalendarPage() {
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
+  */
 
   const loadData = async () => {
+    // TODO: re-enable when backend is available
+    /*
     setIsLoading(true);
     setError("");
     setAssignmentWarning("");
@@ -220,11 +226,12 @@ export default function CalendarPage() {
     } finally {
       setIsLoading(false);
     }
+    */
   };
 
   useEffect(() => {
     void loadData();
-  }, [apiUrl]);
+  }, []);
 
   const selectedDateAppointments = useMemo(() => {
     return appointments.filter((appointment) => {
@@ -267,6 +274,8 @@ export default function CalendarPage() {
     }
     setIsSaving(true);
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/appointments`, {
         method: "POST",
@@ -298,11 +307,15 @@ export default function CalendarPage() {
     } finally {
       setIsSaving(false);
     }
+    */
+    setIsSaving(false);
   };
 
   const markCompleted = async (appointmentId: number) => {
     setIsSaving(true);
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/appointments/${appointmentId}`, {
         method: "PUT",
@@ -320,6 +333,8 @@ export default function CalendarPage() {
     } finally {
       setIsSaving(false);
     }
+    */
+    setIsSaving(false);
   };
 
   return (

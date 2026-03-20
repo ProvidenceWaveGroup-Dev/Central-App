@@ -452,15 +452,18 @@ const ITEMS_PER_PAGE = 9;
 type FilterType = "all" | "active" | "on-duty" | "with-patients";
 
 export function CaregiversSection() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
-  const [caregivers, setCaregivers] = useState<Caregiver[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  const [caregivers, setCaregivers] = useState<Caregiver[]>(fallbackCaregivers);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
 
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     let isMounted = true;
     const loadCaregivers = async () => {
       try {
@@ -507,7 +510,8 @@ export function CaregiversSection() {
     return () => {
       isMounted = false;
     };
-  }, [apiUrl]);
+    */
+  }, []);
 
   const filteredCaregivers = caregivers.filter((caregiver) => {
     const fullName = `${caregiver.first_name} ${caregiver.last_name}`.toLowerCase();

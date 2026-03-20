@@ -26,7 +26,8 @@ export default function Home() {
     fire: process.env.NEXT_PUBLIC_BETTI_FIRE_URL || buildHostUrl("localhost", 3005),
     admin: process.env.NEXT_PUBLIC_BETTI_ADMIN_URL || buildHostUrl("localhost", 3006),
   };
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || buildHostUrl("localhost", 8000);
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || buildHostUrl("localhost", 8000);
 
   const apps = [
     {
@@ -78,6 +79,8 @@ export default function Home() {
       return;
     }
 
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: "POST",
@@ -164,6 +167,8 @@ export default function Home() {
       console.error("Login error:", error);
       setLoginError("Network error. Please check if the backend is running.");
     }
+    */
+    setLoginError("Login is currently unavailable. Backend not yet connected.");
   };
 
   const authTitle = useMemo(

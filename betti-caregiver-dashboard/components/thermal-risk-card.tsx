@@ -135,6 +135,8 @@ export function ThermalRiskCard() {
   const [acknowledgedAlerts, setAcknowledgedAlerts] = useState<string[]>([]);
 
   const fetchData = useCallback(async () => {
+    // TODO: re-enable when backend is available
+    /*
     setLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
@@ -153,12 +155,16 @@ export function ThermalRiskCard() {
     } finally {
       setLoading(false);
     }
+    */
+    setData(MOCK_DATA);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+    // TODO: re-enable when backend is available
+    // const interval = setInterval(fetchData, 30000);
+    // return () => clearInterval(interval);
   }, [fetchData]);
 
   const handleAcknowledgeAlert = (alertId: string) => setAcknowledgedAlerts((prev) => [...prev, alertId]);

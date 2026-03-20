@@ -115,6 +115,8 @@ export function CaregiverSidebar({
   const [dynamicBadges, setDynamicBadges] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     let mounted = true;
     const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
     const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
@@ -186,6 +188,7 @@ export function CaregiverSidebar({
       mounted = false;
       window.clearInterval(intervalId);
     };
+    */
   }, []);
 
   const collapsed = isMobile

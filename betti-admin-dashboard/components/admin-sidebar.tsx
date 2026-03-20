@@ -175,6 +175,8 @@ export function AdminSidebar({
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     let mounted = true;
     const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
@@ -227,6 +229,7 @@ export function AdminSidebar({
     return () => {
       mounted = false;
     };
+    */
   }, []);
 
   // Use controlled state if provided, otherwise use internal state

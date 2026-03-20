@@ -165,14 +165,15 @@ const formatDateTime = (value: string | null): string => {
 };
 
 export function PatientsSection() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [patients, setPatients] = useState<PatientRow[]>([]);
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [caregivers, setCaregivers] = useState<ApiCaregiver[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
@@ -182,6 +183,8 @@ export function PatientsSection() {
   const [form, setForm] = useState(emptyForm);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // TODO: re-enable when backend is available
+  /*
   const getAuthHeaders = (withJsonContentType = true): Record<string, string> => {
     const headers: Record<string, string> = {};
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
@@ -193,6 +196,7 @@ export function PatientsSection() {
     }
     return headers;
   };
+  */
 
   const toArray = <T,>(payload: unknown): T[] => {
     if (Array.isArray(payload)) {
@@ -213,6 +217,8 @@ export function PatientsSection() {
     return [];
   };
 
+  // TODO: re-enable when backend is available
+  /*
   const fetchWithTimeout = async (
     url: string,
     init: RequestInit,
@@ -226,6 +232,7 @@ export function PatientsSection() {
       window.clearTimeout(timeoutId);
     }
   };
+  */
 
   const facilityMap = useMemo(
     () => new Map(facilities.map((facility) => [facility.facility_id, facility.name])),
@@ -289,6 +296,8 @@ export function PatientsSection() {
   };
 
   const loadPatients = useCallback(async () => {
+    // TODO: re-enable when backend is available
+    /*
     const cached = readCachedData();
     let hasCachedData = false;
     if (cached) {
@@ -478,7 +487,8 @@ export function PatientsSection() {
       setIsRefreshing(false);
       setIsLoading(false);
     }
-  }, [apiUrl]);
+    */
+  }, []);
 
   useEffect(() => {
     loadPatients();
@@ -547,6 +557,8 @@ export function PatientsSection() {
     }
   };
 
+  // TODO: re-enable when backend is available
+  /*
   const upsertPrimaryCaregiver = async (
     patientId: number,
     caregiverUserId: string,
@@ -571,6 +583,7 @@ export function PatientsSection() {
       return { ok: false, detail: "Unable to update caregiver assignment." };
     }
   };
+  */
 
   const handleCreatePatient = async () => {
     if (!form.first_name.trim() || !form.last_name.trim()) {
@@ -587,6 +600,8 @@ export function PatientsSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/patients`, {
         method: "POST",
@@ -620,6 +635,8 @@ export function PatientsSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   const handleUpdatePatient = async () => {
@@ -633,6 +650,8 @@ export function PatientsSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/patients/${editingPatient.patient_id}`, {
         method: "PUT",
@@ -668,6 +687,8 @@ export function PatientsSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   const handleDeletePatient = async (patient: PatientRow) => {
@@ -680,6 +701,8 @@ export function PatientsSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/patients/${patient.patient_id}`, {
         method: "DELETE",
@@ -696,6 +719,8 @@ export function PatientsSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   return (

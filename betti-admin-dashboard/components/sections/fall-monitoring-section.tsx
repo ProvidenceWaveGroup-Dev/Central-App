@@ -112,18 +112,21 @@ const formatTimeAgo = (value: string): string => {
 };
 
 export function FallMonitoringSection() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
-  const [incidents, setIncidents] = useState<FallIncident[]>([]);
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  const [incidents, setIncidents] = useState<FallIncident[]>(fallbackFallIncidents);
   const [monitoredPatients, setMonitoredPatients] = useState(0);
   const [activeSensors, setActiveSensors] = useState(0);
   const [offlineSensors, setOfflineSensors] = useState(0);
   const [coverageRate, setCoverageRate] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
 
+  // TODO: re-enable when backend is available
+  /*
   const authHeaders = (): Record<string, string> => {
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
     const headers: Record<string, string> = {};
@@ -132,6 +135,7 @@ export function FallMonitoringSection() {
     }
     return headers;
   };
+  */
 
   const toArray = <T,>(payload: unknown): T[] => {
     if (Array.isArray(payload)) {
@@ -153,6 +157,8 @@ export function FallMonitoringSection() {
   };
 
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     let isMounted = true;
     const loadFallIncidents = async () => {
       try {
@@ -228,7 +234,8 @@ export function FallMonitoringSection() {
     return () => {
       isMounted = false;
     };
-  }, [apiUrl]);
+    */
+  }, []);
 
   // Filter incidents based on search and filter
   const filteredIncidents = incidents.filter(incident => {

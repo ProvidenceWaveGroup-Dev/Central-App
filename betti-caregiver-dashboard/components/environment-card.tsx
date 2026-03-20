@@ -76,6 +76,8 @@ export function EnvironmentCard() {
   const [dataMode, setDataMode] = useState<"live_sensor_ingest" | "mock_fallback">("mock_fallback")
 
   const fetchEnvironment = useCallback(async () => {
+    // TODO: re-enable when backend is available
+    /*
     const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000"
     try {
       const params = new URLSearchParams()
@@ -147,12 +149,16 @@ export function EnvironmentCard() {
       setEnvironmentData(FALLBACK_ENVIRONMENT_DATA)
       setDataMode("mock_fallback")
     }
+    */
+    setEnvironmentData(FALLBACK_ENVIRONMENT_DATA)
+    setDataMode("mock_fallback")
   }, [])
 
   useEffect(() => {
     fetchEnvironment()
-    const timer = window.setInterval(fetchEnvironment, 30000)
-    return () => window.clearInterval(timer)
+    // TODO: re-enable when backend is available
+    // const timer = window.setInterval(fetchEnvironment, 30000)
+    // return () => window.clearInterval(timer)
   }, [fetchEnvironment])
 
   return (

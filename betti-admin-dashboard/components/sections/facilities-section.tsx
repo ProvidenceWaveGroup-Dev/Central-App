@@ -81,11 +81,12 @@ const emptyForm = {
 };
 
 export function FacilitiesSection() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [facilities, setFacilities] = useState<FacilityRow[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
@@ -94,6 +95,8 @@ export function FacilitiesSection() {
   const [editingFacility, setEditingFacility] = useState<FacilityRow | null>(null);
   const [form, setForm] = useState(emptyForm);
 
+  // TODO: re-enable when backend is available
+  /*
   const getAuthHeaders = (withJsonContentType = true): Record<string, string> => {
     const headers: Record<string, string> = {};
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
@@ -105,6 +108,7 @@ export function FacilitiesSection() {
     }
     return headers;
   };
+  */
 
   const toArray = <T,>(payload: unknown): T[] => {
     if (Array.isArray(payload)) {
@@ -125,7 +129,9 @@ export function FacilitiesSection() {
     return [];
   };
 
+  // TODO: re-enable when backend is available
   const loadFacilities = useCallback(async () => {
+    /*
     setLoadError("");
     try {
       const headers = getAuthHeaders(false);
@@ -172,7 +178,8 @@ export function FacilitiesSection() {
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl]);
+    */
+  }, []);
 
   useEffect(() => {
     loadFacilities();
@@ -223,6 +230,8 @@ export function FacilitiesSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/facilities`, {
         method: "POST",
@@ -248,6 +257,8 @@ export function FacilitiesSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   const openEditDialog = (facility: FacilityRow) => {
@@ -273,6 +284,8 @@ export function FacilitiesSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/facilities/${editingFacility.facility_id}`, {
         method: "PUT",
@@ -298,6 +311,8 @@ export function FacilitiesSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   const handleDeleteFacility = async (facility: FacilityRow) => {
@@ -310,6 +325,8 @@ export function FacilitiesSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/facilities/${facility.facility_id}`, {
         method: "DELETE",
@@ -326,6 +343,8 @@ export function FacilitiesSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   return (

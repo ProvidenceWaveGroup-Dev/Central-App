@@ -143,7 +143,8 @@ declare global {
 }
 
 export function AiAssistantFab() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -501,6 +502,8 @@ export function AiAssistantFab() {
   const fallPrecautionMessage =
     "Immediate precautions: Do not stand up quickly. Take slow breaths. Check for bleeding or severe pain. If movement increases pain, stay still and wait for help. Call your caregiver or EMS now if needed.";
 
+  // TODO: re-enable when backend is available
+  /*
   const buildAuthHeaders = (): { token: string; headers: Record<string, string> } | null => {
     if (typeof window === "undefined") {
       return null;
@@ -558,6 +561,7 @@ export function AiAssistantFab() {
     }
     return { ok: true, data };
   };
+  */
 
   const formatFallAssistMessage = (result: CaregiverAssistResponse, fallbackPatientName: string): string => {
     const patientName = normalizeLine(String(result?.patient_name || fallbackPatientName || "you"));
@@ -608,6 +612,8 @@ export function AiAssistantFab() {
     return "low";
   };
 
+  // TODO: re-enable when backend is available
+  /*
   const buildCaregiverContext = async (): Promise<CaregiverContext | null> => {
     try {
       if (typeof window === "undefined") {
@@ -837,6 +843,7 @@ export function AiAssistantFab() {
       return null;
     }
   };
+  */
 
   const formatGroundReport = (context: CaregiverContext): string => {
     const vitals = context.clinicalContext.current_vitals;
@@ -1036,6 +1043,8 @@ export function AiAssistantFab() {
     const timeoutId = window.setTimeout(() => abortController.abort(), 60000);
 
     try {
+      // TODO: re-enable when backend is available
+      /*
       const pageContext = collectPageContext("caregiver-dashboard");
       const caregiverContext = await buildCaregiverContext();
       const fallEmergency = isFallEmergencyMessage(trimmed);
@@ -1162,6 +1171,8 @@ export function AiAssistantFab() {
         appendMessage("assistant", assistantMessage);
         delivered = true;
       }
+      */
+      appendMessage("assistant", "AI assistant is offline. Backend not yet connected.");
     } catch (requestError) {
       const isAbort =
         requestError instanceof DOMException && requestError.name === "AbortError";

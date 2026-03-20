@@ -84,7 +84,8 @@ const formatTimeAgo = (dateStr: string): string => {
 };
 
 export function AIRulesSection() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [inferences, setInferences] = useState<AIInference[]>([]);
   const [rules, setRules] = useState<RuleDefinition[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,7 +93,7 @@ export function AIRulesSection() {
   const [ruleFilter, setRuleFilter] = useState<RuleFilterType>("all");
   const [inferencePage, setInferencePage] = useState(1);
   const [rulePage, setRulePage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
@@ -105,6 +106,8 @@ export function AIRulesSection() {
   const [newRuleActionType, setNewRuleActionType] = useState("update_event_feed");
   const [newRuleActionSummary, setNewRuleActionSummary] = useState("Auto-generated from admin dashboard");
 
+  // TODO: re-enable when backend is available
+  /*
   const authHeaders = (): Record<string, string> => {
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -113,6 +116,7 @@ export function AIRulesSection() {
     }
     return headers;
   };
+  */
 
   const toArray = <T,>(payload: unknown): T[] => {
     if (Array.isArray(payload)) {
@@ -133,7 +137,9 @@ export function AIRulesSection() {
     return [];
   };
 
+  // TODO: re-enable when backend is available
   const loadData = async () => {
+    /*
     setError("");
     try {
       const headers = authHeaders();
@@ -169,11 +175,12 @@ export function AIRulesSection() {
     } finally {
       setIsLoading(false);
     }
+    */
   };
 
   useEffect(() => {
     void loadData();
-  }, [apiUrl]);
+  }, []);
 
   const filteredInferences = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -229,6 +236,8 @@ export function AIRulesSection() {
   const toggleRule = async (rule: RuleDefinition) => {
     setIsSaving(true);
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/rules/${rule.rule_id}/enabled`, {
         method: "PATCH",
@@ -249,6 +258,8 @@ export function AIRulesSection() {
     } finally {
       setIsSaving(false);
     }
+    */
+    setIsSaving(false);
   };
 
   const submitCreateRule = async () => {
@@ -258,6 +269,8 @@ export function AIRulesSection() {
     }
     setIsSaving(true);
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/rules`, {
         method: "POST",
@@ -301,6 +314,8 @@ export function AIRulesSection() {
     } finally {
       setIsSaving(false);
     }
+    */
+    setIsSaving(false);
   };
 
   return (

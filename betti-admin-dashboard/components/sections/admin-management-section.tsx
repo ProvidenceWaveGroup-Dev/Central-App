@@ -126,13 +126,14 @@ const emptyEditForm = {
 };
 
 export function AdminManagementSection() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [facilityOptions, setFacilityOptions] = useState<FacilityOption[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<StatusFilterType>("all");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
@@ -142,6 +143,8 @@ export function AdminManagementSection() {
   const [newAdmin, setNewAdmin] = useState(emptyCreateForm);
   const [editForm, setEditForm] = useState(emptyEditForm);
 
+  // TODO: re-enable when backend is available
+  /*
   const getAuthHeaders = (withJsonContentType = true): Record<string, string> => {
     const headers: Record<string, string> = {};
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
@@ -153,6 +156,7 @@ export function AdminManagementSection() {
     }
     return headers;
   };
+  */
 
   const parseApiError = async (response: Response) => {
     try {
@@ -182,6 +186,8 @@ export function AdminManagementSection() {
     return [];
   };
 
+  // TODO: re-enable when backend is available
+  /*
   const fetchWithTimeout = async (
     url: string,
     init: RequestInit,
@@ -195,8 +201,11 @@ export function AdminManagementSection() {
       window.clearTimeout(timeoutId);
     }
   };
+  */
 
+  // TODO: re-enable when backend is available
   const loadData = useCallback(async () => {
+    /*
     setIsLoading(true);
     setLoadError("");
     try {
@@ -267,7 +276,8 @@ export function AdminManagementSection() {
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl]);
+    */
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -366,6 +376,8 @@ export function AdminManagementSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/users`, {
         method: "POST",
@@ -396,6 +408,8 @@ export function AdminManagementSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   const openEditDialog = (admin: Admin) => {
@@ -427,6 +441,8 @@ export function AdminManagementSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/users/${editingAdmin.user_id}`, {
         method: "PUT",
@@ -456,6 +472,8 @@ export function AdminManagementSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   const handleStatusToggle = async (admin: Admin) => {
@@ -463,6 +481,8 @@ export function AdminManagementSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/users/${admin.user_id}/status`, {
         method: "PATCH",
@@ -484,6 +504,8 @@ export function AdminManagementSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   const handleDeleteAdmin = async (admin: Admin) => {
@@ -496,6 +518,8 @@ export function AdminManagementSection() {
     setIsMutating(true);
     setLoadError("");
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/users/${admin.user_id}`, {
         method: "DELETE",
@@ -512,6 +536,8 @@ export function AdminManagementSection() {
     } finally {
       setIsMutating(false);
     }
+    */
+    setIsMutating(false);
   };
 
   return (

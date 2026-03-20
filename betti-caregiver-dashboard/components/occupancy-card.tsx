@@ -59,13 +59,16 @@ const parseRoomFromAlert = (description: string | null | undefined): string | nu
 };
 
 export function OccupancyCard() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [facilityName, setFacilityName] = useState("Assigned Home");
   const [patientName, setPatientName] = useState("Assigned patient");
   const [movementTrail, setMovementTrail] = useState<MovementPoint[]>(FALLBACK_TRAIL);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     let mounted = true;
     const run = async () => {
       try {
@@ -133,7 +136,8 @@ export function OccupancyCard() {
     return () => {
       mounted = false;
     };
-  }, [apiUrl]);
+    */
+  }, []);
 
   const current = useMemo(
     () => movementTrail[0] || FALLBACK_TRAIL[0],

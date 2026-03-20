@@ -61,7 +61,8 @@ declare global {
 }
 
 export function AiAssistantFab() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -298,6 +299,8 @@ export function AiAssistantFab() {
     }
   };
 
+  // TODO: re-enable when backend is available
+  /*
   const buildAuthHeaders = (): { token: string; headers: Record<string, string> } | null => {
     if (typeof window === "undefined") {
       return null;
@@ -318,6 +321,7 @@ export function AiAssistantFab() {
     }
     return { token, headers: { Authorization: `Bearer ${token}` } };
   };
+  */
 
   const getSessionRole = (): string => {
     if (typeof window === "undefined") {
@@ -403,6 +407,8 @@ export function AiAssistantFab() {
   const fallPrecautionMessage =
     "Immediate precautions: Do not stand up quickly. Take slow breaths. Check for bleeding or severe pain. If movement increases pain, stay still and wait for help. Call your caregiver or EMS now if needed.";
 
+  // TODO: re-enable when backend is available
+  /*
   const requestCaregiverAssist = async (note: string): Promise<CaregiverAssistResult> => {
     const auth = buildAuthHeaders();
     if (!auth) {
@@ -442,6 +448,7 @@ export function AiAssistantFab() {
     }
     return { ok: true, data };
   };
+  */
 
   const formatCaregiverAssistMessage = (result: CaregiverAssistResponse): string => {
     const patientName = normalizeLine(String(result?.patient_name || "you"));
@@ -574,6 +581,8 @@ export function AiAssistantFab() {
     const timeoutId = window.setTimeout(() => abortController.abort(), 60000);
 
     try {
+      // TODO: re-enable when backend is available
+      /*
       const fallEmergency = isFallEmergencyMessage(trimmed);
       if (fallEmergency || isCaretakerPresenceQuestion(trimmed)) {
         const assistNote = fallEmergency ? `Possible fall reported via AI chat: ${trimmed}` : trimmed;
@@ -650,6 +659,8 @@ export function AiAssistantFab() {
         appendMessage("assistant", assistantMessage);
         delivered = true;
       }
+      */
+      appendMessage("assistant", "AI assistant is offline. Backend not yet connected.");
     } catch (requestError) {
       const isAbort = requestError instanceof DOMException && requestError.name === "AbortError";
       const message = isAbort

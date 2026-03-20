@@ -57,7 +57,8 @@ const esc = (value: string) => `"${value.replace(/"/g, "\"\"")}"`;
 const clip = (value: string, max: number) => (value.length > max ? `${value.slice(0, Math.max(0, max - 3))}...` : value);
 
 export default function ReportsPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [categoryFilter, setCategoryFilter] = useState<CategoryId>("all");
   const [selectedCardCategory, setSelectedCardCategory] = useState<CategoryId>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>(DEFAULT_FROM);
@@ -65,7 +66,7 @@ export default function ReportsPage() {
   const [showCalendar, setShowCalendar] = useState<"from" | "to" | null>(null);
   const [detailsPage, setDetailsPage] = useState(0);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [residentName, setResidentName] = useState("Resident");
@@ -78,6 +79,8 @@ export default function ReportsPage() {
   const [medications, setMedications] = useState<Record<string, unknown>[]>([]);
 
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     let cancelled = false;
     const run = async () => {
       setIsLoading(true);
@@ -135,7 +138,8 @@ export default function ReportsPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiUrl]);
+    */
+  }, []);
 
   const inRange = useCallback((ts?: string | null) => {
     if (!dateFrom && !dateTo) return true;

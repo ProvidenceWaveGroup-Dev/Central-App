@@ -10,6 +10,8 @@ const warmupDelayMs = 300;
 
 export default function DashboardWarmup({ urls }: DashboardWarmupProps) {
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     const timeout = setTimeout(() => {
       urls.forEach((url) => {
         if (!url) {
@@ -21,6 +23,7 @@ export default function DashboardWarmup({ urls }: DashboardWarmupProps) {
     }, warmupDelayMs);
 
     return () => clearTimeout(timeout);
+    */
   }, [urls]);
 
   return null;

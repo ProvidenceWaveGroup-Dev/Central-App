@@ -48,6 +48,8 @@ export function CommunicationTools() {
     if (typeof window === "undefined") {
       return
     }
+    // TODO: re-enable when backend is available
+    /*
     const userId = localStorage.getItem("betti_user_id")
     const token = localStorage.getItem("betti_token")
     const headers: Record<string, string> = {}
@@ -94,6 +96,7 @@ export function CommunicationTools() {
           setPatientName("Linked Senior")
         }
       })
+    */
   }, [])
 
   const handleVideoCall = () => {

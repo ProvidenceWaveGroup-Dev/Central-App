@@ -118,15 +118,18 @@ const formatTimeAgo = (dateStr: string): string => {
 const ITEMS_PER_PAGE = 4;
 
 export function AlertsSection() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [alertsData, setAlertsData] = useState<Alert[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // TODO: re-enable when backend is available
+  /*
   const authHeaders = (): Record<string, string> => {
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -135,6 +138,7 @@ export function AlertsSection() {
     }
     return headers;
   };
+  */
 
   const toArray = <T,>(payload: unknown): T[] => {
     if (Array.isArray(payload)) {
@@ -156,6 +160,8 @@ export function AlertsSection() {
   };
 
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     let isMounted = true;
 
     const loadAlerts = async () => {
@@ -234,10 +240,13 @@ export function AlertsSection() {
     return () => {
       isMounted = false;
     };
-  }, [apiUrl]);
+    */
+  }, []);
 
   const handleResolveAlert = async (alertId: number) => {
     setIsSaving(true);
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/alerts/${alertId}`, {
         method: "PUT",
@@ -268,6 +277,8 @@ export function AlertsSection() {
     } finally {
       setIsSaving(false);
     }
+    */
+    setIsSaving(false);
   };
 
   const handleViewAlert = (alert: Alert) => {

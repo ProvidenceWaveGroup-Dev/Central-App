@@ -114,17 +114,20 @@ interface OverviewSectionProps {
 }
 
 export function OverviewSection({ onNavigate }: OverviewSectionProps) {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [patients, setPatients] = useState<PatientRow[]>([]);
   const [caregivers, setCaregivers] = useState<CaregiverRow[]>([]);
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [facilities, setFacilities] = useState<FacilityRow[]>([]);
   const [vitals, setVitals] = useState<VitalRow[]>([]);
   const [profiles, setProfiles] = useState<PatientProfileRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState("");
 
+  // TODO: re-enable when backend is available
+  /*
   const getAuthHeaders = (): Record<string, string> => {
     const headers: Record<string, string> = {};
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
@@ -133,6 +136,7 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
     }
     return headers;
   };
+  */
 
   const toArray = <T,>(payload: unknown): T[] => {
     if (Array.isArray(payload)) {
@@ -153,6 +157,8 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
     return [];
   };
 
+  // TODO: re-enable when backend is available
+  /*
   const fetchWithTimeout = async (
     url: string,
     init: RequestInit,
@@ -166,6 +172,7 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
       window.clearTimeout(timeoutId);
     }
   };
+  */
 
   const readCachedOverview = (): {
     patients: PatientRow[];
@@ -234,6 +241,8 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
   };
 
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     let mounted = true;
     const load = async () => {
       const cached = readCachedOverview();
@@ -403,7 +412,8 @@ export function OverviewSection({ onNavigate }: OverviewSectionProps) {
     return () => {
       mounted = false;
     };
-  }, [apiUrl]);
+    */
+  }, []);
 
   const patientNameById = useMemo(() => {
     const map = new Map<number, string>();

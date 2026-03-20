@@ -149,12 +149,13 @@ const statusStyles: Record<string, string> = {
 };
 
 export function AppointmentsSection() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [patients, setPatients] = useState<ApiPatient[]>([]);
   const [appointments, setAppointments] = useState<ApiAppointment[]>([]);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | AppointmentStatus>("all");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -165,6 +166,8 @@ export function AppointmentsSection() {
   const [editing, setEditing] = useState<ApiAppointment | null>(null);
   const [form, setForm] = useState<AppointmentForm>(defaultForm);
 
+  // TODO: re-enable when backend is available
+  /*
   const authHeaders = (jsonContentType = true): Record<string, string> => {
     const headers: Record<string, string> = {};
     const token = typeof window !== "undefined" ? localStorage.getItem("betti_token") : null;
@@ -176,6 +179,7 @@ export function AppointmentsSection() {
     }
     return headers;
   };
+  */
 
   const toArray = <T,>(payload: unknown): T[] => {
     if (Array.isArray(payload)) {
@@ -196,7 +200,9 @@ export function AppointmentsSection() {
     return [];
   };
 
+  // TODO: re-enable when backend is available
   const loadData = useCallback(async () => {
+    /*
     const readCache = (): { appointments: ApiAppointment[]; patients: ApiPatient[] } | null => {
       if (typeof window === "undefined") {
         return null;
@@ -307,7 +313,8 @@ export function AppointmentsSection() {
       setIsRefreshing(false);
       setIsLoading(false);
     }
-  }, [apiUrl]);
+    */
+  }, []);
 
   useEffect(() => {
     void loadData();
@@ -364,6 +371,8 @@ export function AppointmentsSection() {
 
     setIsSaving(true);
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/appointments`, {
         method: "POST",
@@ -383,6 +392,8 @@ export function AppointmentsSection() {
     } finally {
       setIsSaving(false);
     }
+    */
+    setIsSaving(false);
   };
 
   const submitUpdate = async () => {
@@ -413,6 +424,8 @@ export function AppointmentsSection() {
     }
     setIsSaving(true);
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/appointments/${editing.appointment_id}`, {
         method: "PUT",
@@ -432,6 +445,8 @@ export function AppointmentsSection() {
     } finally {
       setIsSaving(false);
     }
+    */
+    setIsSaving(false);
   };
 
   const deleteAppointment = async (appointmentId: number) => {
@@ -440,6 +455,8 @@ export function AppointmentsSection() {
     }
     setIsSaving(true);
     setActionMessage("");
+    // TODO: re-enable when backend is available
+    /*
     try {
       const response = await fetch(`${apiUrl}/api/appointments/${appointmentId}`, {
         method: "DELETE",
@@ -456,6 +473,8 @@ export function AppointmentsSection() {
     } finally {
       setIsSaving(false);
     }
+    */
+    setIsSaving(false);
   };
 
   const filtered = useMemo(() => {

@@ -44,6 +44,8 @@ export function UserProfileBanner() {
       return;
     }
 
+    // TODO: re-enable when backend is available
+    /*
     const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
     const token = localStorage.getItem("betti_token");
     const headers: Record<string, string> = {};
@@ -71,6 +73,15 @@ export function UserProfileBanner() {
           setError("Profile unavailable");
         }
       });
+    */
+    if (storedEmail || storedFirstName || storedLastName) {
+      setProfile({
+        first_name: storedFirstName || undefined,
+        last_name: storedLastName || undefined,
+        email: storedEmail || undefined,
+        role_name: storedRole || undefined,
+      });
+    }
   }, []);
 
   if (!profile && !userId && !error) {

@@ -13,8 +13,8 @@ import { Eye, EyeOff, Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
-  const [email, setEmail] = useState("");
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -26,47 +26,52 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
 
-    // Validate inputs
-    if (!email || !password) {
-      setError("Please enter both email and password");
-      setIsLoading(false);
-      return;
-    }
+    // TODO: re-enable backend auth when API is available
+    // // Validate inputs
+    // if (!email || !password) {
+    //   setError("Please enter both email and password");
+    //   setIsLoading(false);
+    //   return;
+    // }
 
-    try {
-      const response = await fetch(`${apiUrl}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          identifier: email,
-          password,
-        }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        setError(payload?.detail || "Invalid email or password. Please try again.");
-        return;
-      }
-      if (payload?.role !== "admin") {
-        setError("This account does not have admin access.");
-        return;
-      }
-      if (typeof window !== "undefined") {
-        localStorage.setItem("betti_token", payload.access_token || "");
-        localStorage.setItem("betti_user_id", String(payload.user_id || ""));
-        localStorage.setItem("betti_user_role", payload.role || "");
-        localStorage.setItem("betti_user_email", payload.email || email);
-        localStorage.setItem("betti_user_first_name", payload.first_name || "");
-        localStorage.setItem("betti_user_last_name", payload.last_name || "");
-        sessionStorage.setItem("betti_admin_authenticated", "true");
-        sessionStorage.setItem("betti_admin_email", email);
-      }
-      router.push("/admin-dashboard");
-    } catch {
-      setError("Unable to reach API. Check backend connectivity and try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    // try {
+    //   const response = await fetch(`${apiUrl}/api/auth/login`, {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({
+    //       identifier: email,
+    //       password,
+    //     }),
+    //   });
+    //   const payload = await response.json().catch(() => ({}));
+    //   if (!response.ok) {
+    //     setError(payload?.detail || "Invalid email or password. Please try again.");
+    //     return;
+    //   }
+    //   if (payload?.role !== "admin") {
+    //     setError("This account does not have admin access.");
+    //     return;
+    //   }
+    //   if (typeof window !== "undefined") {
+    //     localStorage.setItem("betti_token", payload.access_token || "");
+    //     localStorage.setItem("betti_user_id", String(payload.user_id || ""));
+    //     localStorage.setItem("betti_user_role", payload.role || "");
+    //     localStorage.setItem("betti_user_email", payload.email || email);
+    //     localStorage.setItem("betti_user_first_name", payload.first_name || "");
+    //     localStorage.setItem("betti_user_last_name", payload.last_name || "");
+    //     sessionStorage.setItem("betti_admin_authenticated", "true");
+    //     sessionStorage.setItem("betti_admin_email", email);
+    //   }
+    //   router.push("/admin-dashboard");
+    // } catch {
+    //   setError("Unable to reach API. Check backend connectivity and try again.");
+    // } finally {
+    //   setIsLoading(false);
+    // }
+
+    // Bypass auth — redirect directly to dashboard
+    router.push("/admin-dashboard");
+    setIsLoading(false);
   };
 
   return (
@@ -196,7 +201,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-muted-foreground mt-6">
-          &copy; {new Date().getFullYear()} Betti Healthcare. All rights reserved.
+          &copy; {new Date().getFullYear()} Betti. All rights reserved.
         </p>
       </div>
     </div>

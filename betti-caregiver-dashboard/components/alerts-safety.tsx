@@ -39,6 +39,8 @@ const isAbortError = (error: unknown): boolean => {
   )
 }
 
+// TODO: re-enable when backend is available
+/*
 const fetchWithTimeout = async (
   url: string,
   init: RequestInit,
@@ -57,14 +59,16 @@ const fetchWithTimeout = async (
     window.clearTimeout(timeoutId)
   }
 }
+*/
 
 export function AlertsSafety() {
   const [alertsList, setAlertsList] = useState<Alert[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState("")
   const { toast } = useToast()
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000"
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000"
   const initializedRef = useRef(false)
   const lastSeenAlertIdRef = useRef(0)
   const mountedRef = useRef(true)
@@ -92,6 +96,8 @@ export function AlertsSafety() {
       void Notification.requestPermission().catch(() => undefined)
     }
 
+    // TODO: re-enable when backend is available
+    /*
     const runPoll = async () => {
       if (!mountedRef.current) {
         return
@@ -108,6 +114,7 @@ export function AlertsSafety() {
       mountedRef.current = false
       window.clearInterval(intervalId)
     }
+    */
   }, [])
 
   const decodeJwtSub = (token?: string | null): number | null => {
@@ -130,6 +137,8 @@ export function AlertsSafety() {
     }
   }
 
+  // TODO: re-enable when backend is available
+  /*
   const getAuthContext = (): { token: string; userId: number | null; headers: Record<string, string> } => {
     if (typeof window === "undefined") {
       return { token: "", userId: null, headers: {} }
@@ -185,7 +194,10 @@ export function AlertsSafety() {
     }
     return new Set<number>()
   }
+  */
 
+  // TODO: re-enable when backend is available
+  /*
   const fetchAlerts = async () => {
     try {
       if (!mountedRef.current) return
@@ -281,8 +293,11 @@ export function AlertsSafety() {
       setLoading(false)
     }
   }
+  */
 
   const handleAcknowledge = async (alertId: number) => {
+    // TODO: re-enable when backend is available
+    /*
     try {
       const auth = getAuthContext()
       await fetch(`${apiUrl}/api/alerts/${alertId}`, {
@@ -295,20 +310,20 @@ export function AlertsSafety() {
           status: "acknowledged",
         }),
       }).catch(() => undefined)
-
-      setAlertsList((prev) =>
-        prev.map((alert) =>
-          alert.alert_id === alertId ? { ...alert, status: "acknowledged" } : alert,
-        ),
-      )
-
-      toast({
-        title: "Alert Acknowledged",
-        description: "The alert has been marked as acknowledged",
-      })
     } catch (error) {
       console.error('Failed to acknowledge alert:', error)
     }
+    */
+    setAlertsList((prev) =>
+      prev.map((alert) =>
+        alert.alert_id === alertId ? { ...alert, status: "acknowledged" } : alert,
+      ),
+    )
+
+    toast({
+      title: "Alert Acknowledged",
+      description: "The alert has been marked as acknowledged",
+    })
   }
 
   const formatTime = (dateString?: string) => {

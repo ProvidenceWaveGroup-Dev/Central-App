@@ -58,7 +58,8 @@ declare global {
 }
 
 export function AiAssistantFab() {
-  const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
+  // TODO: re-enable when backend is available
+  // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -334,6 +335,8 @@ export function AiAssistantFab() {
     return ids.size;
   };
 
+  // TODO: re-enable when backend is available
+  /*
   const getAuthHeaders = (): Record<string, string> => {
     const headers: Record<string, string> = {};
     if (typeof window === "undefined") {
@@ -345,7 +348,10 @@ export function AiAssistantFab() {
     }
     return headers;
   };
+  */
 
+  // TODO: re-enable when backend is available
+  /*
   const buildAdminStats = async (signal?: AbortSignal): Promise<AdminStats | null> => {
     const authHeaders = getAuthHeaders();
     if (!authHeaders.Authorization) {
@@ -411,6 +417,7 @@ export function AiAssistantFab() {
       return null;
     }
   };
+  */
 
   const buildCountResponse = (question: string, stats: AdminStats): string | null => {
     const asOf = new Date(stats.loadedAt).toLocaleString();
@@ -587,6 +594,8 @@ export function AiAssistantFab() {
     const timeoutId = window.setTimeout(() => abortController.abort(), 60000);
 
     try {
+      // TODO: re-enable when backend is available
+      /*
       const adminStats = needsAdminCountStats(trimmed)
         ? await buildAdminStats(abortController.signal)
         : null;
@@ -659,6 +668,8 @@ export function AiAssistantFab() {
         appendMessage("assistant", assistantMessage);
         delivered = true;
       }
+      */
+      appendMessage("assistant", "AI assistant is offline. Backend not yet connected.");
     } catch (requestError) {
       const isAbort =
         requestError instanceof DOMException && requestError.name === "AbortError";

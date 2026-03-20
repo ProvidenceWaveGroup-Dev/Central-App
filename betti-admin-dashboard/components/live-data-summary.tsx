@@ -15,6 +15,8 @@ export function LiveDataSummary() {
   const [hasToken, setHasToken] = useState<boolean | null>(null);
 
   useEffect(() => {
+    // TODO: re-enable when backend is available
+    /*
     let mounted = true;
     const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
 
@@ -130,6 +132,7 @@ export function LiveDataSummary() {
       mounted = false;
       window.clearInterval(intervalId);
     };
+    */
   }, []);
 
   if (hasToken === null || hasToken === false) {
