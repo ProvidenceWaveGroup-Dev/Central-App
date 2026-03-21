@@ -25,6 +25,7 @@ export default function Home() {
     security: process.env.NEXT_PUBLIC_BETTI_SECURITY_URL || buildHostUrl("localhost", 3004),
     fire: process.env.NEXT_PUBLIC_BETTI_FIRE_URL || buildHostUrl("localhost", 3005),
     admin: process.env.NEXT_PUBLIC_BETTI_ADMIN_URL || buildHostUrl("localhost", 3006),
+    operator: process.env.NEXT_PUBLIC_BETTI_OPERATOR_URL || buildHostUrl("localhost", 3007),
   };
   // TODO: re-enable when backend is available
   // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || buildHostUrl("localhost", 8000);
@@ -56,9 +57,9 @@ export default function Home() {
       href: appUrls.fire,
     },
     {
-      title: "Betti Admin",
-      description: "Betti admin dashboard for full operations and management.",
-      href: appUrls.admin,
+      title: "Betti Staff Operator",
+      description: "Betti Staff Operator dashboard for facility operations and management.",
+      href: appUrls.operator,
     },
   ];
 
@@ -216,7 +217,7 @@ export default function Home() {
               <div className="mt-auto">
                 <button
                   type="button"
-                  onClick={() => openLogin(app.href)}
+                  onClick={() => { window.location.href = app.href; }}
                   className="inline-flex w-full items-center justify-center rounded-lg bg-[#233E7D] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1c3164]"
                 >
                   Open dashboard

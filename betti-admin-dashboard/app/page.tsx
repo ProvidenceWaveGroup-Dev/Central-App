@@ -24,14 +24,13 @@ const [email, setEmail] = useState("");
     setError(null);
     setIsLoading(true);
 
-    // Validate inputs
-    if (!email || !password) {
-      setError("Please enter both email and password");
-      setIsLoading(false);
-      return;
-    }
-
     // TODO: re-enable backend auth when API is available
+    // // Validate inputs
+    // if (!email || !password) {
+    //   setError("Please enter both email and password");
+    //   setIsLoading(false);
+    //   return;
+    // }
     // try {
     //   const response = await fetch(`${apiUrl}/api/auth/login`, {
     //     method: "POST",

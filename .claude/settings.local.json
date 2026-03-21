@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:registry.npmjs.org)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:nvd.nist.gov)",
+      "Bash(pnpm install:*)",
+      "Bash(grep -v \"^\\\\s*//\")",
+      "Bash(find 'c:/Users/Admin/Desktop/PATRICK/PWG/Product Dev/Betti App/Central-App' -type f \\\\\\(-name *signin* -o -name *sign-in* -o -name *login* -o -name *auth* \\\\\\))"
+    ]
+  }
+}
