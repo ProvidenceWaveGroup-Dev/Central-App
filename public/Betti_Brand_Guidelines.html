@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+  <meta charset="UTF-8">
+  <title>Betti Brand Guidelines</title>
+  <style>
+    /* Word-compatible page setup */
+    @page {
+      size: 8.5in 11in;
+      margin: 1in 1in 1in 1in;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, "Segoe UI", sans-serif;
+      font-size: 11pt;
+      color: #59595B;
+      background: #ffffff;
+      line-height: 1.6;
+    }
+
+    /* ── COVER PAGE ── */
+    .cover {
+      text-align: center;
+      padding: 80px 60px 60px;
+      background: #233E7D;
+      color: #ffffff;
+      page-break-after: always;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cover-logo-ring {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: #5C7F39;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    }
+
+    .cover-logo-ring span {
+      font-size: 42pt;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -2px;
+    }
+
+    .cover h1 {
+      font-size: 38pt;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    .cover .tagline {
+      font-size: 14pt;
+      color: #DADADA;
+      font-style: italic;
+      margin-bottom: 50px;
+    }
+
+    .cover-divider {
+      width: 80px;
+      height: 4px;
+      background: #5C7F39;
+      border-radius: 2px;
+      margin: 0 auto 40px;
+    }
+
+    .cover .doc-title {
+      font-size: 18pt;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .cover .doc-subtitle {
+      font-size: 11pt;
+      color: #DADADA;
+      margin-top: 8px;
+    }
+
+    .cover .version-badge {
+      margin-top: 60px;
+      display: inline-block;
+      border: 1.5px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 6px 20px;
+      font-size: 9pt;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 1px;
+    }
+
+    /* ── SECTION PAGES ── */
+    .page {
+      padding: 60px 60px 50px;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      page-break-after: avoid;
+    }
+
+    /* Section header bar */
+    .section-label {
+      font-size: 8pt;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #5C7F39;
+      margin-bottom: 6px;
+    }
+
+    h2.section-title {
+      font-size: 24pt;
+      font-weight: 800;
+      color: #233E7D;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .section-rule {
+      width: 50px;
+      height: 3px;
+      background: #5C7F39;
+      border-radius: 2px;
+      margin-bottom: 28px;
+    }
+
+    h3 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #233E7D;
+      margin: 28px 0 10px;
+    }
+
+    p {
+      font-size: 10.5pt;
+      color: #59595B;
+      margin-bottom: 12px;
+      line-height: 1.7;
+    }
+
+    /* ── BRAND INTRO ── */
+    .intro-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .intro-card {
+      background: #F4F6FB;
+      border-left: 4px solid #233E7D;
+      border-radius: 6px;
+      padding: 20px 22px;
+    }
+
+    .intro-card h4 {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #233E7D;
+      margin-bottom: 6px;
+    }
+
+    .intro-card p {
+      font-size: 10pt;
+      margin: 0;
+    }
+
+    /* ── COLOR PALETTE ── */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .color-swatch {
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+
+    .swatch-block {
+      height: 90px;
+    }
+
+    .swatch-info {
+      background: #ffffff;
+      padding: 12px 14px;
+      border: 1px solid #E8E8E8;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+    }
+
+    .swatch-name {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #233E7D;
+      margin-bottom: 2px;
+    }
+
+    .swatch-hex {
+      font-size: 9pt;
+      color: #59595B;
+      font-family: "Courier New", monospace;
+    }
+
+    .swatch-use {
+      font-size: 8.5pt;
+      color: #9a9a9a;
+      margin-top: 4px;
+    }
+
+    /* ── TYPOGRAPHY ── */
+    .type-row {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      align-items: center;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid #ECECEC;
+    }
+
+    .type-label {
+      font-size: 9pt;
+      color: #9a9a9a;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .type-specimen { color: #233E7D; line-height: 1.2; margin: 0; }
+    .type-h1 { font-size: 26pt; font-weight: 800; }
+    .type-h2 { font-size: 20pt; font-weight: 700; }
+    .type-h3 { font-size: 14pt; font-weight: 700; }
+    .type-body { font-size: 11pt; font-weight: 400; color: #59595B; }
+    .type-caption { font-size: 9pt; font-weight: 400; color: #9a9a9a; }
+
+    /* ── LOGO USAGE ── */
+    .logo-display {
+      background: #233E7D;
+      border-radius: 10px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-ring-sm {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #5C7F39;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-ring-sm span {
+      font-size: 22pt;
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .logo-wordmark {
+      font-size: 26pt;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .logo-variants {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .logo-variant-card {
+      border: 1.5px solid #E8E8E8;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .logo-variant-bg {
+      padding: 24px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 18pt;
+      letter-spacing: 0.5px;
+    }
+
+    .logo-variant-label {
+      padding: 8px 12px;
+      font-size: 8.5pt;
+      color: #9a9a9a;
+      text-align: center;
+      border-top: 1px solid #E8E8E8;
+    }
+
+    /* ── PLATFORMS ── */
+    .platform-list {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .platform-card {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding: 18px 22px;
+      background: #F4F6FB;
+      border-radius: 8px;
+      border-left: 4px solid #233E7D;
+    }
+
+    .platform-card.green {
+      border-left-color: #5C7F39;
+    }
+
+    .platform-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: #233E7D;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16pt;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .platform-icon.green { background: #5C7F39; }
+
+    .platform-info h4 {
+      font-size: 11pt;
+      font-weight: 700;
+      color: #233E7D;
+      margin-bottom: 3px;
+    }
+
+    .platform-info p {
+      font-size: 9.5pt;
+      color: #59595B;
+      margin: 0;
+    }
+
+    .platform-url {
+      font-size: 9pt;
+      color: #5C7F39;
+      font-weight: 600;
+      word-break: break-all;
+      text-align: right;
+      text-decoration: none;
+    }
+
+    /* ── DO / DON'T ── */
+    .do-dont {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .do-card, .dont-card {
+      border-radius: 8px;
+      padding: 20px 22px;
+    }
+
+    .do-card {
+      background: #F0F5EB;
+      border-left: 4px solid #5C7F39;
+    }
+
+    .dont-card {
+      background: #FDF0F0;
+      border-left: 4px solid #C0392B;
+    }
+
+    .do-card h4 { color: #5C7F39; font-size: 11pt; margin-bottom: 10px; }
+    .dont-card h4 { color: #C0392B; font-size: 11pt; margin-bottom: 10px; }
+
+    ul.guide-list {
+      padding-left: 16px;
+      margin: 0;
+    }
+
+    ul.guide-list li {
+      font-size: 10pt;
+      color: #59595B;
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      margin-top: 40px;
+      padding-top: 16px;
+      border-top: 1.5px solid #ECECEC;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .page-footer span {
+      font-size: 8.5pt;
+      color: #BDBDBD;
+    }
+
+    .footer-logo {
+      font-size: 10pt;
+      font-weight: 800;
+      color: #233E7D;
+    }
+
+    /* ── CONTACT BLOCK ── */
+    .contact-block {
+      background: #233E7D;
+      color: #ffffff;
+      border-radius: 10px;
+      padding: 36px 40px;
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    .contact-block h4 {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    .contact-block p {
+      font-size: 10pt;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+
+    .contact-block a {
+      color: #8FC85A;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     COVER PAGE
+══════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo-ring"><span>B</span></div>
+  <h1>Betti</h1>
+  <p class="tagline">Intelligent Senior Care, Connected</p>
+  <div class="cover-divider"></div>
+  <div class="doc-title">Brand Guidelines & Platform Directory</div>
+  <p class="doc-subtitle">Visual Identity · Color System · Typography · Platform URLs</p>
+  <div class="version-badge">Version 1.0 &nbsp;·&nbsp; 2025 &nbsp;·&nbsp; Providence Wave Group</div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PAGE 1 — BRAND OVERVIEW
+══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="section-label">01 — Brand Foundation</div>
+  <h2 class="section-title">Who We Are</h2>
+  <div class="section-rule"></div>
+
+  <p>
+    Betti is an intelligent senior care platform that connects residents, caregivers, emergency services,
+    and facility operators through a unified ecosystem of real-time dashboards, health monitoring tools,
+    and smart communications. Our brand reflects our commitment to <strong>trust, clarity, and compassionate technology</strong>.
+  </p>
+
+  <div class="intro-grid">
+    <div class="intro-card">
+      <h4>Mission</h4>
+      <p>To empower senior living communities with intelligent, real-time tools that improve quality of life, accelerate emergency response, and reduce caregiver burden.</p>
+    </div>
+    <div class="intro-card">
+      <h4>Vision</h4>
+      <p>A world where every senior lives with dignity, safety, and connection — supported by technology that works quietly in the background.</p>
+    </div>
+    <div class="intro-card">
+      <h4>Core Values</h4>
+      <p><strong>Care First.</strong> Every feature begins with the resident. Technology is a means, never the end.</p>
+    </div>
+    <div class="intro-card">
+      <h4>Brand Personality</h4>
+      <p>Warm but professional. Calm under pressure. Precise but human. Trustworthy above all else.</p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Betti Brand Guidelines · Confidential</span>
+    <span class="footer-logo">Betti</span>
+    <span>Page 1</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PAGE 2 — LOGO
+══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="section-label">02 — Logo System</div>
+  <h2 class="section-title">The Betti Mark</h2>
+  <div class="section-rule"></div>
+
+  <p>The Betti logo consists of the wordmark paired with a circular emblem. The circular form conveys
+  continuity and protection — core to our mission. Always use approved logo files and never recreate
+  the mark from scratch.</p>
+
+  <div class="logo-display">
+    <div class="logo-mark">
+      <div class="logo-ring-sm"><span>B</span></div>
+      <div class="logo-wordmark">Betti</div>
+    </div>
+  </div>
+
+  <div class="logo-variants">
+    <div class="logo-variant-card">
+      <div class="logo-variant-bg" style="background:#233E7D; color:#ffffff;">Betti</div>
+      <div class="logo-variant-label">Navy — Primary (Dark BG)</div>
+    </div>
+    <div class="logo-variant-card">
+      <div class="logo-variant-bg" style="background:#5C7F39; color:#ffffff;">Betti</div>
+      <div class="logo-variant-label">Green — Primary (Light BG)</div>
+    </div>
+    <div class="logo-variant-card">
+      <div class="logo-variant-bg" style="background:#DADADA; color:#233E7D;">Betti</div>
+      <div class="logo-variant-label">Reversed — On Gray</div>
+    </div>
+  </div>
+
+  <h3>Clear Space & Minimum Size</h3>
+  <p>
+    Always maintain a clear space equal to the height of the "B" letterform on all sides of the logo.
+    Never reproduce the logo at widths smaller than <strong>80px digital</strong> or <strong>0.75 inch print</strong>.
+  </p>
+
+  <div class="page-footer">
+    <span>Betti Brand Guidelines · Confidential</span>
+    <span class="footer-logo">Betti</span>
+    <span>Page 2</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PAGE 3 — COLOR PALETTE
+══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="section-label">03 — Color System</div>
+  <h2 class="section-title">Brand Colors</h2>
+  <div class="section-rule"></div>
+
+  <p>Our color palette is rooted in nature — the deep trust of navy blue paired with the life-affirming
+  energy of forest green. Together they communicate reliability, health, and calm.</p>
+
+  <div class="color-grid">
+    <div class="color-swatch">
+      <div class="swatch-block" style="background:#233E7D;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Betti Navy</div>
+        <div class="swatch-hex">#233E7D</div>
+        <div class="swatch-use">Primary brand · UI accents · Headers</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-block" style="background:#5C7F39;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Betti Green</div>
+        <div class="swatch-hex">#5C7F39</div>
+        <div class="swatch-use">CTA buttons · Success · Highlights</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-block" style="background:#DADADA;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Betti Mist</div>
+        <div class="swatch-hex">#DADADA</div>
+        <div class="swatch-use">Backgrounds · Dividers · Muted UI</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-block" style="background:#59595B;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Betti Slate</div>
+        <div class="swatch-hex">#59595B</div>
+        <div class="swatch-use">Body text · Captions · Labels</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-block" style="background:#1c3164;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Deep Navy</div>
+        <div class="swatch-hex">#1C3164</div>
+        <div class="swatch-use">Button hover · Dark emphasis</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-block" style="background:#8FC85A;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Light Green</div>
+        <div class="swatch-hex">#8FC85A</div>
+        <div class="swatch-use">Links on dark · Positive indicators</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-block" style="background:#ffffff; border: 1px solid #E8E8E8;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">White</div>
+        <div class="swatch-hex">#FFFFFF</div>
+        <div class="swatch-use">Card backgrounds · Clean space</div>
+      </div>
+    </div>
+    <div class="color-swatch">
+      <div class="swatch-block" style="background:#F4F6FB;"></div>
+      <div class="swatch-info">
+        <div class="swatch-name">Off-White</div>
+        <div class="swatch-hex">#F4F6FB</div>
+        <div class="swatch-use">Section fills · Card backgrounds</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Betti Brand Guidelines · Confidential</span>
+    <span class="footer-logo">Betti</span>
+    <span>Page 3</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PAGE 4 — TYPOGRAPHY
+══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="section-label">04 — Typography</div>
+  <h2 class="section-title">Type System</h2>
+  <div class="section-rule"></div>
+
+  <p>Betti uses <strong>Arial / Segoe UI</strong> as the primary sans-serif across all digital interfaces — clean,
+  highly legible, and universally accessible. <strong>Georgia Pro</strong> is reserved for long-form editorial content.</p>
+
+  <h3>Primary Typeface — Arial / Segoe UI</h3>
+
+  <div class="type-row">
+    <div class="type-label">Display / H1<br><span style="color:#BDBDBD;">800 · 28–38pt</span></div>
+    <p class="type-specimen type-h1">Betti Platform</p>
+  </div>
+  <div class="type-row">
+    <div class="type-label">Heading / H2<br><span style="color:#BDBDBD;">700 · 20–24pt</span></div>
+    <p class="type-specimen type-h2">Dashboard Overview</p>
+  </div>
+  <div class="type-row">
+    <div class="type-label">Subheading / H3<br><span style="color:#BDBDBD;">700 · 13–16pt</span></div>
+    <p class="type-specimen type-h3">Patient Activity Feed</p>
+  </div>
+  <div class="type-row">
+    <div class="type-label">Body<br><span style="color:#BDBDBD;">400 · 10.5–11pt</span></div>
+    <p class="type-specimen type-body">Real-time health data, fall detection alerts, and caregiver scheduling displayed in a unified, accessible interface.</p>
+  </div>
+  <div class="type-row">
+    <div class="type-label">Caption / Label<br><span style="color:#BDBDBD;">400 · 8.5–9pt</span></div>
+    <p class="type-specimen type-caption">Last updated: 2 minutes ago · Alert ID #4821 · Facility: Sunrise Gardens</p>
+  </div>
+
+  <h3>Secondary Typeface — Georgia Pro</h3>
+  <p style="font-family: Georgia, serif; font-size: 12pt; color: #233E7D; font-style: italic; margin: 10px 0 20px;">
+    "Technology should feel as natural as breathing — present when needed, invisible when not."
+  </p>
+  <p>Use Georgia sparingly — only for pull quotes, editorial copy, or printed materials requiring a warmer, more personal tone.</p>
+
+  <div class="page-footer">
+    <span>Betti Brand Guidelines · Confidential</span>
+    <span class="footer-logo">Betti</span>
+    <span>Page 4</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PAGE 5 — PLATFORM DIRECTORY
+══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="section-label">05 — Platform Directory</div>
+  <h2 class="section-title">Live Platform URLs</h2>
+  <div class="section-rule"></div>
+
+  <p>The Betti ecosystem is composed of purpose-built web applications, each serving a distinct role
+  in the care continuum. All platforms are hosted on Vercel and accessible via the URLs below.</p>
+
+  <div class="platform-list">
+
+    <div class="platform-card">
+      <div class="platform-icon">B</div>
+      <div class="platform-info">
+        <h4>Betti Central Hub</h4>
+        <p>The unified entry point to the entire Betti ecosystem. Quick access to all dashboards.</p>
+      </div>
+      <a class="platform-url" href="https://central-app-phi.vercel.app/">central-app-phi.vercel.app</a>
+    </div>
+
+    <div class="platform-card green">
+      <div class="platform-icon green">A</div>
+      <div class="platform-info">
+        <h4>Betti Admin Dashboard</h4>
+        <p>Full operations and management dashboard for facility administrators and staff operators.</p>
+      </div>
+      <a class="platform-url" href="https://betti-admin-dashboard.vercel.app/admin-dashboard">betti-admin-dashboard.vercel.app</a>
+    </div>
+
+    <div class="platform-card">
+      <div class="platform-icon">H</div>
+      <div class="platform-info">
+        <h4>Betti Home Intelligence</h4>
+        <p>In-home senior monitoring and wellness platform for independent living environments.</p>
+      </div>
+      <a class="platform-url" href="https://betti-home-intelligence.vercel.app">betti-home-intelligence.vercel.app</a>
+    </div>
+
+    <div class="platform-card green">
+      <div class="platform-icon green">C</div>
+      <div class="platform-info">
+        <h4>City & Transitional Housing</h4>
+        <p>Monitoring and coordination platform for city-managed and transitional housing facilities.</p>
+      </div>
+      <a class="platform-url" href="https://city-transitional-housing.vercel.app/">city-transitional-housing.vercel.app</a>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <span>Betti Brand Guidelines · Confidential</span>
+    <span class="footer-logo">Betti</span>
+    <span>Page 5</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     PAGE 6 — USAGE GUIDELINES
+══════════════════════════════════════════════ -->
+<div class="page">
+  <div class="section-label">06 — Usage Guidelines</div>
+  <h2 class="section-title">Do's &amp; Don'ts</h2>
+  <div class="section-rule"></div>
+
+  <p>Consistent brand application builds recognition and trust. Follow these guidelines across all
+  communications — digital, print, and presentation.</p>
+
+  <div class="do-dont">
+    <div class="do-card">
+      <h4>✓ Do</h4>
+      <ul class="guide-list">
+        <li>Use Betti Navy (#233E7D) as the dominant brand color in headers and navigation</li>
+        <li>Use Betti Green (#5C7F39) for calls-to-action, positive indicators, and highlights</li>
+        <li>Maintain sufficient contrast — minimum 4.5:1 ratio for all body text</li>
+        <li>Use the approved logo files provided by the brand team</li>
+        <li>Keep UI language calm, clear, and compassionate</li>
+        <li>Use Arial/Segoe UI at defined weights for digital interfaces</li>
+        <li>Apply proper clear space around the Betti logo at all times</li>
+      </ul>
+    </div>
+    <div class="dont-card">
+      <h4>✗ Don't</h4>
+      <ul class="guide-list">
+        <li>Don't alter the logo colors, proportions, or add effects</li>
+        <li>Don't use brand colors at low opacity in ways that reduce legibility</li>
+        <li>Don't use all-caps in body copy — it reads as aggressive in care contexts</li>
+        <li>Don't combine both brand fonts in the same layout element</li>
+        <li>Don't place the logo on busy photographic backgrounds without a clear backdrop</li>
+        <li>Don't use red or high-saturation colors for general UI — reserve for critical alerts only</li>
+        <li>Don't reproduce the brand materials without authorization from Providence Wave Group</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Voice &amp; Tone</h3>
+  <p>Betti communicates with the warmth of a trusted caregiver and the clarity of a skilled clinician.
+  Language should always be <strong>simple, direct, and reassuring</strong>. Avoid jargon. Never alarm without context.
+  In emergency scenarios, prioritize accuracy and brevity over style.</p>
+
+  <div class="contact-block">
+    <div>
+      <h4>Brand Inquiries</h4>
+      <p>For brand assets, logo files, or usage questions, contact the product team at Providence Wave Group.</p>
+      <p><a href="mailto:brand@providencewavegroup.com">brand@providencewavegroup.com</a></p>
+    </div>
+    <div>
+      <h4>Platform Access</h4>
+      <p>For access credentials, onboarding, or technical support across Betti platforms, reach out to the operations team.</p>
+      <p><a href="https://central-app-phi.vercel.app/">central-app-phi.vercel.app</a></p>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span>Betti Brand Guidelines · Confidential · &copy; 2025 Providence Wave Group</span>
+    <span class="footer-logo">Betti</span>
+    <span>Page 6</span>
+  </div>
+</div>
+
+</body>
+</html>
