@@ -1,11 +1,13 @@
 {
-  "env": {
-    "NEXT_PUBLIC_BETTI_SENIOR_URL": "https://senior-dashboard-sepia.vercel.app",
-    "NEXT_PUBLIC_BETTI_CAREGIVER_URL": "https://caregiver-dashboard-pi.vercel.app",
-    "NEXT_PUBLIC_BETTI_EMS_URL": "https://ems-dashboard-sigma.vercel.app",
-    "NEXT_PUBLIC_BETTI_SECURITY_URL": "https://security-dashboard-tau.vercel.app",
-    "NEXT_PUBLIC_BETTI_FIRE_URL": "https://fire-service-dashboard.vercel.app",
-    "NEXT_PUBLIC_BETTI_OPERATOR_URL": "https://operator-dashboard-xi.vercel.app"
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_BETTI_SENIOR_URL": "https://senior-dashboard-sepia.vercel.app",
+      "NEXT_PUBLIC_BETTI_CAREGIVER_URL": "https://caregiver-dashboard-pi.vercel.app",
+      "NEXT_PUBLIC_BETTI_EMS_URL": "https://ems-dashboard-sigma.vercel.app",
+      "NEXT_PUBLIC_BETTI_SECURITY_URL": "https://security-dashboard-tau.vercel.app",
+      "NEXT_PUBLIC_BETTI_FIRE_URL": "https://fire-service-dashboard.vercel.app",
+      "NEXT_PUBLIC_BETTI_OPERATOR_URL": "https://operator-dashboard-xi.vercel.app"
+    }
   },
   "installCommand": "pnpm install --no-frozen-lockfile"
 }
