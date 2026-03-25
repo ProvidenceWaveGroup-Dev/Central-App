@@ -8,6 +8,11 @@ import "./globals.css"
 export const metadata: Metadata = {
   title: "Betti Facility Operator Dashboard",
   description: "Day-to-day resident monitoring, alert response, and care management",
+  icons: {
+    icon: "/betti-logo.png",
+    shortcut: "/betti-logo.png",
+    apple: "/betti-logo.png",
+  },
 }
 
 export default function RootLayout({

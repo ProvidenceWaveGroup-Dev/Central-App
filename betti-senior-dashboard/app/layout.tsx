@@ -23,6 +23,11 @@ export const metadata: Metadata = {
   title: "Betti - User Dashboard",
   description: "Be Empowered Through Technology and Innovation - Health and wellness monitoring for seniors",
   generator: "v0.app",
+  icons: {
+    icon: "/images/betti-logo.png",
+    shortcut: "/images/betti-logo.png",
+    apple: "/images/betti-logo.png",
+  },
 }
 
 export default function RootLayout({

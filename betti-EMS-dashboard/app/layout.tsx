@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "Betti Dashboard - Medical & Health Centre",
   description: "Real-time patient monitoring and incident response dashboard",
   generator: "v0.app",
+  icons: {
+    icon: "/betti-logo.png",
+    shortcut: "/betti-logo.png",
+    apple: "/betti-logo.png",
+  },
 }
 
 export default function RootLayout({

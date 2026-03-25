@@ -11,7 +11,12 @@ import "./globals.css"
 
 export const metadata: Metadata = {
   title: "Betti Caregiver Dashboard",
-  description: "Professional caregiver monitoring and communication platform"
+  description: "Professional caregiver monitoring and communication platform",
+  icons: {
+    icon: "/betti-logo.png",
+    shortcut: "/betti-logo.png",
+    apple: "/betti-logo.png",
+  },
 }
 
 export default function RootLayout({

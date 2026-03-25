@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "Betti Security Dashboard",
   description: "Comprehensive security monitoring and incident management",
   generator: "v0.app",
+  icons: {
+    icon: "/betti-logo.png",
+    shortcut: "/betti-logo.png",
+    apple: "/betti-logo.png",
+  },
 }
 
 export default function RootLayout({

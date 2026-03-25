@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "Betti FIRE/RESCUE Dashboard",
   description: "Environmental & Occupancy Monitoring Dashboard",
   generator: "v0.app",
+  icons: {
+    icon: "/betti-logo.png",
+    shortcut: "/betti-logo.png",
+    apple: "/betti-logo.png",
+  },
 }
 
 export default function RootLayout({

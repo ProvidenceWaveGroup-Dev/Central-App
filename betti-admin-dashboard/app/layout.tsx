@@ -13,6 +13,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Betti Admin Dashboard",
   description: "Centralized administration for Betti care monitoring system",
+  icons: {
+    icon: "/images/betti-logo.png",
+    shortcut: "/images/betti-logo.png",
+    apple: "/images/betti-logo.png",
+  },
 };
 
 export default function RootLayout({
