@@ -8,6 +8,21 @@ import { Input } from "@/components/ui/input";
 import { PaginationControlled } from "@/components/ui/pagination";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   UserCog,
   Search,
   Plus,
@@ -29,6 +44,7 @@ interface Caregiver {
   created_at: string;
   // From user_credentials
   last_login_at: string;
+  last_logout_at: string;
   // From roles via user_roles
   role_name: string;
   // From facility_memberships
@@ -61,6 +77,7 @@ type ApiCaregiver = {
   is_active: boolean;
   created_at: string;
   last_login_at: string;
+  last_logout_at: string;
   role_name: string;
   facility_id: number;
   facility_role: string;
@@ -73,6 +90,249 @@ type ApiCaregiver = {
 
 // HARDWARE_READINESS: frontend fallback for demo continuity when live caregiver API fails.
 const fallbackCaregivers: Caregiver[] = [
+  // ── EMS Staff ──
+  {
+    user_id: 401,
+    first_name: "Carlos",
+    last_name: "Rivera",
+    email: "carlos.rivera@ems.betti.com",
+    phone: "+15615561001",
+    status: "active",
+    is_active: true,
+    created_at: "2025-08-01T08:00:00Z",
+    last_login_at: "2026-01-30T07:00:00Z",
+    role_name: "paramedic",
+    facility_id: 12,
+    facility_role: "ems",
+    assigned_patients: 4,
+    primary_patients: 4,
+    duty_status: "on-duty",
+    current_shift: "7AM - 3PM",
+    avg_response_time: "2.1m",
+    last_logout_at: "2026-01-29T15:06:22Z"
+  },
+  {
+    user_id: 402,
+    first_name: "Diane",
+    last_name: "Foster",
+    email: "diane.foster@ems.betti.com",
+    phone: "+15615561002",
+    status: "active",
+    is_active: true,
+    created_at: "2025-09-10T09:00:00Z",
+    last_login_at: "2026-01-30T06:50:00Z",
+    role_name: "emt",
+    facility_id: 12,
+    facility_role: "ems",
+    assigned_patients: 3,
+    primary_patients: 3,
+    duty_status: "on-duty",
+    current_shift: "7AM - 3PM",
+    avg_response_time: "2.8m",
+    last_logout_at: "2026-01-29T15:02:45Z"
+  },
+  {
+    user_id: 403,
+    first_name: "Marcus",
+    last_name: "Hill",
+    email: "marcus.hill@ems.betti.com",
+    phone: "+15615561003",
+    status: "active",
+    is_active: true,
+    created_at: "2025-07-15T08:00:00Z",
+    last_login_at: "2026-01-29T23:00:00Z",
+    role_name: "paramedic",
+    facility_id: 15,
+    facility_role: "ems",
+    assigned_patients: 5,
+    primary_patients: 5,
+    duty_status: "off-duty",
+    current_shift: "11PM - 7AM",
+    avg_response_time: "1.9m",
+    last_logout_at: "2026-01-30T07:09:15Z"
+  },
+  {
+    user_id: 404,
+    first_name: "Tanya",
+    last_name: "Brooks",
+    email: "tanya.brooks@ems.betti.com",
+    phone: "+15615561004",
+    status: "active",
+    is_active: true,
+    created_at: "2025-10-05T09:00:00Z",
+    last_login_at: "2026-01-30T08:10:00Z",
+    role_name: "emt",
+    facility_id: 23,
+    facility_role: "ems",
+    assigned_patients: 3,
+    primary_patients: 2,
+    duty_status: "break",
+    current_shift: "3PM - 11PM",
+    avg_response_time: "3.2m",
+    last_logout_at: "2026-01-29T23:05:38Z"
+  },
+  // ── Security Staff ──
+  {
+    user_id: 411,
+    first_name: "Victor",
+    last_name: "Nguyen",
+    email: "victor.nguyen@security.betti.com",
+    phone: "+15615562001",
+    status: "active",
+    is_active: true,
+    created_at: "2025-06-10T08:00:00Z",
+    last_login_at: "2026-01-30T07:30:00Z",
+    role_name: "security_officer",
+    facility_id: 12,
+    facility_role: "security",
+    assigned_patients: 0,
+    primary_patients: 0,
+    duty_status: "on-duty",
+    current_shift: "7AM - 3PM",
+    avg_response_time: "1.5m",
+    last_logout_at: "2026-01-29T15:04:11Z"
+  },
+  {
+    user_id: 412,
+    first_name: "Priya",
+    last_name: "Shah",
+    email: "priya.shah@security.betti.com",
+    phone: "+15615562002",
+    status: "active",
+    is_active: true,
+    created_at: "2025-07-20T09:00:00Z",
+    last_login_at: "2026-01-30T06:45:00Z",
+    role_name: "security_supervisor",
+    facility_id: 12,
+    facility_role: "security",
+    assigned_patients: 0,
+    primary_patients: 0,
+    duty_status: "on-duty",
+    current_shift: "7AM - 3PM",
+    avg_response_time: "1.2m",
+    last_logout_at: "2026-01-29T15:01:55Z"
+  },
+  {
+    user_id: 413,
+    first_name: "Darnell",
+    last_name: "King",
+    email: "darnell.king@security.betti.com",
+    phone: "+15615562003",
+    status: "active",
+    is_active: true,
+    created_at: "2025-08-25T08:00:00Z",
+    last_login_at: "2026-01-29T23:30:00Z",
+    role_name: "security_officer",
+    facility_id: 15,
+    facility_role: "security",
+    assigned_patients: 0,
+    primary_patients: 0,
+    duty_status: "off-duty",
+    current_shift: "11PM - 7AM",
+    avg_response_time: "2.0m",
+    last_logout_at: "2026-01-30T07:14:22Z"
+  },
+  {
+    user_id: 414,
+    first_name: "Mei",
+    last_name: "Chen",
+    email: "mei.chen@security.betti.com",
+    phone: "+15615562004",
+    status: "active",
+    is_active: true,
+    created_at: "2025-09-30T09:00:00Z",
+    last_login_at: "2026-01-30T07:55:00Z",
+    role_name: "security_officer",
+    facility_id: 23,
+    facility_role: "security",
+    assigned_patients: 0,
+    primary_patients: 0,
+    duty_status: "on-duty",
+    current_shift: "3PM - 11PM",
+    avg_response_time: "1.8m",
+    last_logout_at: "2026-01-29T23:08:40Z"
+  },
+  // ── Fire Service Staff ──
+  {
+    user_id: 421,
+    first_name: "Brian",
+    last_name: "Coleman",
+    email: "brian.coleman@fire.betti.com",
+    phone: "+15615563001",
+    status: "active",
+    is_active: true,
+    created_at: "2025-05-01T08:00:00Z",
+    last_login_at: "2026-01-30T07:20:00Z",
+    role_name: "firefighter",
+    facility_id: 12,
+    facility_role: "fire_service",
+    assigned_patients: 0,
+    primary_patients: 0,
+    duty_status: "on-duty",
+    current_shift: "7AM - 7PM",
+    avg_response_time: "3.0m",
+    last_logout_at: "2026-01-29T19:12:33Z"
+  },
+  {
+    user_id: 422,
+    first_name: "Lena",
+    last_name: "Vasquez",
+    email: "lena.vasquez@fire.betti.com",
+    phone: "+15615563002",
+    status: "active",
+    is_active: true,
+    created_at: "2025-06-15T09:00:00Z",
+    last_login_at: "2026-01-30T06:40:00Z",
+    role_name: "fire_captain",
+    facility_id: 12,
+    facility_role: "fire_service",
+    assigned_patients: 0,
+    primary_patients: 0,
+    duty_status: "on-duty",
+    current_shift: "7AM - 7PM",
+    avg_response_time: "2.5m",
+    last_logout_at: "2026-01-29T19:05:17Z"
+  },
+  {
+    user_id: 423,
+    first_name: "Jerome",
+    last_name: "Patterson",
+    email: "jerome.patterson@fire.betti.com",
+    phone: "+15615563003",
+    status: "active",
+    is_active: true,
+    created_at: "2025-07-10T08:00:00Z",
+    last_login_at: "2026-01-29T19:00:00Z",
+    role_name: "firefighter",
+    facility_id: 15,
+    facility_role: "fire_service",
+    assigned_patients: 0,
+    primary_patients: 0,
+    duty_status: "off-duty",
+    current_shift: "7PM - 7AM",
+    avg_response_time: "3.5m",
+    last_logout_at: "2026-01-30T07:18:44Z"
+  },
+  {
+    user_id: 424,
+    first_name: "Aisha",
+    last_name: "Grant",
+    email: "aisha.grant@fire.betti.com",
+    phone: "+15615563004",
+    status: "active",
+    is_active: true,
+    created_at: "2025-08-20T09:00:00Z",
+    last_login_at: "2026-01-30T07:50:00Z",
+    role_name: "firefighter",
+    facility_id: 23,
+    facility_role: "fire_service",
+    assigned_patients: 0,
+    primary_patients: 0,
+    duty_status: "on-duty",
+    current_shift: "7AM - 7PM",
+    avg_response_time: "2.8m",
+    last_logout_at: "2026-01-29T19:09:55Z"
+  },
   {
     user_id: 340,
     first_name: "Angela",
@@ -90,7 +350,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 5,
     duty_status: "on-duty",
     current_shift: "7AM - 3PM",
-    avg_response_time: "3.2m"
+    avg_response_time: "3.2m",
+    last_logout_at: "2026-01-29T15:08:30Z"
   },
   {
     user_id: 341,
@@ -109,7 +370,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 4,
     duty_status: "on-duty",
     current_shift: "7AM - 3PM",
-    avg_response_time: "4.1m"
+    avg_response_time: "4.1m",
+    last_logout_at: "2026-01-29T15:03:48Z"
   },
   {
     user_id: 342,
@@ -128,7 +390,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 3,
     duty_status: "break",
     current_shift: "3PM - 11PM",
-    avg_response_time: "2.8m"
+    avg_response_time: "2.8m",
+    last_logout_at: "2026-01-28T23:07:22Z"
   },
   {
     user_id: 343,
@@ -147,7 +410,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 5,
     duty_status: "off-duty",
     current_shift: "11PM - 7AM",
-    avg_response_time: "4.5m"
+    avg_response_time: "4.5m",
+    last_logout_at: "2026-01-30T07:22:13Z"
   },
   {
     user_id: 344,
@@ -166,7 +430,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 0,
     duty_status: "on-duty",
     current_shift: "8AM - 4PM",
-    avg_response_time: "2.1m"
+    avg_response_time: "2.1m",
+    last_logout_at: "2026-01-29T16:03:45Z"
   },
   {
     user_id: 345,
@@ -185,7 +450,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 0,
     duty_status: "off-duty",
     current_shift: "N/A",
-    avg_response_time: "N/A"
+    avg_response_time: "N/A",
+    last_logout_at: "2025-12-15T23:47:15Z"
   },
   {
     user_id: 346,
@@ -204,7 +470,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 6,
     duty_status: "on-duty",
     current_shift: "7AM - 3PM",
-    avg_response_time: "3.5m"
+    avg_response_time: "3.5m",
+    last_logout_at: "2026-01-29T15:05:12Z"
   },
   {
     user_id: 347,
@@ -223,7 +490,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 2,
     duty_status: "on-duty",
     current_shift: "7AM - 3PM",
-    avg_response_time: "2.5m"
+    avg_response_time: "2.5m",
+    last_logout_at: "2026-01-29T15:00:58Z"
   },
   {
     user_id: 348,
@@ -242,7 +510,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 7,
     duty_status: "off-duty",
     current_shift: "11PM - 7AM",
-    avg_response_time: "3.8m"
+    avg_response_time: "3.8m",
+    last_logout_at: "2026-01-30T07:06:33Z"
   },
   {
     user_id: 349,
@@ -261,7 +530,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 5,
     duty_status: "on-duty",
     current_shift: "7AM - 3PM",
-    avg_response_time: "4.0m"
+    avg_response_time: "4.0m",
+    last_logout_at: "2026-01-29T15:10:25Z"
   },
   {
     user_id: 350,
@@ -280,7 +550,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 0,
     duty_status: "on-duty",
     current_shift: "8AM - 4PM",
-    avg_response_time: "1.9m"
+    avg_response_time: "1.9m",
+    last_logout_at: "2026-01-29T16:04:20Z"
   },
   {
     user_id: 351,
@@ -299,7 +570,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 4,
     duty_status: "on-duty",
     current_shift: "7AM - 3PM",
-    avg_response_time: "3.3m"
+    avg_response_time: "3.3m",
+    last_logout_at: "2026-01-29T15:01:15Z"
   },
   {
     user_id: 352,
@@ -318,7 +590,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 5,
     duty_status: "break",
     current_shift: "3PM - 11PM",
-    avg_response_time: "3.0m"
+    avg_response_time: "3.0m",
+    last_logout_at: "2026-01-28T23:03:40Z"
   },
   {
     user_id: 353,
@@ -337,7 +610,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 3,
     duty_status: "on-duty",
     current_shift: "7AM - 3PM",
-    avg_response_time: "3.7m"
+    avg_response_time: "3.7m",
+    last_logout_at: "2026-01-29T15:07:19Z"
   },
   {
     user_id: 354,
@@ -356,7 +630,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 4,
     duty_status: "off-duty",
     current_shift: "11PM - 7AM",
-    avg_response_time: "4.2m"
+    avg_response_time: "4.2m",
+    last_logout_at: "2026-01-30T07:25:52Z"
   },
   {
     user_id: 355,
@@ -375,7 +650,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 1,
     duty_status: "on-duty",
     current_shift: "8AM - 4PM",
-    avg_response_time: "2.3m"
+    avg_response_time: "2.3m",
+    last_logout_at: "2026-01-29T16:05:38Z"
   },
   {
     user_id: 356,
@@ -394,7 +670,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 0,
     duty_status: "off-duty",
     current_shift: "N/A",
-    avg_response_time: "N/A"
+    avg_response_time: "N/A",
+    last_logout_at: "2025-11-20T22:07:15Z"
   },
   {
     user_id: 357,
@@ -413,7 +690,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 3,
     duty_status: "break",
     current_shift: "3PM - 11PM",
-    avg_response_time: "3.9m"
+    avg_response_time: "3.9m",
+    last_logout_at: "2026-01-28T23:06:10Z"
   },
   {
     user_id: 358,
@@ -432,7 +710,8 @@ const fallbackCaregivers: Caregiver[] = [
     primary_patients: 5,
     duty_status: "on-duty",
     current_shift: "7AM - 3PM",
-    avg_response_time: "3.1m"
+    avg_response_time: "3.1m",
+    last_logout_at: "2026-01-29T15:04:55Z"
   },
 ];
 
@@ -449,7 +728,28 @@ const facilityRoleLabels: Record<Caregiver["facility_role"], string> = {
 
 const ITEMS_PER_PAGE = 9;
 
+const formatDateTime = (iso: string): string => {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
 type FilterType = "all" | "active" | "on-duty" | "with-patients";
+type GroupTab = "all" | "care" | "ems" | "security" | "fire_service";
+
+const GROUP_TABS: { id: GroupTab; label: string }[] = [
+  { id: "all", label: "All Staff" },
+  { id: "care", label: "Care Staff" },
+  { id: "ems", label: "EMS" },
+  { id: "security", label: "Security" },
+  { id: "fire_service", label: "Fire Service" },
+];
 
 export function CaregiversSection() {
   // TODO: re-enable when backend is available
@@ -460,6 +760,17 @@ export function CaregiversSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [activeGroup, setActiveGroup] = useState<GroupTab>("all");
+  const [addStaffOpen, setAddStaffOpen] = useState(false);
+  const [newStaff, setNewStaff] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    role: "",
+    shift: "",
+    facility_role: "",
+  });
 
   useEffect(() => {
     // TODO: re-enable when backend is available
@@ -483,6 +794,7 @@ export function CaregiversSection() {
           is_active: Boolean(row.is_active),
           created_at: row.created_at || new Date().toISOString(),
           last_login_at: row.last_login_at || "",
+          last_logout_at: row.last_logout_at || "",
           role_name: row.role_name || "caregiver",
           facility_id: Number(row.facility_id || 0),
           facility_role: (row.facility_role || "staff") as Caregiver["facility_role"],
@@ -513,7 +825,17 @@ export function CaregiversSection() {
     */
   }, []);
 
-  const filteredCaregivers = caregivers.filter((caregiver) => {
+  const groupFiltered = caregivers.filter((c) => {
+    switch (activeGroup) {
+      case "care": return ["staff", "admin", "supervisor", "caregiver"].includes(c.facility_role);
+      case "ems": return c.facility_role === "ems";
+      case "security": return c.facility_role === "security";
+      case "fire_service": return c.facility_role === "fire_service";
+      default: return true;
+    }
+  });
+
+  const filteredCaregivers = groupFiltered.filter((caregiver) => {
     const fullName = `${caregiver.first_name} ${caregiver.last_name}`.toLowerCase();
     const matchesSearch = fullName.includes(searchQuery.toLowerCase()) ||
            caregiver.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -544,15 +866,20 @@ export function CaregiversSection() {
     setCurrentPage(1);
   };
 
+  const handleGroupChange = (group: GroupTab) => {
+    setActiveGroup(group);
+    setCurrentPage(1);
+  };
+
   const totalPages = Math.ceil(filteredCaregivers.length / ITEMS_PER_PAGE);
   const paginatedCaregivers = filteredCaregivers.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  const activeCaregivers = caregivers.filter(c => c.is_active);
-  const onDutyCaregivers = caregivers.filter(c => c.duty_status === "on-duty");
-  const totalPatients = caregivers.reduce((sum, c) => sum + c.assigned_patients, 0);
+  const activeCaregivers = groupFiltered.filter(c => c.is_active);
+  const onDutyCaregivers = groupFiltered.filter(c => c.duty_status === "on-duty");
+  const totalPatients = groupFiltered.reduce((sum, c) => sum + c.assigned_patients, 0);
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)]">
@@ -561,22 +888,144 @@ export function CaregiversSection() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Caregivers</h1>
+            <h1 className="text-3xl font-bold text-foreground">Staff</h1>
             <p className="text-muted-foreground">
-              Manage caregiver assignments and performance
+              Manage staff assignments and performance
             </p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setAddStaffOpen(true)}>
             <Plus className="h-4 w-4" />
-            Add Caregiver
+            Add Staff
           </Button>
+        </div>
+
+        {/* Add Staff Dialog */}
+        <Dialog open={addStaffOpen} onOpenChange={setAddStaffOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add New Staff Member</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="staff-first-name">First Name</Label>
+                  <Input
+                    id="staff-first-name"
+                    placeholder="First name"
+                    value={newStaff.first_name}
+                    onChange={(e) => setNewStaff({ ...newStaff, first_name: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="staff-last-name">Last Name</Label>
+                  <Input
+                    id="staff-last-name"
+                    placeholder="Last name"
+                    value={newStaff.last_name}
+                    onChange={(e) => setNewStaff({ ...newStaff, last_name: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="staff-email">Email</Label>
+                <Input
+                  id="staff-email"
+                  type="email"
+                  placeholder="email@facility.com"
+                  value={newStaff.email}
+                  onChange={(e) => setNewStaff({ ...newStaff, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="staff-phone">Phone</Label>
+                <Input
+                  id="staff-phone"
+                  placeholder="+1 (555) 000-0000"
+                  value={newStaff.phone}
+                  onChange={(e) => setNewStaff({ ...newStaff, phone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Role</Label>
+                <Select value={newStaff.facility_role} onValueChange={(v) => setNewStaff({ ...newStaff, facility_role: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="staff">Care Staff</SelectItem>
+                    <SelectItem value="supervisor">Supervisor</SelectItem>
+                    <SelectItem value="admin">Administrator</SelectItem>
+                    <SelectItem value="ems">EMS</SelectItem>
+                    <SelectItem value="security">Security</SelectItem>
+                    <SelectItem value="fire_service">Fire Service</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Shift</Label>
+                <Select value={newStaff.shift} onValueChange={(v) => setNewStaff({ ...newStaff, shift: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select shift" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7AM - 3PM">7AM – 3PM</SelectItem>
+                    <SelectItem value="3PM - 11PM">3PM – 11PM</SelectItem>
+                    <SelectItem value="11PM - 7AM">11PM – 7AM</SelectItem>
+                    <SelectItem value="8AM - 4PM">8AM – 4PM</SelectItem>
+                    <SelectItem value="7AM - 7PM">7AM – 7PM</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddStaffOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setAddStaffOpen(false);
+                  setNewStaff({ first_name: "", last_name: "", email: "", phone: "", role: "", shift: "", facility_role: "" });
+                }}
+              >
+                Add Staff
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Group Tabs */}
+        <div className="flex flex-wrap gap-2">
+          {GROUP_TABS.map((tab) => {
+            const count = caregivers.filter((c) => {
+              switch (tab.id) {
+                case "care": return ["staff", "admin", "supervisor", "caregiver"].includes(c.facility_role);
+                case "ems": return c.facility_role === "ems";
+                case "security": return c.facility_role === "security";
+                case "fire_service": return c.facility_role === "fire_service";
+                default: return true;
+              }
+            }).length;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => handleGroupChange(tab.id)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                  activeGroup === tab.id
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                }`}
+              >
+                {tab.label} <span className="ml-1 opacity-70">({count})</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search caregivers..."
+            placeholder="Search staff..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-10"
@@ -608,7 +1057,7 @@ export function CaregiversSection() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{activeCaregivers.length}</div>
-                  <div className="text-xs text-muted-foreground">Active Caregivers</div>
+                  <div className="text-xs text-muted-foreground">Active Staff</div>
                 </div>
               </div>
             </CardContent>
@@ -664,7 +1113,7 @@ export function CaregiversSection() {
         </div>
       </div>
 
-      {/* Scrollable Caregivers Grid */}
+      {/* Scrollable Staff Grid */}
       <div className="flex-1 overflow-y-auto min-h-0 pr-2">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
           {paginatedCaregivers.map((caregiver) => (
@@ -713,6 +1162,14 @@ export function CaregiversSection() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Shift</span>
                     <span className="font-medium">{caregiver.current_shift}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Last Login</span>
+                    <span className="font-medium text-xs">{formatDateTime(caregiver.last_login_at)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Last Logout</span>
+                    <span className="font-medium text-xs">{formatDateTime(caregiver.last_logout_at)}</span>
                   </div>
                 </div>
 

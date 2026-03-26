@@ -7,6 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaginationControlled } from "@/components/ui/pagination";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   MessageSquare,
   Phone,
   Video,
@@ -430,6 +446,12 @@ export function CommunicationsSection() {
   const [messagePage, setMessagePage] = useState(1);
   const [callPage, setCallPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<CommFilterType>("all");
+  const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const [newMessage, setNewMessage] = useState({
+    recipient: "",
+    channel: "",
+    content: "",
+  });
 
   const filteredMessages = messages.filter(m => {
     const matchesSearch = m.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -501,11 +523,68 @@ export function CommunicationsSection() {
             <h1 className="text-3xl font-bold text-foreground">Communications</h1>
             <p className="text-muted-foreground">Manage messages and calls with families and staff</p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setNewMessageOpen(true)}>
             <Plus className="h-4 w-4" />
             New Message
           </Button>
         </div>
+
+        {/* New Message Dialog */}
+        <Dialog open={newMessageOpen} onOpenChange={setNewMessageOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>New Message</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="msg-recipient">Recipient</Label>
+                <Input
+                  id="msg-recipient"
+                  placeholder="Name or email"
+                  value={newMessage.recipient}
+                  onChange={(e) => setNewMessage({ ...newMessage, recipient: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Channel</Label>
+                <Select value={newMessage.channel} onValueChange={(v) => setNewMessage({ ...newMessage, channel: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select channel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="in_app">In-App</SelectItem>
+                    <SelectItem value="text">SMS / Text</SelectItem>
+                    <SelectItem value="email">Email</SelectItem>
+                    <SelectItem value="push">Push Notification</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="msg-content">Message</Label>
+                <Textarea
+                  id="msg-content"
+                  placeholder="Type your message..."
+                  rows={4}
+                  value={newMessage.content}
+                  onChange={(e) => setNewMessage({ ...newMessage, content: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setNewMessageOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setNewMessageOpen(false);
+                  setNewMessage({ recipient: "", channel: "", content: "" });
+                }}
+              >
+                Send Message
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

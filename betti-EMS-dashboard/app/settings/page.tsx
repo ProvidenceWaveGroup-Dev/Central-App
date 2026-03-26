@@ -68,20 +68,6 @@ export default function SettingsPage() {
   })
   const [devices, setDevices] = useState([
     {
-      name: "Halo Sensor",
-      type: "Wearable Device",
-      status: "Connected",
-      battery: "85%",
-      lastSync: "2 minutes ago",
-    },
-    {
-      name: "Smart Watch",
-      type: "Wearable Device",
-      status: "Connected",
-      battery: "62%",
-      lastSync: "5 minutes ago",
-    },
-    {
       name: "Home Hub",
       type: "Smart Home Device",
       status: "Connected",
@@ -702,7 +688,6 @@ export default function SettingsPage() {
                   <SelectValue placeholder="Select device type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Wearable Device">Wearable Device</SelectItem>
                   <SelectItem value="Smart Home Device">Smart Home Device</SelectItem>
                   <SelectItem value="Medical Monitor">Medical Monitor</SelectItem>
                   <SelectItem value="Sensor">Sensor</SelectItem>

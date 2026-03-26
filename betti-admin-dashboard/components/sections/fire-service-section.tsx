@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaginationControlled } from "@/components/ui/pagination";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
   Flame,
   Search,
   Plus,
@@ -130,6 +138,15 @@ export function FireServiceSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [addStationOpen, setAddStationOpen] = useState(false);
+  const [newStation, setNewStation] = useState({
+    station_name: "",
+    station_number: "",
+    chief_name: "",
+    phone: "",
+    address: "",
+    coverage_area: "",
+  });
 
   const activeUnits = fireServiceUnits.filter(u => u.status === "active");
   const totalPersonnel = activeUnits.reduce((sum, u) => sum + u.total_personnel, 0);
@@ -172,9 +189,7 @@ export function FireServiceSection() {
   );
 
   const handleAddStation = () => {
-    toast.info("Add Fire Station", {
-      description: "This would open a form to add a new fire station.",
-    });
+    setAddStationOpen(true);
   };
 
   const handleViewDetails = (unit: FireServiceUnit) => {
@@ -204,6 +219,84 @@ export function FireServiceSection() {
             Add Station
           </Button>
         </div>
+
+        {/* Add Station Dialog */}
+        <Dialog open={addStationOpen} onOpenChange={setAddStationOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Fire Station</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="station-name">Station Name</Label>
+                <Input
+                  id="station-name"
+                  placeholder="e.g. Delray Beach Fire Station 3"
+                  value={newStation.station_name}
+                  onChange={(e) => setNewStation({ ...newStation, station_name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="station-number">Station Number</Label>
+                <Input
+                  id="station-number"
+                  placeholder="e.g. FS-003"
+                  value={newStation.station_number}
+                  onChange={(e) => setNewStation({ ...newStation, station_number: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="station-chief">Chief / Captain Name</Label>
+                <Input
+                  id="station-chief"
+                  placeholder="Full name"
+                  value={newStation.chief_name}
+                  onChange={(e) => setNewStation({ ...newStation, chief_name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="station-phone">Phone</Label>
+                <Input
+                  id="station-phone"
+                  placeholder="+1 (561) 555-0000"
+                  value={newStation.phone}
+                  onChange={(e) => setNewStation({ ...newStation, phone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="station-address">Address</Label>
+                <Input
+                  id="station-address"
+                  placeholder="Street address"
+                  value={newStation.address}
+                  onChange={(e) => setNewStation({ ...newStation, address: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="station-coverage">Coverage Area</Label>
+                <Input
+                  id="station-coverage"
+                  placeholder="e.g. Palm Beach County"
+                  value={newStation.coverage_area}
+                  onChange={(e) => setNewStation({ ...newStation, coverage_area: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddStationOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setAddStationOpen(false);
+                  setNewStation({ station_name: "", station_number: "", chief_name: "", phone: "", address: "", coverage_area: "" });
+                }}
+              >
+                Add Station
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Search */}
         <div className="relative">

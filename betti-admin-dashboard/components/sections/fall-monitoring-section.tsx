@@ -70,7 +70,7 @@ const fallbackFallIncidents: FallIncident[] = [
     severity: "medium",
     responseTime: "4.2 min",
     caregiver: "John Davis",
-    sensorType: "Wearable",
+    sensorType: "Motion + Impact",
   },
   {
     id: 3,

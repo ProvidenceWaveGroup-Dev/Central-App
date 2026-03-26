@@ -7,6 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaginationControlled } from "@/components/ui/pagination";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Siren,
   MapPin,
   Phone,
@@ -322,6 +337,13 @@ export function EmergencySection() {
   const [responderPage, setResponderPage] = useState(1);
   const [routePage, setRoutePage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<ResponderFilterType>("all");
+  const [addResponderOpen, setAddResponderOpen] = useState(false);
+  const [newResponder, setNewResponder] = useState({
+    name: "",
+    responder_type: "",
+    contact_number: "",
+    coverage_area: "",
+  });
 
   // Filter responders
   const filteredResponders = emergencyResponders.filter(responder => {
@@ -393,7 +415,7 @@ export function EmergencySection() {
             <p className="text-muted-foreground">Manage emergency responders and wayfinding routes</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => setAddResponderOpen(true)}>
               <Plus className="h-4 w-4" />
               Add Responder
             </Button>
@@ -403,6 +425,71 @@ export function EmergencySection() {
             </Button>
           </div>
         </div>
+
+        {/* Add Responder Dialog */}
+        <Dialog open={addResponderOpen} onOpenChange={setAddResponderOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Emergency Responder</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="responder-name">Responder Name / Unit</Label>
+                <Input
+                  id="responder-name"
+                  placeholder="e.g. Delray EMS Unit 5"
+                  value={newResponder.name}
+                  onChange={(e) => setNewResponder({ ...newResponder, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Responder Type</Label>
+                <Select value={newResponder.responder_type} onValueChange={(v) => setNewResponder({ ...newResponder, responder_type: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ems">EMS</SelectItem>
+                    <SelectItem value="fire">Fire Service</SelectItem>
+                    <SelectItem value="police">Police</SelectItem>
+                    <SelectItem value="security">Security</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="responder-contact">Contact Number</Label>
+                <Input
+                  id="responder-contact"
+                  placeholder="+1-561-555-0000"
+                  value={newResponder.contact_number}
+                  onChange={(e) => setNewResponder({ ...newResponder, contact_number: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="responder-coverage">Coverage Area</Label>
+                <Input
+                  id="responder-coverage"
+                  placeholder="e.g. Palm Beach County"
+                  value={newResponder.coverage_area}
+                  onChange={(e) => setNewResponder({ ...newResponder, coverage_area: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddResponderOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setAddResponderOpen(false);
+                  setNewResponder({ name: "", responder_type: "", contact_number: "", coverage_area: "" });
+                }}
+              >
+                Add Responder
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Search */}
         <div className="relative max-w-md">

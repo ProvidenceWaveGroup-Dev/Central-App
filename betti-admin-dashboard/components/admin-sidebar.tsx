@@ -70,7 +70,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: "caregivers",
-    label: "Caregivers",
+    label: "Staff",
     icon: UserCog,
     badge: null,
   },

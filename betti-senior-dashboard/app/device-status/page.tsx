@@ -52,22 +52,6 @@ export default function DeviceStatusPage() {
 
   const devices = [
     {
-      id: 1,
-      name: "Smartwatch",
-      category: "Wearables",
-      battery: 82,
-      status: "Active",
-      lastToggle: "Still Wearing",
-    },
-    {
-      id: 2,
-      name: "Fitness Band",
-      category: "Wearables",
-      battery: 65,
-      status: "Active",
-      lastToggle: "Last turned on 3 days ago",
-    },
-    {
       id: 3,
       name: "Front Door Lock",
       category: "Smart Locks",

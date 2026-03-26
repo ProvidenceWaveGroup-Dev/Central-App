@@ -8,6 +8,21 @@ import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { PaginationControlled } from "@/components/ui/pagination";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Cpu,
   Wifi,
   WifiOff,
@@ -16,7 +31,6 @@ import {
   Plus,
   Settings,
   Activity,
-  Watch,
   Home,
   Lock,
   Thermometer,
@@ -26,7 +40,7 @@ import {
 // Schema-aligned: sensors, device_status, hubs, room_packs
 interface Sensor {
   sensor_id: number;
-  sensor_type: "motion" | "door" | "bed" | "environmental" | "wearable" | "panic";
+  sensor_type: "motion" | "door" | "bed" | "environmental" | "panic";
   device_id: string;
   status: "active" | "inactive" | "maintenance";
   facility_id: number;
@@ -66,20 +80,6 @@ const sensors: Sensor[] = [
     patient_name: "Margaret Johnson",
     room_name: "Room 214",
     hub_serial: "HUB-DEL-8821"
-  },
-  {
-    sensor_id: 315,
-    sensor_type: "wearable",
-    device_id: "WRB-44521",
-    status: "active",
-    facility_id: 12,
-    battery_level: 62.0,
-    connection_status: "connected",
-    signal_strength: -45,
-    last_sync: "2026-02-01T06:55:00Z",
-    patient_name: "Robert Smith",
-    room_name: "Room 118",
-    hub_serial: "HUB-DEL-8815"
   },
   {
     sensor_id: 318,
@@ -150,20 +150,6 @@ const sensors: Sensor[] = [
     patient_name: "Dorothy Miller",
     room_name: "Room 301",
     hub_serial: "HUB-DEL-8830"
-  },
-  {
-    sensor_id: 332,
-    sensor_type: "wearable",
-    device_id: "WRB-44522",
-    status: "active",
-    facility_id: 12,
-    battery_level: 45.0,
-    connection_status: "connected",
-    signal_strength: -48,
-    last_sync: "2026-02-01T06:40:00Z",
-    patient_name: "William Anderson",
-    room_name: "Room 205",
-    hub_serial: "HUB-DEL-8825"
   },
   {
     sensor_id: 335,
@@ -237,20 +223,6 @@ const sensors: Sensor[] = [
     hub_serial: "HUB-DEL-8850"
   },
   {
-    sensor_id: 348,
-    sensor_type: "wearable",
-    device_id: "WRB-44523",
-    status: "active",
-    facility_id: 12,
-    battery_level: 34.0,
-    connection_status: "connected",
-    signal_strength: -52,
-    last_sync: "2026-02-01T06:48:00Z",
-    patient_name: "Thomas Clark",
-    room_name: "Room 408",
-    hub_serial: "HUB-DEL-8850"
-  },
-  {
     sensor_id: 350,
     sensor_type: "door",
     device_id: "DOR-77814",
@@ -321,20 +293,6 @@ const sensors: Sensor[] = [
     hub_serial: "HUB-DEL-8832"
   },
   {
-    sensor_id: 362,
-    sensor_type: "wearable",
-    device_id: "WRB-44524",
-    status: "active",
-    facility_id: 12,
-    battery_level: 58.0,
-    connection_status: "connected",
-    signal_strength: -50,
-    last_sync: "2026-02-01T06:45:00Z",
-    patient_name: "Steven Wright",
-    room_name: "Room 232",
-    hub_serial: "HUB-DEL-8855"
-  },
-  {
     sensor_id: 365,
     sensor_type: "door",
     device_id: "DOR-77815",
@@ -388,13 +346,11 @@ const sensorTypeLabels: Record<Sensor["sensor_type"], string> = {
   door: "Door Sensor",
   bed: "Bed Sensor",
   environmental: "Environmental",
-  wearable: "Wearable",
   panic: "Panic Button"
 };
 
 const getDeviceIcon = (type: Sensor["sensor_type"]) => {
   switch (type) {
-    case "wearable": return Watch;
     case "door": return Lock;
     case "environmental": return Thermometer;
     case "panic": return Activity;
@@ -433,6 +389,13 @@ export function DevicesSection() {
   const [sensorPage, setSensorPage] = useState(1);
   const [hubPage, setHubPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<SensorFilterType>("all");
+  const [addDeviceOpen, setAddDeviceOpen] = useState(false);
+  const [newDevice, setNewDevice] = useState({
+    device_type: "",
+    device_id: "",
+    room: "",
+    patient: "",
+  });
 
   // Filter sensors based on search and filter
   const filteredSensors = sensors.filter(sensor => {
@@ -511,11 +474,78 @@ export function DevicesSection() {
             <h1 className="text-3xl font-bold text-foreground">Devices & Sensors</h1>
             <p className="text-muted-foreground">Manage all connected devices and hubs</p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setAddDeviceOpen(true)}>
             <Plus className="h-4 w-4" />
             Add Device
           </Button>
         </div>
+
+        {/* Add Device Dialog */}
+        <Dialog open={addDeviceOpen} onOpenChange={setAddDeviceOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add New Device</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-1.5">
+                <Label>Device Type</Label>
+                <Select value={newDevice.device_type} onValueChange={(v) => setNewDevice({ ...newDevice, device_type: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select device type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="motion">Motion Sensor</SelectItem>
+                    <SelectItem value="door">Door Sensor</SelectItem>
+                    <SelectItem value="bed">Bed Sensor</SelectItem>
+                    <SelectItem value="environmental">Environmental Sensor</SelectItem>
+                    <SelectItem value="panic">Panic Button</SelectItem>
+                    <SelectItem value="hub">Hub</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="device-id">Device ID / Serial Number</Label>
+                <Input
+                  id="device-id"
+                  placeholder="e.g. MOT-12345"
+                  value={newDevice.device_id}
+                  onChange={(e) => setNewDevice({ ...newDevice, device_id: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="device-room">Room / Location</Label>
+                <Input
+                  id="device-room"
+                  placeholder="e.g. Room 204B"
+                  value={newDevice.room}
+                  onChange={(e) => setNewDevice({ ...newDevice, room: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="device-patient">Assigned Patient (optional)</Label>
+                <Input
+                  id="device-patient"
+                  placeholder="Patient name"
+                  value={newDevice.patient}
+                  onChange={(e) => setNewDevice({ ...newDevice, patient: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddDeviceOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setAddDeviceOpen(false);
+                  setNewDevice({ device_type: "", device_id: "", room: "", patient: "" });
+                }}
+              >
+                Add Device
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Search */}
         <div className="relative max-w-md">

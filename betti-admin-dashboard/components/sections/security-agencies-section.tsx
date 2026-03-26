@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaginationControlled } from "@/components/ui/pagination";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
   Shield,
   Search,
   Plus,
@@ -124,6 +132,15 @@ export function SecurityAgenciesSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [addAgencyOpen, setAddAgencyOpen] = useState(false);
+  const [newAgency, setNewAgency] = useState({
+    name: "",
+    contact_person: "",
+    phone: "",
+    email: "",
+    address: "",
+    coverage_area: "",
+  });
 
   const activeAgencies = securityAgencies.filter(a => a.status === "active");
   const agenciesWithGuards = securityAgencies.filter(a => a.total_guards > 0);
@@ -166,9 +183,7 @@ export function SecurityAgenciesSection() {
   );
 
   const handleAddAgency = () => {
-    toast.info("Add Agency", {
-      description: "This would open a form to add a new security agency.",
-    });
+    setAddAgencyOpen(true);
   };
 
   const handleViewDetails = (agency: SecurityAgency) => {
@@ -198,6 +213,85 @@ export function SecurityAgenciesSection() {
             Add Agency
           </Button>
         </div>
+
+        {/* Add Agency Dialog */}
+        <Dialog open={addAgencyOpen} onOpenChange={setAddAgencyOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Security Agency</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="agency-name">Agency Name</Label>
+                <Input
+                  id="agency-name"
+                  placeholder="e.g. SecureGuard Protection Services"
+                  value={newAgency.name}
+                  onChange={(e) => setNewAgency({ ...newAgency, name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="agency-contact">Contact Person</Label>
+                <Input
+                  id="agency-contact"
+                  placeholder="Full name"
+                  value={newAgency.contact_person}
+                  onChange={(e) => setNewAgency({ ...newAgency, contact_person: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="agency-phone">Phone</Label>
+                <Input
+                  id="agency-phone"
+                  placeholder="+1 (561) 555-0000"
+                  value={newAgency.phone}
+                  onChange={(e) => setNewAgency({ ...newAgency, phone: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="agency-email">Email</Label>
+                <Input
+                  id="agency-email"
+                  type="email"
+                  placeholder="contact@agency.com"
+                  value={newAgency.email}
+                  onChange={(e) => setNewAgency({ ...newAgency, email: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="agency-address">Address</Label>
+                <Input
+                  id="agency-address"
+                  placeholder="Street address"
+                  value={newAgency.address}
+                  onChange={(e) => setNewAgency({ ...newAgency, address: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="agency-coverage">Coverage Area</Label>
+                <Input
+                  id="agency-coverage"
+                  placeholder="e.g. Palm Beach County"
+                  value={newAgency.coverage_area}
+                  onChange={(e) => setNewAgency({ ...newAgency, coverage_area: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddAgencyOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setAddAgencyOpen(false);
+                  setNewAgency({ name: "", contact_person: "", phone: "", email: "", address: "", coverage_area: "" });
+                }}
+              >
+                Add Agency
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Search */}
         <div className="relative">
