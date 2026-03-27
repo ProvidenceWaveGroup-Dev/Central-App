@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { ServerCrash, RefreshCw } from "lucide-react";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
-// global-error must include its own <html> and <body> tags
-// as it replaces the root layout when triggered.
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   useEffect(() => {
     console.error("[Betti] Global layout error:", error);
@@ -17,7 +14,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   return (
     <html lang="en">
-      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#f8fafc" }}>
+      <body style={{ margin: 0, fontFamily: "system-ui, sans-serif", background: "#ffffff" }}>
         <div
           style={{
             minHeight: "100vh",
@@ -30,48 +27,66 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             gap: "2rem",
           }}
         >
-          {/* Icon */}
-          <div
-            style={{
-              padding: "1.5rem",
-              borderRadius: "9999px",
-              background: "#fff7ed",
-              display: "inline-flex",
-            }}
-          >
-            <ServerCrash
-              style={{ width: "3.5rem", height: "3.5rem", color: "#ea580c" }}
-            />
-          </div>
+          {/* Logo */}
+          <img
+            src="/betti-logo.png"
+            alt="Betti"
+            style={{ height: "40px", objectFit: "contain" }}
+          />
 
           {/* Error code */}
           <p
             style={{
               fontSize: "6rem",
               fontWeight: 900,
-              color: "rgba(100,116,139,0.2)",
+              color: "rgba(148,163,184,0.3)",
               lineHeight: 1,
-              userSelect: "none",
               margin: 0,
+              userSelect: "none",
             }}
           >
             500
           </p>
 
+          {/* Icon */}
+          <div
+            style={{
+              padding: "1rem",
+              borderRadius: "9999px",
+              background: "#fff7ed",
+              display: "inline-flex",
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ width: "3rem", height: "3rem", color: "#f97316" }}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+              />
+            </svg>
+          </div>
+
           {/* Message */}
-          <div style={{ maxWidth: "28rem", margin: "0 auto" }}>
+          <div style={{ maxWidth: "28rem" }}>
             <h1
               style={{
                 fontSize: "1.5rem",
                 fontWeight: 700,
                 color: "#0f172a",
-                marginBottom: "0.5rem",
+                margin: "0 0 0.5rem",
               }}
             >
               Critical Error
             </h1>
-            <p style={{ color: "#64748b", fontSize: "0.875rem", lineHeight: 1.6 }}>
-              The Betti dashboard encountered a critical error and could not
+            <p style={{ color: "#64748b", fontSize: "0.875rem", lineHeight: 1.6, margin: 0 }}>
+              The Betti Central Hub encountered a critical error and could not
               recover. Please refresh the page. If the problem persists, contact
               your system administrator.
             </p>
@@ -83,8 +98,11 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               style={{
                 padding: "0.75rem 1rem",
                 borderRadius: "0.5rem",
-                background: "#f1f5f9",
+                background: "#f8fafc",
                 border: "1px solid #e2e8f0",
+                maxWidth: "28rem",
+                width: "100%",
+                textAlign: "left",
               }}
             >
               <p style={{ fontSize: "0.75rem", color: "#64748b", margin: 0 }}>
@@ -111,7 +129,6 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               cursor: "pointer",
             }}
           >
-            <RefreshCw style={{ width: "1rem", height: "1rem" }} />
             Reload Page
           </button>
 
@@ -126,14 +143,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               textAlign: "left",
             }}
           >
-            <p
-              style={{
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                color: "#9a3412",
-                margin: "0 0 0.25rem",
-              }}
-            >
+            <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "#9a3412", margin: "0 0 0.25rem" }}>
               For urgent patient situations
             </p>
             <p style={{ fontSize: "0.75rem", color: "#c2410c", margin: 0 }}>
@@ -142,8 +152,8 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             </p>
           </div>
 
-          <p style={{ fontSize: "0.75rem", color: "rgba(100,116,139,0.5)", margin: 0 }}>
-            Betti Admin Dashboard &mdash; Critical Error
+          <p style={{ fontSize: "0.75rem", color: "rgba(148,163,184,0.6)", margin: 0 }}>
+            Betti Central Hub &mdash; Critical Error
           </p>
         </div>
       </body>
