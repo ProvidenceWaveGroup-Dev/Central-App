@@ -54,10 +54,7 @@ export default function Unauthorized() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-medium transition-colors"
-            style={{ backgroundColor: "#233e7d" }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1a2e5e")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#233e7d")}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#233e7d] hover:bg-[#1a2e5e] text-white text-sm font-medium transition-colors"
           >
             Sign In at Central Hub
           </Link>
@@ -65,10 +62,7 @@ export default function Unauthorized() {
             href="https://betti.providencewavegroup.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border text-sm font-medium transition-colors"
-            style={{ borderColor: "#233e7d", color: "#233e7d" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f0f4ff"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-[#233e7d] text-[#233e7d] hover:bg-[#f0f4ff] text-sm font-medium transition-colors"
           >
             Visit Betti Website
           </a>

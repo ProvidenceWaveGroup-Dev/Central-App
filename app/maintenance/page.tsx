@@ -71,10 +71,7 @@ export default function MaintenancePage() {
             href="https://betti.providencewavegroup.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-medium transition-colors"
-            style={{ backgroundColor: "#233e7d" }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1a2e5e")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#233e7d")}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#233e7d] hover:bg-[#1a2e5e] text-white text-sm font-medium transition-colors"
           >
             Visit Betti Website
           </a>
