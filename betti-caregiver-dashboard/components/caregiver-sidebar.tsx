@@ -18,8 +18,19 @@ import {
   Lock,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   LogOut,
+  Utensils,
+  Droplets,
+  PersonStanding,
+  Pill,
 } from "lucide-react";
+
+interface SubMenuItem {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+}
 
 interface MenuItem {
   id: string;
@@ -27,6 +38,7 @@ interface MenuItem {
   icon: LucideIcon;
   badge: string | null;
   badgeVariant?: "destructive" | "secondary";
+  subItems?: SubMenuItem[];
 }
 
 interface CaregiverSidebarProps {
@@ -81,9 +93,15 @@ const toolItems: MenuItem[] = [
   },
   {
     id: "reminders",
-    label: "Reminders & Scheduling",
+    label: "Appointments",
     icon: Calendar,
     badge: null,
+    subItems: [
+      { id: "meal", label: "Meal", icon: Utensils },
+      { id: "hydration", label: "Hydration", icon: Droplets },
+      { id: "restroom", label: "Restroom", icon: PersonStanding },
+      { id: "medication", label: "Medication", icon: Pill },
+    ],
   },
   {
     id: "reports",
@@ -113,6 +131,7 @@ export function CaregiverSidebar({
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [dynamicBadges, setDynamicBadges] = useState<Record<string, string>>({});
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(["reminders"]));
 
   useEffect(() => {
     // TODO: re-enable when backend is available
@@ -226,39 +245,100 @@ export function CaregiverSidebar({
     setShowLogoutConfirm(false);
   };
 
-  const renderItem = (item: MenuItem) => (
-    <Button
-      key={item.id}
-      onClick={() => handleItemClick(item.id)}
-      variant={activeSection === item.id ? "secondary" : "ghost"}
-      className={cn(
-        "w-full gap-3 h-10 justify-start text-sm",
-        collapsed && "justify-center px-2",
-        activeSection === item.id &&
-          "bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
-      )}
-    >
-        <item.icon
+  const toggleExpanded = (id: string) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const isSubItemActive = (item: MenuItem) =>
+    item.subItems?.some((s) => s.id === activeSection) ?? false;
+
+  const renderItem = (item: MenuItem) => {
+    const hasChildren = item.subItems && item.subItems.length > 0;
+    const isExpanded = expandedItems.has(item.id);
+    const isActive = activeSection === item.id || isSubItemActive(item);
+
+    return (
+      <div key={item.id}>
+        <Button
+          onClick={() => {
+            if (hasChildren && !collapsed) {
+              toggleExpanded(item.id);
+            }
+            handleItemClick(item.id);
+          }}
+          variant={isActive ? "secondary" : "ghost"}
           className={cn(
-            "h-5 w-5 flex-shrink-0",
-            activeSection === item.id ? "text-green-600" : "text-gray-500"
+            "w-full gap-3 h-10 justify-start text-sm",
+            collapsed && "justify-center px-2",
+            isActive && "bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
           )}
-        />
-        {!collapsed && (
-          <>
-            <span className="flex-1 text-left">{item.label}</span>
-            {(dynamicBadges[item.id] || item.badge) && (
-              <Badge
-                variant={item.badgeVariant || "secondary"}
-                className="ml-auto text-xs"
-              >
-                {dynamicBadges[item.id] || item.badge}
-              </Badge>
+        >
+          <item.icon
+            className={cn(
+              "h-5 w-5 flex-shrink-0",
+              isActive ? "text-green-600" : "text-gray-500"
             )}
-          </>
+          />
+          {!collapsed && (
+            <>
+              <span className="flex-1 text-left">{item.label}</span>
+              {(dynamicBadges[item.id] || item.badge) && (
+                <Badge
+                  variant={item.badgeVariant || "secondary"}
+                  className="ml-auto text-xs"
+                >
+                  {dynamicBadges[item.id] || item.badge}
+                </Badge>
+              )}
+              {hasChildren && (
+                <ChevronDown
+                  className={cn(
+                    "h-4 w-4 text-gray-400 transition-transform duration-200 flex-shrink-0",
+                    isExpanded && "rotate-180"
+                  )}
+                />
+              )}
+            </>
+          )}
+        </Button>
+
+        {/* Sub-items */}
+        {hasChildren && !collapsed && isExpanded && (
+          <div className="ml-4 mt-0.5 space-y-0.5 border-l-2 border-green-100 pl-3">
+            {item.subItems!.map((sub) => (
+              <Button
+                key={sub.id}
+                onClick={() => handleItemClick(sub.id)}
+                variant={activeSection === sub.id ? "secondary" : "ghost"}
+                className={cn(
+                  "w-full gap-2.5 h-9 justify-start text-sm",
+                  activeSection === sub.id
+                    ? "bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
+                    : "text-gray-600 hover:text-gray-900"
+                )}
+              >
+                <sub.icon
+                  className={cn(
+                    "h-4 w-4 flex-shrink-0",
+                    activeSection === sub.id ? "text-green-600" : "text-gray-400"
+                  )}
+                />
+                <span className="flex-1 text-left">{sub.label}</span>
+              </Button>
+            ))}
+          </div>
         )}
-    </Button>
-  );
+      </div>
+    );
+  };
 
   return (
     <div
