@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,19 +18,8 @@ import {
   Lock,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   LogOut,
-  Utensils,
-  Droplets,
-  PersonStanding,
-  Pill,
 } from "lucide-react";
-
-interface SubMenuItem {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-}
 
 interface MenuItem {
   id: string;
@@ -38,7 +27,6 @@ interface MenuItem {
   icon: LucideIcon;
   badge: string | null;
   badgeVariant?: "destructive" | "secondary";
-  subItems?: SubMenuItem[];
 }
 
 interface CaregiverSidebarProps {
@@ -93,15 +81,9 @@ const toolItems: MenuItem[] = [
   },
   {
     id: "reminders",
-    label: "Appointments",
+    label: "Reminders",
     icon: Calendar,
     badge: null,
-    subItems: [
-      { id: "meal", label: "Meal", icon: Utensils },
-      { id: "hydration", label: "Hydration", icon: Droplets },
-      { id: "restroom", label: "Restroom", icon: PersonStanding },
-      { id: "medication", label: "Medication", icon: Pill },
-    ],
   },
   {
     id: "reports",
@@ -131,84 +113,10 @@ export function CaregiverSidebar({
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [dynamicBadges, setDynamicBadges] = useState<Record<string, string>>({});
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(["reminders"]));
 
-  useEffect(() => {
-    // TODO: re-enable when backend is available
-    /*
-    let mounted = true;
-    const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
-    const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("betti_token") || params?.get("betti_token") || params?.get("token")
-      : null;
-    const userId = typeof window !== "undefined"
-      ? localStorage.getItem("betti_user_id") || params?.get("betti_user_id") || params?.get("user_id")
-      : null;
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-      if (typeof window !== "undefined" && !localStorage.getItem("betti_token")) {
-        localStorage.setItem("betti_token", token);
-      }
-    }
-    if (userId && typeof window !== "undefined" && !localStorage.getItem("betti_user_id")) {
-      localStorage.setItem("betti_user_id", userId);
-    }
-
-    const loadBadges = async () => {
-      try {
-        let alertCount = 0;
-        let assignedPatientIds = new Set<number>();
-        if (userId) {
-          const assignedRes = await fetch(`${apiUrl}/api/users/${userId}/assigned-patients?active_only=true`, { headers });
-          if (assignedRes.ok) {
-            const assignedRows = (await assignedRes.json()) as Array<{ active_alerts?: number; patient_id?: number }>;
-            alertCount = (assignedRows || []).reduce((sum, row) => sum + Number(row?.active_alerts || 0), 0);
-            assignedPatientIds = new Set(
-              (assignedRows || [])
-                .map((row) => Number(row?.patient_id || 0))
-                .filter((id) => id > 0),
-            );
-          }
-        }
-
-        if (alertCount === 0) {
-          const alertsRes = await fetch(`${apiUrl}/api/alerts?limit=${SIDEBAR_ALERTS_LIMIT}`, { headers });
-          if (alertsRes.ok) {
-            const alertRows = (await alertsRes.json()) as Array<{ status?: string | null; patient_id?: number | null }>;
-            alertCount = (alertRows || []).filter(
-              (row) =>
-                String(row?.status || "active").toLowerCase() === "active" &&
-                (assignedPatientIds.size === 0 || assignedPatientIds.has(Number(row?.patient_id || 0))),
-            ).length;
-          }
-        }
-
-        if (mounted) {
-          if (alertCount > 0) {
-            setDynamicBadges({ alerts: String(alertCount) });
-          } else {
-            setDynamicBadges({});
-          }
-        }
-      } catch {
-        if (mounted) {
-          setDynamicBadges({});
-        }
-      }
-    };
-
-    void loadBadges();
-    const intervalId = window.setInterval(() => {
-      void loadBadges();
-    }, SIDEBAR_BADGE_POLL_MS);
-    return () => {
-      mounted = false;
-      window.clearInterval(intervalId);
-    };
-    */
-  }, []);
+  // TODO: re-enable badge polling when backend is available
+  void SIDEBAR_BADGE_POLL_MS;
+  void SIDEBAR_ALERTS_LIMIT;
 
   const collapsed = isMobile
     ? false
@@ -245,98 +153,40 @@ export function CaregiverSidebar({
     setShowLogoutConfirm(false);
   };
 
-  const toggleExpanded = (id: string) => {
-    setExpandedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  const isSubItemActive = (item: MenuItem) =>
-    item.subItems?.some((s) => s.id === activeSection) ?? false;
-
   const renderItem = (item: MenuItem) => {
-    const hasChildren = item.subItems && item.subItems.length > 0;
-    const isExpanded = expandedItems.has(item.id);
-    const isActive = activeSection === item.id || isSubItemActive(item);
+    const isActive = activeSection === item.id;
 
     return (
-      <div key={item.id}>
-        <Button
-          onClick={() => {
-            if (hasChildren && !collapsed) {
-              toggleExpanded(item.id);
-            }
-            handleItemClick(item.id);
-          }}
-          variant={isActive ? "secondary" : "ghost"}
-          className={cn(
-            "w-full gap-3 h-10 justify-start text-sm",
-            collapsed && "justify-center px-2",
-            isActive && "bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
-          )}
-        >
-          <item.icon
-            className={cn(
-              "h-5 w-5 flex-shrink-0",
-              isActive ? "text-green-600" : "text-gray-500"
-            )}
-          />
-          {!collapsed && (
-            <>
-              <span className="flex-1 text-left">{item.label}</span>
-              {(dynamicBadges[item.id] || item.badge) && (
-                <Badge
-                  variant={item.badgeVariant || "secondary"}
-                  className="ml-auto text-xs"
-                >
-                  {dynamicBadges[item.id] || item.badge}
-                </Badge>
-              )}
-              {hasChildren && (
-                <ChevronDown
-                  className={cn(
-                    "h-4 w-4 text-gray-400 transition-transform duration-200 flex-shrink-0",
-                    isExpanded && "rotate-180"
-                  )}
-                />
-              )}
-            </>
-          )}
-        </Button>
-
-        {/* Sub-items */}
-        {hasChildren && !collapsed && isExpanded && (
-          <div className="ml-4 mt-0.5 space-y-0.5 border-l-2 border-green-100 pl-3">
-            {item.subItems!.map((sub) => (
-              <Button
-                key={sub.id}
-                onClick={() => handleItemClick(sub.id)}
-                variant={activeSection === sub.id ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full gap-2.5 h-9 justify-start text-sm",
-                  activeSection === sub.id
-                    ? "bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
-                    : "text-gray-600 hover:text-gray-900"
-                )}
-              >
-                <sub.icon
-                  className={cn(
-                    "h-4 w-4 flex-shrink-0",
-                    activeSection === sub.id ? "text-green-600" : "text-gray-400"
-                  )}
-                />
-                <span className="flex-1 text-left">{sub.label}</span>
-              </Button>
-            ))}
-          </div>
+      <Button
+        key={item.id}
+        onClick={() => handleItemClick(item.id)}
+        variant={isActive ? "secondary" : "ghost"}
+        className={cn(
+          "w-full gap-3 h-10 justify-start text-sm",
+          collapsed && "justify-center px-2",
+          isActive && "bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
         )}
-      </div>
+      >
+        <item.icon
+          className={cn(
+            "h-5 w-5 flex-shrink-0",
+            isActive ? "text-green-600" : "text-gray-500"
+          )}
+        />
+        {!collapsed && (
+          <>
+            <span className="flex-1 text-left">{item.label}</span>
+            {(dynamicBadges[item.id] || item.badge) && (
+              <Badge
+                variant={item.badgeVariant || "secondary"}
+                className="ml-auto text-xs"
+              >
+                {dynamicBadges[item.id] || item.badge}
+              </Badge>
+            )}
+          </>
+        )}
+      </Button>
     );
   };
 
