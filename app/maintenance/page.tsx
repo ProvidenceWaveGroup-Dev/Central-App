@@ -65,40 +65,19 @@ export default function MaintenancePage() {
           <span className="text-sm text-slate-500">Maintenance in progress</span>
         </div>
 
-        {/* Emergency contacts */}
-        <div className="rounded-lg border border-red-200 bg-red-50 p-5 text-left space-y-3">
-          <div className="flex items-center gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 text-red-600 flex-shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25z"
-              />
-            </svg>
-            <p className="text-sm font-semibold text-red-800">Emergency Contacts</p>
-          </div>
-          <p className="text-xs text-red-700 leading-relaxed">
-            If you require immediate access to patient monitoring data, please
-            contact your facility&apos;s on-call coordinator or use your
-            facility&apos;s backup procedures.
-          </p>
-          <div className="space-y-1.5 pt-1 border-t border-red-200">
-            <div className="flex justify-between text-xs pt-1.5">
-              <span className="text-red-700 font-medium">Betti Emergency Support</span>
-              <span className="font-mono font-semibold text-red-800">1-800-BETTI-911</span>
-            </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-red-700 font-medium">Technical Support</span>
-              <span className="font-mono font-semibold text-red-800">support@betti.com</span>
-            </div>
-          </div>
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <a
+            href="https://betti.providencewavegroup.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-medium transition-colors"
+            style={{ backgroundColor: "#233e7d" }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1a2e5e")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#233e7d")}
+          >
+            Visit Betti Website
+          </a>
         </div>
 
         <p className="text-xs text-slate-400">

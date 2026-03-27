@@ -52,10 +52,24 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-white text-sm font-medium transition-colors"
+            style={{ backgroundColor: "#233e7d" }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1a2e5e")}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#233e7d")}
           >
             Back to Central Hub
           </Link>
+          <a
+            href="https://betti.providencewavegroup.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border text-sm font-medium transition-colors"
+            style={{ borderColor: "#233e7d", color: "#233e7d" }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f0f4ff"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          >
+            Visit Betti Website
+          </a>
         </div>
 
         <p className="text-xs text-slate-400">
