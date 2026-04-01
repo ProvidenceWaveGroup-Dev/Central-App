@@ -3,28 +3,60 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, Plus, CheckCircle, AlertCircle, User, Pill, Dumbbell, Utensils, Droplets, PersonStanding } from "lucide-react"
+import {
+  Calendar,
+  Clock,
+  Plus,
+  CheckCircle,
+  AlertCircle,
+  User,
+  Pill,
+  Dumbbell,
+  Utensils,
+  Droplets,
+  PersonStanding,
+} from "lucide-react"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { AddReminderDialog } from "@/components/add-reminder-dialog"
-import { format } from "date-fns"
+import { AddReminderDialog, type ReminderFormType, type ReminderPayload } from "@/components/add-reminder-dialog"
 import Link from "next/link"
 
-type ReminderType = "medication" | "appointment" | "exercise" | "hydration" | "meal" | "restroom"
-type FilterTab = "all" | "meal" | "hydration" | "restroom" | "medication"
+type FilterTab = "all" | "appointment" | "meal" | "exercise" | "medication" | "hydration" | "restroom"
 
 const FILTER_TABS: { id: FilterTab; label: string; icon: React.ElementType }[] = [
-  { id: "all", label: "All", icon: Calendar },
-  { id: "meal", label: "Meal", icon: Utensils },
-  { id: "hydration", label: "Hydration", icon: Droplets },
-  { id: "restroom", label: "Restroom", icon: PersonStanding },
-  { id: "medication", label: "Medication", icon: Pill },
+  { id: "all",         label: "All",          icon: Calendar },
+  { id: "appointment", label: "Appointments",  icon: User },
+  { id: "meal",        label: "Meal",          icon: Utensils },
+  { id: "exercise",    label: "PT & Exercise", icon: Dumbbell },
+  { id: "medication",  label: "Medication",    icon: Pill },
+  { id: "hydration",   label: "Hydration",     icon: Droplets },
+  { id: "restroom",    label: "Restroom",       icon: PersonStanding },
 ]
 
-const upcomingReminders = [
+const ICON_MAP: Record<ReminderFormType, React.ElementType> = {
+  appointment: User,
+  meal:        Utensils,
+  exercise:    Dumbbell,
+  medication:  Pill,
+  hydration:   Droplets,
+  restroom:    PersonStanding,
+}
+
+interface Reminder {
+  id: number
+  type: ReminderFormType
+  icon: React.ElementType
+  title: string
+  description: string
+  time: string
+  status: string
+  priority: "high" | "medium" | "low"
+}
+
+const initialReminders: Reminder[] = [
   {
     id: 1,
-    type: "medication" as ReminderType,
+    type: "medication",
     icon: Pill,
     title: "Evening Medication",
     description: "Blood pressure medication",
@@ -34,9 +66,9 @@ const upcomingReminders = [
   },
   {
     id: 2,
-    type: "appointment" as ReminderType,
+    type: "appointment",
     icon: User,
-    title: "Doctor Visit - Dr. Smith",
+    title: "Doctor Visit — Dr. Smith",
     description: "Regular checkup",
     time: "Tomorrow 10:00 AM",
     status: "confirmed",
@@ -44,7 +76,7 @@ const upcomingReminders = [
   },
   {
     id: 3,
-    type: "exercise" as ReminderType,
+    type: "exercise",
     icon: Dumbbell,
     title: "Light Walking Exercise",
     description: "15 minutes around the house",
@@ -54,7 +86,7 @@ const upcomingReminders = [
   },
   {
     id: 4,
-    type: "hydration" as ReminderType,
+    type: "hydration",
     icon: Droplets,
     title: "Hydration Reminder",
     description: "Drink a glass of water",
@@ -64,7 +96,7 @@ const upcomingReminders = [
   },
   {
     id: 5,
-    type: "meal" as ReminderType,
+    type: "meal",
     icon: Utensils,
     title: "Lunch",
     description: "Prepare afternoon meal",
@@ -74,7 +106,7 @@ const upcomingReminders = [
   },
   {
     id: 6,
-    type: "restroom" as ReminderType,
+    type: "restroom",
     icon: PersonStanding,
     title: "Restroom Break",
     description: "Scheduled restroom assistance",
@@ -85,80 +117,49 @@ const upcomingReminders = [
 ]
 
 const todaySchedule = [
-  { time: "8:00 AM", event: "Morning medication ✓", completed: true },
-  { time: "9:00 AM", event: "Breakfast ✓", completed: true },
-  { time: "12:00 PM", event: "Lunch ✓", completed: true },
-  { time: "2:00 PM", event: "Afternoon rest ✓", completed: true },
-  { time: "4:00 PM", event: "Light exercise", completed: false },
-  { time: "6:00 PM", event: "Evening medication", completed: false },
-  { time: "7:00 PM", event: "Dinner", completed: false },
+  { time: "8:00 AM",  event: "Morning medication ✓", completed: true },
+  { time: "9:00 AM",  event: "Breakfast ✓",           completed: true },
+  { time: "12:00 PM", event: "Lunch ✓",                completed: true },
+  { time: "2:00 PM",  event: "Afternoon rest ✓",       completed: true },
+  { time: "4:00 PM",  event: "Light exercise",          completed: false },
+  { time: "6:00 PM",  event: "Evening medication",      completed: false },
+  { time: "7:00 PM",  event: "Dinner",                  completed: false },
 ]
 
 export function RemindersScheduling() {
-  const [reminders, setReminders] = useState(upcomingReminders)
-  const [schedule] = useState(todaySchedule)
+  const [reminders, setReminders] = useState<Reminder[]>(initialReminders)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all")
   const { toast } = useToast()
 
-  const getFilterCount = (tab: FilterTab) => {
-    if (tab === "all") return reminders.length
-    return reminders.filter((r) => r.type === tab).length
-  }
+  const getFilterCount = (tab: FilterTab) =>
+    tab === "all" ? reminders.length : reminders.filter((r) => r.type === tab).length
 
   const filteredReminders =
-    activeFilter === "all"
-      ? reminders
-      : reminders.filter((r) => r.type === activeFilter)
+    activeFilter === "all" ? reminders : reminders.filter((r) => r.type === activeFilter)
 
-  const handleCompleteReminder = (reminderId: number) => {
+  const handleCompleteReminder = (id: number) => {
     setReminders((prev) =>
-      prev.map((reminder) => (reminder.id === reminderId ? { ...reminder, status: "completed" as const } : reminder)),
+      prev.map((r) => (r.id === id ? { ...r, status: "completed" } : r)),
     )
-
-    toast({
-      title: "Reminder Completed",
-      description: "The reminder has been marked as done",
-    })
+    toast({ title: "Reminder Completed", description: "The reminder has been marked as done" })
   }
 
-  const handleAddReminder = () => {
-    setIsAddDialogOpen(true)
-  }
-
-  const handleSubmitReminder = (reminderData: {
-    title: string
-    date: Date
-    time: string
-    purpose: string
-  }) => {
-    const iconMap: Record<string, React.ElementType> = {
-      medication: Pill,
-      checkup: User,
-      appointment: User,
-      exercise: Dumbbell,
-      hydration: Droplets,
-      meal: Utensils,
-      restroom: PersonStanding,
-      other: Clock,
-    }
-
-    const newReminder = {
+  const handleSubmitReminder = (payload: ReminderPayload) => {
+    const newReminder: Reminder = {
       id: reminders.length + 1,
-      type: reminderData.purpose as ReminderType,
-      icon: iconMap[reminderData.purpose] || Clock,
-      title: reminderData.title,
-      description: reminderData.purpose,
-      time: `${format(reminderData.date, "MMM d")} at ${reminderData.time}`,
-      status: "upcoming" as const,
-      priority: "medium" as const,
+      type: payload.type,
+      icon: ICON_MAP[payload.type] || Clock,
+      title: payload.title,
+      description: String(payload.metadata.meal_type || payload.metadata.appointment_type || payload.metadata.exercise_type || payload.type),
+      time: payload.timeLabel,
+      status: "upcoming",
+      priority: "medium",
     }
-
     setReminders((prev) => [...prev, newReminder])
-
     toast({
       title: "Reminder Added",
-      description: `${reminderData.title} has been scheduled for ${format(reminderData.date, "PPP")} at ${reminderData.time}`,
+      description: `${payload.title} has been scheduled`,
     })
   }
 
@@ -169,7 +170,7 @@ export function RemindersScheduling() {
           <CardTitle className="flex items-center gap-2 text-lg">
             <Calendar className="h-5 w-5 text-accent" />
             Reminders
-            <Button size="sm" variant="outline" className="ml-auto bg-transparent" onClick={handleAddReminder}>
+            <Button size="sm" variant="outline" className="ml-auto bg-transparent" onClick={() => setIsAddDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-1" />
               Add
             </Button>
@@ -205,7 +206,7 @@ export function RemindersScheduling() {
           <div className="space-y-3">
             {filteredReminders.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No reminders for this category.
+                No reminders in this category.
               </p>
             ) : (
               filteredReminders.map((reminder) => (
@@ -257,7 +258,7 @@ export function RemindersScheduling() {
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-foreground">Today&apos;s Schedule</h4>
             <div className="space-y-2 max-h-32 overflow-y-auto">
-              {schedule.map((item, index) => (
+              {todaySchedule.map((item, index) => (
                 <div
                   key={index}
                   className={`flex items-center gap-3 p-2 rounded text-xs ${
