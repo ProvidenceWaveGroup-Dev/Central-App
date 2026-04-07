@@ -17,36 +17,44 @@ interface Alert {
 }
 
 const initialAlerts: Alert[] = [
-  { id: 1, severity: "critical", type: "Fall Detected", resident: "Margaret Collins", room: "204", time: "2 min ago", status: "new" },
-  { id: 2, severity: "warning", type: "Vitals Anomaly", resident: "Robert Chen", room: "118", time: "8 min ago", status: "new" },
-  { id: 3, severity: "warning", type: "Inactivity (45 min)", resident: "Dorothy Palmer", room: "310", time: "15 min ago", status: "new" },
-  { id: 4, severity: "info", type: "Device Offline", resident: "James Wilson", room: "205", time: "22 min ago", status: "acknowledged" },
-  { id: 5, severity: "critical", type: "Emergency Button", resident: "Frank Martinez", room: "401", time: "30 min ago", status: "acknowledged" },
-  { id: 6, severity: "info", type: "Low Battery", resident: "Helen Torres", room: "112", time: "45 min ago", status: "resolved" },
-  { id: 7, severity: "warning", type: "Temp Spike", resident: "William Davis", room: "302", time: "1 hr ago", status: "resolved" },
-  { id: 8, severity: "warning", type: "Missed Medication", resident: "Susan Park", room: "220", time: "1.5 hr ago", status: "resolved" },
+  { id: 1,  severity: "critical", type: "Fall Detected",        resident: "Margaret Collins", room: "204", time: "2 min ago",   status: "new"          },
+  { id: 2,  severity: "critical", type: "High Blood Pressure",  resident: "Thomas Wright",    room: "306", time: "1 min ago",   status: "new"          },
+  { id: 3,  severity: "critical", type: "High Blood Pressure",  resident: "Margaret Collins", room: "204", time: "5 min ago",   status: "new"          },
+  { id: 4,  severity: "warning",  type: "Elevated BP",          resident: "Robert Chen",      room: "118", time: "7 min ago",   status: "new"          },
+  { id: 5,  severity: "warning",  type: "Vitals Anomaly",       resident: "Robert Chen",      room: "118", time: "8 min ago",   status: "new"          },
+  { id: 6,  severity: "warning",  type: "Inactivity (45 min)",  resident: "Dorothy Palmer",   room: "310", time: "15 min ago",  status: "new"          },
+  { id: 7,  severity: "info",     type: "Device Offline",       resident: "James Wilson",     room: "205", time: "22 min ago",  status: "acknowledged" },
+  { id: 8,  severity: "critical", type: "Emergency Button",     resident: "Frank Martinez",   room: "401", time: "30 min ago",  status: "acknowledged" },
+  { id: 9,  severity: "info",     type: "Low Battery",          resident: "Helen Torres",     room: "112", time: "45 min ago",  status: "resolved"     },
+  { id: 10, severity: "warning",  type: "Temp Spike",           resident: "William Davis",    room: "302", time: "1 hr ago",    status: "resolved"     },
+  { id: 11, severity: "warning",  type: "Missed Medication",    resident: "Susan Park",       room: "220", time: "1.5 hr ago",  status: "resolved"     },
 ];
 
 const sevColors: Record<Severity, string> = {
   critical: "bg-red-100 text-red-700 border-red-200",
-  warning: "bg-amber-100 text-amber-700 border-amber-200",
-  info: "bg-blue-100 text-blue-700 border-blue-200",
+  warning:  "bg-amber-100 text-amber-700 border-amber-200",
+  info:     "bg-blue-100 text-blue-700 border-blue-200",
 };
 
 const statusColors: Record<AlertStatus, string> = {
-  new: "bg-red-50 text-red-600",
+  new:          "bg-red-50 text-red-600",
   acknowledged: "bg-amber-50 text-amber-600",
-  resolved: "bg-green-50 text-green-600",
+  resolved:     "bg-green-50 text-green-600",
 };
+
+// Highlight BP alerts with a subtle left border
+const isBpAlert = (type: string) =>
+  type === "High Blood Pressure" || type === "Elevated BP";
 
 const filters = ["all", "critical", "warning", "info"] as const;
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState<Alert[]>(initialAlerts);
+  const [alerts, setAlerts]         = useState<Alert[]>(initialAlerts);
   const [activeFilter, setActiveFilter] = useState<string>("all");
 
-  const filtered = activeFilter === "all" ? alerts : alerts.filter((a) => a.severity === activeFilter);
-  const newCount = alerts.filter((a) => a.status === "new").length;
+  const filtered   = activeFilter === "all" ? alerts : alerts.filter((a) => a.severity === activeFilter);
+  const newCount   = alerts.filter((a) => a.status === "new").length;
+  const bpNewCount = alerts.filter((a) => a.status === "new" && isBpAlert(a.type)).length;
 
   const acknowledge = (id: number) => {
     setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, status: "acknowledged" as AlertStatus } : a)));
@@ -58,6 +66,7 @@ export default function AlertsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3">
+            <Bell className="h-6 w-6 text-gray-400" />
             <h1 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">Live Alert Queue</h1>
             {newCount > 0 && (
               <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-2 text-xs font-bold text-white">
@@ -82,6 +91,21 @@ export default function AlertsPage() {
           </div>
         </div>
 
+        {/* BP alert banner when there are unacknowledged BP alerts */}
+        {bpNewCount > 0 && (
+          <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+            <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 font-bold text-sm">
+              {bpNewCount}
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-red-700">High Blood Pressure Alert{bpNewCount > 1 ? "s" : ""}</p>
+              <p className="text-xs text-red-600">
+                {bpNewCount === 1 ? "1 resident has" : `${bpNewCount} residents have`} reported elevated blood pressure. Review and acknowledge below.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Alert List */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           {/* Table Header */}
@@ -101,7 +125,11 @@ export default function AlertsPage() {
             filtered.map((alert) => (
               <div
                 key={alert.id}
-                className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center px-5 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                className={`grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center px-5 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                  isBpAlert(alert.type) && alert.status === "new"
+                    ? "border-l-4 border-l-red-400 bg-red-50/40 hover:bg-red-50/60"
+                    : ""
+                }`}
               >
                 <div className="md:col-span-1">
                   <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold capitalize ${sevColors[alert.severity]}`}>
