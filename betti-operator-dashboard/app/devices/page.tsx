@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Cpu, Wifi, WifiOff, BatteryLow, Wrench } from "lucide-react";
+import { Pagination } from "@/components/pagination";
 
 const statusSummary = [
   { label: "Online",          value: 38, icon: Wifi,       color: "text-green-600", bg: "bg-green-50", border: "border-green-200" },
@@ -17,16 +19,11 @@ interface Device {
   location: string;
   status: DeviceStatus;
   battery: number;
-  batteryHoursEst: number;   // estimated hours remaining at current charge
+  batteryHoursEst: number;
   signal: string;
   lastPing: string;
 }
 
-// batteryHoursEst: realistic estimates per device type
-// Motion Sensor: ~6-month total → hourly estimate proportional
-// Vitals Monitor: continuous use, ~48h total
-// Emergency Button: ~12-month total → proportional
-// Door Sensor: ~6-month total → proportional
 const devices: Device[] = [
   { id: "DEV-001", type: "Motion Sensor",    location: "Room 105", status: "online",  battery: 92, batteryHoursEst: 3974, signal: "Strong", lastPing: "1 min ago"  },
   { id: "DEV-002", type: "Vitals Monitor",   location: "Room 118", status: "online",  battery: 85, batteryHoursEst: 41,   signal: "Strong", lastPing: "30 sec ago" },
@@ -38,7 +35,14 @@ const devices: Device[] = [
   { id: "DEV-008", type: "Door Sensor",      location: "Room 401", status: "online",  battery: 67, batteryHoursEst: 1344, signal: "Good",   lastPing: "3 min ago"  },
   { id: "DEV-009", type: "Motion Sensor",    location: "Room 408", status: "online",  battery: 22, batteryHoursEst: 3,    signal: "Good",   lastPing: "2 min ago"  },
   { id: "DEV-010", type: "Vitals Monitor",   location: "Room 115", status: "online",  battery: 88, batteryHoursEst: 42,   signal: "Strong", lastPing: "45 sec ago" },
+  { id: "DEV-011", type: "Motion Sensor",    location: "Room 212", status: "online",  battery: 74, batteryHoursEst: 1246, signal: "Strong", lastPing: "1 min ago"  },
+  { id: "DEV-012", type: "Door Sensor",      location: "Room 306", status: "online",  battery: 55, batteryHoursEst: 980,  signal: "Good",   lastPing: "4 min ago"  },
+  { id: "DEV-013", type: "Emergency Button", location: "Room 322", status: "online",  battery: 61, batteryHoursEst: 5335, signal: "Strong", lastPing: "2 min ago"  },
+  { id: "DEV-014", type: "Vitals Monitor",   location: "Room 201", status: "online",  battery: 79, batteryHoursEst: 38,   signal: "Good",   lastPing: "1 min ago"  },
+  { id: "DEV-015", type: "Motion Sensor",    location: "Room 109", status: "online",  battery: 43, batteryHoursEst: 14,   signal: "Good",   lastPing: "3 min ago"  },
 ];
+
+const PAGE_SIZE = 8;
 
 const statusDot: Record<DeviceStatus, string> = {
   online:      "bg-green-500",
@@ -66,16 +70,21 @@ const signalColor: Record<string, string> = {
 };
 
 function formatBatteryTime(hours: number, battery: number): { label: string; color: string } {
-  if (battery === 0 || hours === 0) return { label: "—", color: "text-gray-400" };
-  if (hours < 1)    return { label: `~${Math.round(hours * 60)} min`,  color: "text-red-600 font-bold"   };
-  if (hours < 12)   return { label: `~${Math.round(hours)}h`,          color: "text-red-600 font-bold"   };
-  if (hours < 48)   return { label: `~${Math.round(hours)}h`,          color: "text-amber-600 font-semibold" };
-  if (hours < 720)  return { label: `~${Math.round(hours / 24)} days`, color: "text-gray-600"            };
-  if (hours < 4380) return { label: `~${Math.round(hours / (24 * 7))} weeks`, color: "text-gray-500"     };
-  return               { label: `~${Math.round(hours / (24 * 30))} months`, color: "text-gray-500"       };
+  if (battery === 0 || hours === 0) return { label: "—",                                          color: "text-gray-400"                };
+  if (hours < 1)                    return { label: `~${Math.round(hours * 60)} min`,              color: "text-red-600 font-bold"       };
+  if (hours < 12)                   return { label: `~${Math.round(hours)}h`,                      color: "text-red-600 font-bold"       };
+  if (hours < 48)                   return { label: `~${Math.round(hours)}h`,                      color: "text-amber-600 font-semibold" };
+  if (hours < 720)                  return { label: `~${Math.round(hours / 24)} days`,             color: "text-gray-600"                };
+  if (hours < 4380)                 return { label: `~${Math.round(hours / (24 * 7))} weeks`,      color: "text-gray-500"                };
+  return                                   { label: `~${Math.round(hours / (24 * 30))} months`,    color: "text-gray-500"                };
 }
 
 export default function DevicesPage() {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const totalPages = Math.ceil(devices.length / PAGE_SIZE);
+  const paginated  = devices.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -100,7 +109,7 @@ export default function DevicesPage() {
           ))}
         </div>
 
-        {/* Device Table — 8 cols: ID | Type | Location | Status | Battery | Time Left | Signal | Last Ping */}
+        {/* Device Table */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           <div className="hidden lg:grid grid-cols-8 gap-3 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
             <div>Device ID</div>
@@ -112,7 +121,8 @@ export default function DevicesPage() {
             <div>Signal</div>
             <div>Last Ping</div>
           </div>
-          {devices.map((d) => {
+
+          {paginated.map((d) => {
             const effectiveStatus: DeviceStatus = d.status === "online" && d.battery <= 25 ? "low_battery" : d.status;
             const sl = statusLabel[effectiveStatus];
             const timeLeft = formatBatteryTime(d.batteryHoursEst, d.battery);
@@ -125,7 +135,6 @@ export default function DevicesPage() {
                   <span className={`h-2 w-2 rounded-full ${statusDot[effectiveStatus]}`} />
                   <span className={`text-sm font-medium ${sl.color}`}>{sl.text}</span>
                 </div>
-                {/* Battery bar + % */}
                 <div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 h-2 rounded-full bg-gray-200 max-w-20">
@@ -134,13 +143,20 @@ export default function DevicesPage() {
                     <span className="text-xs text-gray-500 w-7 text-right">{d.battery}%</span>
                   </div>
                 </div>
-                {/* Time remaining */}
                 <div className={`text-xs ${timeLeft.color}`}>{timeLeft.label}</div>
                 <div className={`text-sm ${signalColor[d.signal]}`}>{d.signal}</div>
                 <div className="text-xs text-gray-500">{d.lastPing}</div>
               </div>
             );
           })}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={devices.length}
+            pageSize={PAGE_SIZE}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>
