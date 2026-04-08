@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ClipboardList, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ClipboardList, Clock, CheckCircle2, AlertTriangle, X, Plus } from "lucide-react";
 import { Pagination } from "@/components/pagination";
 
 type IncidentStatus = "open" | "in_progress" | "resolved";
@@ -50,13 +50,180 @@ const incidentStats = [
   { label: "Avg Resolution", value: "12 min", icon: ClipboardList, color: "text-blue-600",  bg: "bg-blue-50"  },
 ];
 
-// grid: #(1) ID(1) Type(2) Resident(2) Room(1) Status(1) Assigned(1) Time(1) Actions(2) = 12
 const ROW_CLS = "grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-4 items-center px-5 py-4 border-b";
 
+// ── Notes Modal ───────────────────────────────────────────────────────────────
+function NotesModal({ incident, onSave, onClose }: { incident: Incident; onSave: (id: string, note: string) => void; onClose: () => void }) {
+  const [newNote, setNewNote] = useState("");
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h2 className="font-serif text-lg font-semibold text-gray-900">Incident Notes</h2>
+            <p className="text-xs text-gray-500">{incident.id} · {incident.type}</p>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100 transition"><X className="h-4 w-4 text-gray-500" /></button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          {/* Incident summary */}
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            {[
+              { label: "Resident", value: incident.resident },
+              { label: "Room",     value: `Room ${incident.room}` },
+              { label: "Assigned", value: incident.assignedTo },
+              { label: "Status",   value: incident.status.replace("_", " "), capitalize: true },
+            ].map((row) => (
+              <div key={row.label} className="rounded-lg bg-gray-50 px-3 py-2">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">{row.label}</p>
+                <p className={`font-medium text-gray-800 ${row.capitalize ? "capitalize" : ""}`}>{row.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Existing notes */}
+          {incident.notes ? (
+            <div>
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Existing Notes</p>
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-gray-700">{incident.notes}</div>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400 italic">No notes recorded yet.</p>
+          )}
+
+          {/* Add note */}
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Add Note</p>
+            <textarea rows={3} value={newNote} onChange={(e) => setNewNote(e.target.value)}
+              placeholder="Describe action taken, observations, or next steps…"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-[#233E7D] focus:outline-none focus:ring-2 focus:ring-[#233E7D]/20 resize-none" />
+          </div>
+        </div>
+
+        <div className="flex gap-3 px-6 py-4 border-t border-gray-100">
+          <button onClick={onClose} className="flex-1 rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Cancel</button>
+          <button onClick={() => { if (newNote.trim()) { onSave(incident.id, newNote); } onClose(); }}
+            className="flex-1 rounded-lg bg-[#233E7D] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1c3164] transition">
+            Save Note
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── New Incident Modal ────────────────────────────────────────────────────────
+function NewIncidentModal({ onSave, onClose }: { onSave: (inc: Omit<Incident, "id" | "time">) => void; onClose: () => void }) {
+  const [type, setType]         = useState("");
+  const [resident, setResident] = useState("");
+  const [room, setRoom]         = useState("");
+  const [assignedTo, setAssign] = useState("");
+  const [notes, setNotes]       = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const valid = type && resident && room;
+
+  if (submitted) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 text-center space-y-3">
+          <div className="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+            <CheckCircle2 className="h-6 w-6 text-green-600" />
+          </div>
+          <p className="font-semibold text-gray-900">Incident created</p>
+          <p className="text-sm text-gray-500">{type} for {resident} (Room {room}) has been logged.</p>
+          <button onClick={onClose} className="mt-2 rounded-lg bg-[#5C7F39] px-5 py-2 text-sm font-semibold text-white hover:bg-[#4f6b32] transition">Done</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+          <h2 className="font-serif text-lg font-semibold text-gray-900">New Incident</h2>
+          <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100 transition"><X className="h-4 w-4 text-gray-500" /></button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Incident Type <span className="text-red-500">*</span></label>
+            <select value={type} onChange={(e) => setType(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/20">
+              <option value="">Select type…</option>
+              <option value="Fall">Fall</option>
+              <option value="Fall in Hallway">Fall in Hallway</option>
+              <option value="Vitals Alert">Vitals Alert</option>
+              <option value="High Blood Pressure">High Blood Pressure</option>
+              <option value="Wandering">Wandering</option>
+              <option value="Missed Medication">Missed Medication</option>
+              <option value="Missed Check-in">Missed Check-in</option>
+              <option value="Emergency Response">Emergency Response</option>
+              <option value="Device Malfunction">Device Malfunction</option>
+              <option value="Skin Incident Reported">Skin Incident Reported</option>
+              <option value="Inactivity Alert">Inactivity Alert</option>
+              <option value="Routine Check Failed">Routine Check Failed</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Resident Name <span className="text-red-500">*</span></label>
+              <input value={resident} onChange={(e) => setResident(e.target.value)} placeholder="Full name…"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/20" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Room <span className="text-red-500">*</span></label>
+              <input value={room} onChange={(e) => setRoom(e.target.value)} placeholder="e.g. 204"
+                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/20" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Assign To</label>
+            <select value={assignedTo} onChange={(e) => setAssign(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/20">
+              <option value="">Unassigned</option>
+              <option value="Nurse Sarah Kim">Nurse Sarah Kim</option>
+              <option value="Nurse Maria Lopez">Nurse Maria Lopez</option>
+              <option value="Aide James Obi">Aide James Obi</option>
+              <option value="Aide David Nguyen">Aide David Nguyen</option>
+              <option value="Tech Support">Tech Support</option>
+              <option value="You">Myself</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Initial Notes</label>
+            <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)}
+              placeholder="Describe what happened, initial response, or context…"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/20 resize-none" />
+          </div>
+        </div>
+
+        <div className="flex gap-3 px-6 py-4 border-t border-gray-100 flex-shrink-0">
+          <button onClick={onClose} className="flex-1 rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Cancel</button>
+          <button disabled={!valid} onClick={() => { onSave({ type, resident, room, status: "open", assignedTo: assignedTo || "Unassigned", notes }); setSubmitted(true); }}
+            className="flex-1 rounded-lg bg-[#5C7F39] px-4 py-2 text-sm font-semibold text-white hover:bg-[#4f6b32] disabled:opacity-40 disabled:cursor-not-allowed transition">
+            Log Incident
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function IncidentsPage() {
   const [incidents, setIncidents]       = useState<Incident[]>(initialIncidents);
   const [statusFilter, setStatusFilter] = useState<"all" | IncidentStatus>("all");
   const [currentPage, setCurrentPage]   = useState(1);
+  const [notesIncident, setNotes]       = useState<Incident | null>(null);
+  const [showNew, setShowNew]           = useState(false);
 
   const filtered   = statusFilter === "all" ? incidents : incidents.filter((i) => i.status === statusFilter);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -65,15 +232,18 @@ export default function IncidentsPage() {
 
   const handleFilterChange = (val: "all" | IncidentStatus) => { setStatusFilter(val); setCurrentPage(1); };
 
-  const acknowledge = (id: string) => {
-    setIncidents((prev) =>
-      prev.map((inc) => (inc.id === id && inc.status === "open" ? { ...inc, status: "in_progress" as IncidentStatus, assignedTo: "You" } : inc))
-    );
-  };
-  const resolve = (id: string) => {
-    setIncidents((prev) =>
-      prev.map((inc) => (inc.id === id ? { ...inc, status: "resolved" as IncidentStatus } : inc))
-    );
+  const acknowledge = (id: string) =>
+    setIncidents((prev) => prev.map((inc) => inc.id === id && inc.status === "open" ? { ...inc, status: "in_progress" as IncidentStatus, assignedTo: "You" } : inc));
+
+  const resolve = (id: string) =>
+    setIncidents((prev) => prev.map((inc) => inc.id === id ? { ...inc, status: "resolved" as IncidentStatus } : inc));
+
+  const saveNote = (id: string, note: string) =>
+    setIncidents((prev) => prev.map((inc) => inc.id === id ? { ...inc, notes: inc.notes ? `${inc.notes}\n${note}` : note } : inc));
+
+  const addIncident = (data: Omit<Incident, "id" | "time">) => {
+    const nextId = `INC-${1037 - incidents.length}`;
+    setIncidents((prev) => [{ ...data, id: nextId, time: "just now" }, ...prev]);
   };
 
   return (
@@ -85,19 +255,17 @@ export default function IncidentsPage() {
           <div className="flex items-center gap-3">
             <div className="flex gap-2">
               {(["all", "open", "in_progress", "resolved"] as const).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => handleFilterChange(f)}
+                <button key={f} onClick={() => handleFilterChange(f)}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition ${
                     statusFilter === f ? "bg-[#233E7D] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
+                  }`}>
                   {f === "in_progress" ? "In Progress" : f.charAt(0).toUpperCase() + f.slice(1)}
                 </button>
               ))}
             </div>
-            <button className="inline-flex items-center gap-2 rounded-lg bg-[#5C7F39] px-4 py-2 text-sm font-semibold text-white hover:bg-[#4f6b32] transition">
-              + New Incident
+            <button onClick={() => setShowNew(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-[#5C7F39] px-4 py-2 text-sm font-semibold text-white hover:bg-[#4f6b32] transition">
+              <Plus className="h-4 w-4" /> New Incident
             </button>
           </div>
         </div>
@@ -115,7 +283,7 @@ export default function IncidentsPage() {
           ))}
         </div>
 
-        {/* Incident Table — #(1) ID(1) Type(2) Resident(2) Room(1) Status(1) Assigned(1) Time(1) Actions(2) = 12 */}
+        {/* Table */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           <div className="hidden lg:grid grid-cols-12 gap-4 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
             <div className="col-span-1">#</div>
@@ -137,9 +305,7 @@ export default function IncidentsPage() {
                 const st = statusConfig[inc.status];
                 return (
                   <div key={inc.id} className={`${ROW_CLS} border-gray-100 hover:bg-gray-50 transition-colors`}>
-                    <div className="lg:col-span-1 text-xs font-medium text-gray-400">
-                      {(currentPage - 1) * PAGE_SIZE + idx + 1}
-                    </div>
+                    <div className="lg:col-span-1 text-xs font-medium text-gray-400">{(currentPage - 1) * PAGE_SIZE + idx + 1}</div>
                     <div className="lg:col-span-1 text-xs font-mono text-gray-500">{inc.id}</div>
                     <div className="lg:col-span-2 text-sm font-medium text-gray-900">{inc.type}</div>
                     <div className="lg:col-span-2 text-sm text-gray-700">{inc.resident}</div>
@@ -151,23 +317,19 @@ export default function IncidentsPage() {
                     <div className="lg:col-span-1 text-xs text-gray-500">{inc.time}</div>
                     <div className="lg:col-span-2 flex gap-2">
                       {inc.status === "open" && (
-                        <button onClick={() => acknowledge(inc.id)} className="rounded-lg bg-[#233E7D] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1c3164] transition">
-                          Take On
-                        </button>
+                        <button onClick={() => acknowledge(inc.id)} className="rounded-lg bg-[#233E7D] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1c3164] transition">Take On</button>
                       )}
                       {inc.status === "in_progress" && (
-                        <button onClick={() => resolve(inc.id)} className="rounded-lg bg-[#5C7F39] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#4f6b32] transition">
-                          Resolve
-                        </button>
+                        <button onClick={() => resolve(inc.id)} className="rounded-lg bg-[#5C7F39] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#4f6b32] transition">Resolve</button>
                       )}
-                      <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition">
-                        Notes
+                      <button onClick={() => setNotes(inc)}
+                        className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition">
+                        Notes {inc.notes && <span className="ml-0.5 text-amber-500">●</span>}
                       </button>
                     </div>
                   </div>
                 );
               })}
-              {/* Ghost rows */}
               {Array.from({ length: ghosts }).map((_, i) => (
                 <div key={`ghost-${i}`} aria-hidden="true" className={`${ROW_CLS} border-transparent opacity-0 pointer-events-none select-none`}>
                   <div className="lg:col-span-12">&nbsp;</div>
@@ -176,15 +338,12 @@ export default function IncidentsPage() {
             </>
           )}
 
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={filtered.length}
-            pageSize={PAGE_SIZE}
-            onPageChange={setCurrentPage}
-          />
+          <Pagination currentPage={currentPage} totalPages={totalPages} totalItems={filtered.length} pageSize={PAGE_SIZE} onPageChange={setCurrentPage} />
         </div>
       </div>
+
+      {notesIncident && <NotesModal incident={notesIncident} onSave={saveNote} onClose={() => setNotes(null)} />}
+      {showNew && <NewIncidentModal onSave={addIncident} onClose={() => setShowNew(false)} />}
     </div>
   );
 }
