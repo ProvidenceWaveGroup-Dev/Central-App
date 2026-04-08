@@ -44,20 +44,24 @@ const statusConfig: Record<IncidentStatus, { bg: string; text: string; label: st
 };
 
 const incidentStats = [
-  { label: "Open",           value: 2,       icon: AlertTriangle,  color: "text-red-600",   bg: "bg-red-50"   },
-  { label: "In Progress",    value: 3,       icon: Clock,          color: "text-amber-600", bg: "bg-amber-50" },
-  { label: "Resolved Today", value: 10,      icon: CheckCircle2,   color: "text-green-600", bg: "bg-green-50" },
-  { label: "Avg Resolution", value: "12 min",icon: ClipboardList,  color: "text-blue-600",  bg: "bg-blue-50"  },
+  { label: "Open",           value: 2,        icon: AlertTriangle, color: "text-red-600",   bg: "bg-red-50"   },
+  { label: "In Progress",    value: 3,        icon: Clock,         color: "text-amber-600", bg: "bg-amber-50" },
+  { label: "Resolved Today", value: 10,       icon: CheckCircle2,  color: "text-green-600", bg: "bg-green-50" },
+  { label: "Avg Resolution", value: "12 min", icon: ClipboardList, color: "text-blue-600",  bg: "bg-blue-50"  },
 ];
 
+// grid: #(1) ID(1) Type(2) Resident(2) Room(1) Status(1) Assigned(1) Time(1) Actions(2) = 12
+const ROW_CLS = "grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-4 items-center px-5 py-4 border-b";
+
 export default function IncidentsPage() {
-  const [incidents, setIncidents]     = useState<Incident[]>(initialIncidents);
+  const [incidents, setIncidents]       = useState<Incident[]>(initialIncidents);
   const [statusFilter, setStatusFilter] = useState<"all" | IncidentStatus>("all");
   const [currentPage, setCurrentPage]   = useState(1);
 
-  const filtered = statusFilter === "all" ? incidents : incidents.filter((i) => i.status === statusFilter);
+  const filtered   = statusFilter === "all" ? incidents : incidents.filter((i) => i.status === statusFilter);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated  = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const ghosts     = PAGE_SIZE - paginated.length;
 
   const handleFilterChange = (val: "all" | IncidentStatus) => { setStatusFilter(val); setCurrentPage(1); };
 
@@ -66,7 +70,6 @@ export default function IncidentsPage() {
       prev.map((inc) => (inc.id === id && inc.status === "open" ? { ...inc, status: "in_progress" as IncidentStatus, assignedTo: "You" } : inc))
     );
   };
-
   const resolve = (id: string) => {
     setIncidents((prev) =>
       prev.map((inc) => (inc.id === id ? { ...inc, status: "resolved" as IncidentStatus } : inc))
@@ -80,16 +83,13 @@ export default function IncidentsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h1 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">Incident Management</h1>
           <div className="flex items-center gap-3">
-            {/* Status filter */}
             <div className="flex gap-2">
               {(["all", "open", "in_progress", "resolved"] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => handleFilterChange(f)}
                   className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition ${
-                    statusFilter === f
-                      ? "bg-[#233E7D] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    statusFilter === f ? "bg-[#233E7D] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
                   {f === "in_progress" ? "In Progress" : f.charAt(0).toUpperCase() + f.slice(1)}
@@ -115,15 +115,16 @@ export default function IncidentsPage() {
           ))}
         </div>
 
-        {/* Incident Table */}
+        {/* Incident Table — #(1) ID(1) Type(2) Resident(2) Room(1) Status(1) Assigned(1) Time(1) Actions(2) = 12 */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           <div className="hidden lg:grid grid-cols-12 gap-4 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <div className="col-span-1">#</div>
             <div className="col-span-1">ID</div>
             <div className="col-span-2">Type</div>
             <div className="col-span-2">Resident</div>
             <div className="col-span-1">Room</div>
             <div className="col-span-1">Status</div>
-            <div className="col-span-2">Assigned To</div>
+            <div className="col-span-1">Assigned To</div>
             <div className="col-span-1">Time</div>
             <div className="col-span-2">Actions</div>
           </div>
@@ -131,37 +132,48 @@ export default function IncidentsPage() {
           {paginated.length === 0 ? (
             <div className="p-8 text-center text-sm text-gray-400">No incidents matching this filter.</div>
           ) : (
-            paginated.map((inc) => {
-              const st = statusConfig[inc.status];
-              return (
-                <div key={inc.id} className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-4 items-center px-5 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <div className="lg:col-span-1 text-xs font-mono text-gray-500">{inc.id}</div>
-                  <div className="lg:col-span-2 text-sm font-medium text-gray-900">{inc.type}</div>
-                  <div className="lg:col-span-2 text-sm text-gray-700">{inc.resident}</div>
-                  <div className="lg:col-span-1 text-sm text-gray-600">{inc.room}</div>
-                  <div className="lg:col-span-1">
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${st.bg} ${st.text}`}>{st.label}</span>
-                  </div>
-                  <div className="lg:col-span-2 text-sm text-gray-600">{inc.assignedTo}</div>
-                  <div className="lg:col-span-1 text-xs text-gray-500">{inc.time}</div>
-                  <div className="lg:col-span-2 flex gap-2">
-                    {inc.status === "open" && (
-                      <button onClick={() => acknowledge(inc.id)} className="rounded-lg bg-[#233E7D] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1c3164] transition">
-                        Take On
+            <>
+              {paginated.map((inc, idx) => {
+                const st = statusConfig[inc.status];
+                return (
+                  <div key={inc.id} className={`${ROW_CLS} border-gray-100 hover:bg-gray-50 transition-colors`}>
+                    <div className="lg:col-span-1 text-xs font-medium text-gray-400">
+                      {(currentPage - 1) * PAGE_SIZE + idx + 1}
+                    </div>
+                    <div className="lg:col-span-1 text-xs font-mono text-gray-500">{inc.id}</div>
+                    <div className="lg:col-span-2 text-sm font-medium text-gray-900">{inc.type}</div>
+                    <div className="lg:col-span-2 text-sm text-gray-700">{inc.resident}</div>
+                    <div className="lg:col-span-1 text-sm text-gray-600">{inc.room}</div>
+                    <div className="lg:col-span-1">
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${st.bg} ${st.text}`}>{st.label}</span>
+                    </div>
+                    <div className="lg:col-span-1 text-sm text-gray-600 truncate">{inc.assignedTo}</div>
+                    <div className="lg:col-span-1 text-xs text-gray-500">{inc.time}</div>
+                    <div className="lg:col-span-2 flex gap-2">
+                      {inc.status === "open" && (
+                        <button onClick={() => acknowledge(inc.id)} className="rounded-lg bg-[#233E7D] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1c3164] transition">
+                          Take On
+                        </button>
+                      )}
+                      {inc.status === "in_progress" && (
+                        <button onClick={() => resolve(inc.id)} className="rounded-lg bg-[#5C7F39] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#4f6b32] transition">
+                          Resolve
+                        </button>
+                      )}
+                      <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition">
+                        Notes
                       </button>
-                    )}
-                    {inc.status === "in_progress" && (
-                      <button onClick={() => resolve(inc.id)} className="rounded-lg bg-[#5C7F39] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#4f6b32] transition">
-                        Resolve
-                      </button>
-                    )}
-                    <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition">
-                      Notes
-                    </button>
+                    </div>
                   </div>
+                );
+              })}
+              {/* Ghost rows */}
+              {Array.from({ length: ghosts }).map((_, i) => (
+                <div key={`ghost-${i}`} aria-hidden="true" className={`${ROW_CLS} border-transparent opacity-0 pointer-events-none select-none`}>
+                  <div className="lg:col-span-12">&nbsp;</div>
                 </div>
-              );
-            })
+              ))}
+            </>
           )}
 
           <Pagination

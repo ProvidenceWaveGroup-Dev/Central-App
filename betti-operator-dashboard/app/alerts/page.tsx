@@ -57,23 +57,23 @@ const isBpAlert = (type: string) =>
 
 const filters = ["all", "critical", "warning", "info"] as const;
 
+// grid: #(1) Severity(1) Type(2) Resident(2) Room(1) Time(1) Status(2) Actions(2) = 12
+const ROW_CLS = "grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center px-5 py-4 border-b";
+
 export default function AlertsPage() {
-  const [alerts, setAlerts]         = useState<Alert[]>(initialAlerts);
+  const [alerts, setAlerts]             = useState<Alert[]>(initialAlerts);
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [currentPage, setCurrentPage]   = useState(1);
 
-  const filtered = activeFilter === "all" ? alerts : alerts.filter((a) => a.severity === activeFilter);
+  const filtered   = activeFilter === "all" ? alerts : alerts.filter((a) => a.severity === activeFilter);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated  = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const ghosts     = PAGE_SIZE - paginated.length;
 
   const newCount   = alerts.filter((a) => a.status === "new").length;
   const bpNewCount = alerts.filter((a) => a.status === "new" && isBpAlert(a.type)).length;
 
-  const handleFilterChange = (f: string) => {
-    setActiveFilter(f);
-    setCurrentPage(1);
-  };
-
+  const handleFilterChange = (f: string) => { setActiveFilter(f); setCurrentPage(1); };
   const acknowledge = (id: number) => {
     setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, status: "acknowledged" as AlertStatus } : a)));
   };
@@ -98,9 +98,7 @@ export default function AlertsPage() {
                 key={f}
                 onClick={() => handleFilterChange(f)}
                 className={`rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition ${
-                  activeFilter === f
-                    ? "bg-[#233E7D] text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  activeFilter === f ? "bg-[#233E7D] text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 {f}
@@ -118,7 +116,7 @@ export default function AlertsPage() {
             <div>
               <p className="text-sm font-semibold text-red-700">High Blood Pressure Alert{bpNewCount > 1 ? "s" : ""}</p>
               <p className="text-xs text-red-600">
-                {bpNewCount === 1 ? "1 resident has" : `${bpNewCount} residents have`} reported elevated blood pressure. Review and acknowledge below.
+                {bpNewCount === 1 ? "1 resident has" : `${bpNewCount} residents have`} reported elevated blood pressure.
               </p>
             </div>
           </div>
@@ -126,12 +124,14 @@ export default function AlertsPage() {
 
         {/* Alert Table */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+          {/* Header — S/N(1) Severity(1) Type(2) Resident(2) Room(1) Time(1) Status(2) Actions(2) */}
           <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <div className="col-span-1">#</div>
             <div className="col-span-1">Severity</div>
             <div className="col-span-2">Type</div>
             <div className="col-span-2">Resident</div>
             <div className="col-span-1">Room</div>
-            <div className="col-span-2">Time</div>
+            <div className="col-span-1">Time</div>
             <div className="col-span-2">Status</div>
             <div className="col-span-2">Actions</div>
           </div>
@@ -139,52 +139,63 @@ export default function AlertsPage() {
           {paginated.length === 0 ? (
             <div className="p-8 text-center text-sm text-gray-400">No alerts matching this filter.</div>
           ) : (
-            paginated.map((alert) => (
-              <div
-                key={alert.id}
-                className={`grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center px-5 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                  isBpAlert(alert.type) && alert.status === "new"
-                    ? "border-l-4 border-l-red-400 bg-red-50/40 hover:bg-red-50/60"
-                    : ""
-                }`}
-              >
-                <div className="md:col-span-1">
-                  <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold capitalize ${sevColors[alert.severity]}`}>
-                    {alert.severity}
-                  </span>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm font-medium text-gray-900">{alert.type}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-sm text-gray-700">{alert.resident}</p>
-                </div>
-                <div className="md:col-span-1">
-                  <p className="text-sm text-gray-600">{alert.room}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="text-xs text-gray-500">{alert.time}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusColors[alert.status]}`}>
-                    {alert.status}
-                  </span>
-                </div>
-                <div className="md:col-span-2 flex gap-2">
-                  {alert.status === "new" && (
-                    <button
-                      onClick={() => acknowledge(alert.id)}
-                      className="rounded-lg bg-[#233E7D] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1c3164] transition"
-                    >
-                      Acknowledge
+            <>
+              {paginated.map((alert, idx) => (
+                <div
+                  key={alert.id}
+                  className={`${ROW_CLS} border-gray-100 hover:bg-gray-50 transition-colors ${
+                    isBpAlert(alert.type) && alert.status === "new"
+                      ? "border-l-4 border-l-red-400 bg-red-50/40 hover:bg-red-50/60"
+                      : ""
+                  }`}
+                >
+                  <div className="md:col-span-1 text-xs font-medium text-gray-400">
+                    {(currentPage - 1) * PAGE_SIZE + idx + 1}
+                  </div>
+                  <div className="md:col-span-1">
+                    <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold capitalize ${sevColors[alert.severity]}`}>
+                      {alert.severity}
+                    </span>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-sm font-medium text-gray-900">{alert.type}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-gray-700">{alert.resident}</p>
+                  </div>
+                  <div className="md:col-span-1">
+                    <p className="text-sm text-gray-600">{alert.room}</p>
+                  </div>
+                  <div className="md:col-span-1">
+                    <p className="text-xs text-gray-500">{alert.time}</p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${statusColors[alert.status]}`}>
+                      {alert.status}
+                    </span>
+                  </div>
+                  <div className="md:col-span-2 flex gap-2">
+                    {alert.status === "new" && (
+                      <button
+                        onClick={() => acknowledge(alert.id)}
+                        className="rounded-lg bg-[#233E7D] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#1c3164] transition"
+                      >
+                        Acknowledge
+                      </button>
+                    )}
+                    <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition">
+                      Details
                     </button>
-                  )}
-                  <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition">
-                    Details
-                  </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+              {/* Ghost rows — maintain fixed page height */}
+              {Array.from({ length: ghosts }).map((_, i) => (
+                <div key={`ghost-${i}`} aria-hidden="true" className={`${ROW_CLS} border-transparent opacity-0 pointer-events-none select-none`}>
+                  <div className="md:col-span-12">&nbsp;</div>
+                </div>
+              ))}
+            </>
           )}
 
           <Pagination

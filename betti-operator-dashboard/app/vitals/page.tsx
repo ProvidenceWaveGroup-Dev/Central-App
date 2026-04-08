@@ -64,17 +64,21 @@ const activityBarColor = (pct: number) => {
 };
 
 const activityPatterns = [
-  { label: "Busiest Time",     value: "10:00 AM – 12:00 PM", detail: "45% of daily activity"         },
+  { label: "Busiest Time",     value: "10:00 AM – 12:00 PM", detail: "45% of daily activity"        },
   { label: "Most Active Area", value: "Common Room",          detail: "38% of movement tracked here" },
   { label: "Avg Daily Steps",  value: "1,240",               detail: "Across all residents"          },
   { label: "Sleep Quality",    value: "Good",                 detail: "82% avg sleep score"           },
 ];
+
+// grid: #(1) Resident(2) HR(1) BP(1) SpO2(1) Temp(1) Activity(1) Updated(1) = 9
+const ROW_CLS = "grid grid-cols-1 lg:grid-cols-9 gap-2 lg:gap-3 items-center px-5 py-4 border-b";
 
 export default function VitalsPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(vitalsData.length / PAGE_SIZE);
   const paginated  = vitalsData.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const ghosts     = PAGE_SIZE - paginated.length;
   const highBpCount = vitalsData.filter((r) => r.bpStatus === "concerning").length;
 
   return (
@@ -103,20 +107,24 @@ export default function VitalsPage() {
           ))}
         </div>
 
-        {/* Vitals Table */}
+        {/* Vitals Table — #(1) Resident(2) HR(1) BP(1) SpO2(1) Temp(1) Activity(1) Updated(1) = 9 */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
           <div className="hidden lg:grid grid-cols-9 gap-3 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <div>#</div>
             <div className="col-span-2">Resident</div>
             <div>Heart Rate</div>
             <div className="text-purple-600">Blood Pressure</div>
             <div>SpO₂</div>
             <div>Temp</div>
             <div>Activity</div>
-            <div className="col-span-2">Last Updated</div>
+            <div>Last Updated</div>
           </div>
 
-          {paginated.map((r) => (
-            <div key={r.name} className="grid grid-cols-1 lg:grid-cols-9 gap-2 lg:gap-3 items-center px-5 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+          {paginated.map((r, idx) => (
+            <div key={r.name} className={`${ROW_CLS} border-gray-100 hover:bg-gray-50 transition-colors`}>
+              <div className="text-xs font-medium text-gray-400">
+                {(currentPage - 1) * PAGE_SIZE + idx + 1}
+              </div>
               <div className="lg:col-span-2">
                 <p className="text-sm font-medium text-gray-900">{r.name}</p>
                 <p className="text-xs text-gray-500">Room {r.room}</p>
@@ -138,7 +146,13 @@ export default function VitalsPage() {
                   <span className="text-xs text-gray-500 w-7 text-right">{r.activity}%</span>
                 </div>
               </div>
-              <div className="lg:col-span-2 text-xs text-gray-500">{r.lastUpdated}</div>
+              <div className="text-xs text-gray-500">{r.lastUpdated}</div>
+            </div>
+          ))}
+          {/* Ghost rows */}
+          {Array.from({ length: ghosts }).map((_, i) => (
+            <div key={`ghost-${i}`} aria-hidden="true" className={`${ROW_CLS} border-transparent opacity-0 pointer-events-none select-none`}>
+              <div className="lg:col-span-9">&nbsp;</div>
             </div>
           ))}
 

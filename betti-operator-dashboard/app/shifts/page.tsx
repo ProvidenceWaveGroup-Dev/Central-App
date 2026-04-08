@@ -12,9 +12,7 @@ const currentShift = {
 
 const allStaff = [
   {
-    name: "Sarah Kim",
-    role: "Registered Nurse",
-    status: "on_floor",
+    name: "Sarah Kim",     role: "Registered Nurse", status: "on_floor",
     residents: [
       { name: "Margaret Collins", room: "204" },
       { name: "Robert Chen",      room: "118" },
@@ -23,9 +21,7 @@ const allStaff = [
     ],
   },
   {
-    name: "James Obi",
-    role: "Care Aide",
-    status: "on_floor",
+    name: "James Obi",     role: "Care Aide",        status: "on_floor",
     residents: [
       { name: "Helen Torres", room: "220" },
       { name: "Susan Park",   room: "220" },
@@ -33,9 +29,7 @@ const allStaff = [
     ],
   },
   {
-    name: "Maria Lopez",
-    role: "Shift Supervisor",
-    status: "on_break",
+    name: "Maria Lopez",   role: "Shift Supervisor", status: "on_break",
     residents: [
       { name: "Frank Martinez",  room: "401" },
       { name: "Charles Lee",     room: "408" },
@@ -43,9 +37,7 @@ const allStaff = [
     ],
   },
   {
-    name: "David Nguyen",
-    role: "Care Aide",
-    status: "on_floor",
+    name: "David Nguyen",  role: "Care Aide",        status: "on_floor",
     residents: [
       { name: "Dorothy Palmer", room: "310" },
       { name: "James Wilson",   room: "105" },
@@ -53,37 +45,29 @@ const allStaff = [
     ],
   },
   {
-    name: "Angela Reyes",
-    role: "Registered Nurse",
-    status: "on_floor",
+    name: "Angela Reyes",  role: "Registered Nurse", status: "on_floor",
     residents: [
-      { name: "George Harris",   room: "201" },
-      { name: "Nancy White",     room: "317" },
-      { name: "Richard Taylor",  room: "322" },
+      { name: "George Harris",  room: "201" },
+      { name: "Nancy White",    room: "317" },
+      { name: "Richard Taylor", room: "322" },
     ],
   },
   {
-    name: "Michael Torres",
-    role: "Care Aide",
-    status: "on_floor",
+    name: "Michael Torres", role: "Care Aide",       status: "on_floor",
     residents: [
       { name: "Barbara Moore",   room: "415" },
       { name: "Joseph Anderson", room: "121" },
     ],
   },
   {
-    name: "Lisa Patel",
-    role: "Registered Nurse",
-    status: "off_floor",
+    name: "Lisa Patel",    role: "Registered Nurse", status: "off_floor",
     residents: [
       { name: "Margaret Collins", room: "204" },
       { name: "Thomas Wright",    room: "306" },
     ],
   },
   {
-    name: "Kevin Brown",
-    role: "Care Aide",
-    status: "on_floor",
+    name: "Kevin Brown",   role: "Care Aide",        status: "on_floor",
     residents: [
       { name: "Dorothy Palmer", room: "310" },
       { name: "Charles Lee",    room: "408" },
@@ -92,16 +76,16 @@ const allStaff = [
 ];
 
 const shiftTimeline = [
-  { time: "7:00 AM",  event: "Shift started — Handoff from night team", icon: Clock         },
-  { time: "7:15 AM",  event: "Morning rounds initiated",                 icon: CheckCircle2  },
-  { time: "8:30 AM",  event: "Medication round completed (Wing A)",       icon: CheckCircle2  },
-  { time: "9:45 AM",  event: "Incident INC-1052: Fall in Room 204",       icon: Clock         },
-  { time: "10:00 AM", event: "Maria Lopez — 15 min break",               icon: Coffee        },
-  { time: "10:30 AM", event: "Vitals check round initiated",              icon: CheckCircle2  },
-  { time: "11:00 AM", event: "Medication round completed (Wing B)",       icon: CheckCircle2  },
-  { time: "11:30 AM", event: "INC-1051 Vitals Alert — Robert Chen",       icon: Clock         },
-  { time: "12:00 PM", event: "Lunch service commenced",                   icon: CheckCircle2  },
-  { time: "12:45 PM", event: "INC-1050 resolved — Dorothy Palmer",        icon: CheckCircle2  },
+  { time: "7:00 AM",  event: "Shift started — Handoff from night team", icon: Clock        },
+  { time: "7:15 AM",  event: "Morning rounds initiated",                 icon: CheckCircle2 },
+  { time: "8:30 AM",  event: "Medication round completed (Wing A)",       icon: CheckCircle2 },
+  { time: "9:45 AM",  event: "Incident INC-1052: Fall in Room 204",       icon: Clock        },
+  { time: "10:00 AM", event: "Maria Lopez — 15 min break",               icon: Coffee       },
+  { time: "10:30 AM", event: "Vitals check round initiated",              icon: CheckCircle2 },
+  { time: "11:00 AM", event: "Medication round completed (Wing B)",       icon: CheckCircle2 },
+  { time: "11:30 AM", event: "INC-1051 Vitals Alert — Robert Chen",       icon: Clock        },
+  { time: "12:00 PM", event: "Lunch service commenced",                   icon: CheckCircle2 },
+  { time: "12:45 PM", event: "INC-1050 resolved — Dorothy Palmer",        icon: CheckCircle2 },
 ];
 
 const STAFF_PAGE_SIZE    = 4;
@@ -121,7 +105,10 @@ export default function ShiftsPage() {
   const timelineTotalPages = Math.ceil(shiftTimeline.length / TIMELINE_PAGE_SIZE);
 
   const paginatedStaff    = allStaff.slice((staffPage - 1) * STAFF_PAGE_SIZE, staffPage * STAFF_PAGE_SIZE);
+  const staffGhosts       = STAFF_PAGE_SIZE - paginatedStaff.length;
+
   const paginatedTimeline = shiftTimeline.slice((timelinePage - 1) * TIMELINE_PAGE_SIZE, timelinePage * TIMELINE_PAGE_SIZE);
+  const timelineGhosts    = TIMELINE_PAGE_SIZE - paginatedTimeline.length;
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -135,23 +122,27 @@ export default function ShiftsPage() {
           </span>
         </div>
 
-        {/* Staff Grid */}
+        {/* Staff Cards */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-              On-Shift Staff
-              <span className="ml-2 font-normal normal-case text-gray-400">({allStaff.length} total)</span>
-            </h2>
-          </div>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            On-Shift Staff
+            <span className="ml-2 font-normal normal-case text-gray-400">({allStaff.length} total)</span>
+          </h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            {paginatedStaff.map((s) => {
-              const st = statusConfig[s.status];
+            {paginatedStaff.map((s, idx) => {
+              const st  = statusConfig[s.status];
+              const sn  = (staffPage - 1) * STAFF_PAGE_SIZE + idx + 1;
               return (
                 <div key={s.name} className="rounded-xl border border-gray-200 bg-white p-5 hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-[#233E7D] flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-                        {s.name.split(" ").map((n) => n[0]).join("")}
+                      <div className="relative flex-shrink-0">
+                        <div className="h-10 w-10 rounded-full bg-[#233E7D] flex items-center justify-center text-white font-semibold text-sm">
+                          {s.name.split(" ").map((n) => n[0]).join("")}
+                        </div>
+                        <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gray-100 text-gray-400 text-[9px] font-bold border border-white">
+                          {sn}
+                        </span>
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-gray-900">{s.name}</p>
@@ -179,8 +170,29 @@ export default function ShiftsPage() {
                 </div>
               );
             })}
+            {/* Ghost staff cards */}
+            {Array.from({ length: staffGhosts }).map((_, i) => (
+              <div
+                key={`ghost-staff-${i}`}
+                aria-hidden="true"
+                className="rounded-xl border border-transparent p-5 opacity-0 pointer-events-none select-none"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full" />
+                    <div><div className="h-4 mb-1 w-24" /><div className="h-3 w-16" /></div>
+                  </div>
+                  <div className="h-5 w-16" />
+                </div>
+                <div className="border-t border-transparent pt-3">
+                  <div className="h-3 mb-2" />
+                  <div className="space-y-1.5">
+                    <div className="h-4" /><div className="h-4" /><div className="h-4" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          {/* Staff pagination */}
           {staffTotalPages > 1 && (
             <div className="rounded-xl border border-gray-200 bg-white">
               <Pagination
@@ -203,15 +215,30 @@ export default function ShiftsPage() {
                 <span className="ml-2 text-sm font-normal text-gray-400">({shiftTimeline.length} events)</span>
               </h2>
               <div className="space-y-4 pb-4">
-                {paginatedTimeline.map((entry, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-0.5 h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center">
-                      <entry.icon className="h-3.5 w-3.5 text-gray-500" />
+                {paginatedTimeline.map((entry, i) => {
+                  const sn = (timelinePage - 1) * TIMELINE_PAGE_SIZE + i + 1;
+                  return (
+                    <div key={i} className="flex items-start gap-3">
+                      {/* S/N badge */}
+                      <span className="flex-shrink-0 mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold text-gray-400">
+                        {sn}
+                      </span>
+                      <div className="flex-shrink-0 mt-0.5 h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center">
+                        <entry.icon className="h-3.5 w-3.5 text-gray-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-700">{entry.event}</p>
+                        <p className="text-xs text-gray-400">{entry.time}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-gray-700">{entry.event}</p>
-                      <p className="text-xs text-gray-400">{entry.time}</p>
-                    </div>
+                  );
+                })}
+                {/* Ghost timeline rows */}
+                {Array.from({ length: timelineGhosts }).map((_, i) => (
+                  <div key={`ghost-tl-${i}`} aria-hidden="true" className="flex items-start gap-3 opacity-0 pointer-events-none select-none">
+                    <span className="flex-shrink-0 mt-0.5 h-5 w-5 rounded-full" />
+                    <div className="flex-shrink-0 mt-0.5 h-7 w-7 rounded-full" />
+                    <div><div className="h-4 mb-1 w-48" /><div className="h-3 w-16" /></div>
                   </div>
                 ))}
               </div>
@@ -225,7 +252,7 @@ export default function ShiftsPage() {
             />
           </div>
 
-          {/* Next Shift */}
+          {/* Upcoming Shift */}
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             <h2 className="font-serif text-lg font-semibold text-gray-900 mb-4">Upcoming Shift</h2>
             <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 space-y-3">

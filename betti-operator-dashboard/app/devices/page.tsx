@@ -70,20 +70,24 @@ const signalColor: Record<string, string> = {
 };
 
 function formatBatteryTime(hours: number, battery: number): { label: string; color: string } {
-  if (battery === 0 || hours === 0) return { label: "—",                                          color: "text-gray-400"                };
-  if (hours < 1)                    return { label: `~${Math.round(hours * 60)} min`,              color: "text-red-600 font-bold"       };
-  if (hours < 12)                   return { label: `~${Math.round(hours)}h`,                      color: "text-red-600 font-bold"       };
-  if (hours < 48)                   return { label: `~${Math.round(hours)}h`,                      color: "text-amber-600 font-semibold" };
-  if (hours < 720)                  return { label: `~${Math.round(hours / 24)} days`,             color: "text-gray-600"                };
-  if (hours < 4380)                 return { label: `~${Math.round(hours / (24 * 7))} weeks`,      color: "text-gray-500"                };
-  return                                   { label: `~${Math.round(hours / (24 * 30))} months`,    color: "text-gray-500"                };
+  if (battery === 0 || hours === 0) return { label: "—",                                       color: "text-gray-400"                };
+  if (hours < 1)                    return { label: `~${Math.round(hours * 60)} min`,           color: "text-red-600 font-bold"       };
+  if (hours < 12)                   return { label: `~${Math.round(hours)}h`,                   color: "text-red-600 font-bold"       };
+  if (hours < 48)                   return { label: `~${Math.round(hours)}h`,                   color: "text-amber-600 font-semibold" };
+  if (hours < 720)                  return { label: `~${Math.round(hours / 24)} days`,          color: "text-gray-600"                };
+  if (hours < 4380)                 return { label: `~${Math.round(hours / (24 * 7))} weeks`,   color: "text-gray-500"                };
+  return                                   { label: `~${Math.round(hours / (24 * 30))} months`, color: "text-gray-500"                };
 }
+
+// grid: #(1) ID(1) Type(1) Location(1) Status(1) Battery(1) TimeLeft(1) Signal(1) LastPing(1) = 9
+const ROW_CLS = "grid grid-cols-1 lg:grid-cols-9 gap-2 lg:gap-3 items-center px-5 py-4 border-b";
 
 export default function DevicesPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(devices.length / PAGE_SIZE);
   const paginated  = devices.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const ghosts     = PAGE_SIZE - paginated.length;
 
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -109,9 +113,10 @@ export default function DevicesPage() {
           ))}
         </div>
 
-        {/* Device Table */}
+        {/* Device Table — #(1) ID(1) Type(1) Location(1) Status(1) Battery(1) TimeLeft(1) Signal(1) LastPing(1) = 9 */}
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-          <div className="hidden lg:grid grid-cols-8 gap-3 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <div className="hidden lg:grid grid-cols-9 gap-3 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <div>#</div>
             <div>Device ID</div>
             <div>Type</div>
             <div>Location</div>
@@ -122,12 +127,15 @@ export default function DevicesPage() {
             <div>Last Ping</div>
           </div>
 
-          {paginated.map((d) => {
+          {paginated.map((d, idx) => {
             const effectiveStatus: DeviceStatus = d.status === "online" && d.battery <= 25 ? "low_battery" : d.status;
             const sl = statusLabel[effectiveStatus];
             const timeLeft = formatBatteryTime(d.batteryHoursEst, d.battery);
             return (
-              <div key={d.id} className="grid grid-cols-1 lg:grid-cols-8 gap-2 lg:gap-3 items-center px-5 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              <div key={d.id} className={`${ROW_CLS} border-gray-100 hover:bg-gray-50 transition-colors`}>
+                <div className="text-xs font-medium text-gray-400">
+                  {(currentPage - 1) * PAGE_SIZE + idx + 1}
+                </div>
                 <div className="text-xs font-mono text-gray-500">{d.id}</div>
                 <div className="text-sm font-medium text-gray-900">{d.type}</div>
                 <div className="text-sm text-gray-700">{d.location}</div>
@@ -149,6 +157,12 @@ export default function DevicesPage() {
               </div>
             );
           })}
+          {/* Ghost rows */}
+          {Array.from({ length: ghosts }).map((_, i) => (
+            <div key={`ghost-${i}`} aria-hidden="true" className={`${ROW_CLS} border-transparent opacity-0 pointer-events-none select-none`}>
+              <div className="lg:col-span-9">&nbsp;</div>
+            </div>
+          ))}
 
           <Pagination
             currentPage={currentPage}

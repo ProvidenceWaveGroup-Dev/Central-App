@@ -42,9 +42,9 @@ const residents: Resident[] = [
 const PAGE_SIZE = 6;
 
 const statusConfig: Record<string, { bg: string; text: string; label: string; dot: string }> = {
-  stable:    { bg: "bg-green-100", text: "text-green-700",  label: "Stable",    dot: "bg-green-500" },
-  attention: { bg: "bg-amber-100", text: "text-amber-700",  label: "Attention", dot: "bg-amber-500" },
-  critical:  { bg: "bg-red-100",   text: "text-red-700",    label: "Critical",  dot: "bg-red-500"   },
+  stable:    { bg: "bg-green-100", text: "text-green-700", label: "Stable",    dot: "bg-green-500" },
+  attention: { bg: "bg-amber-100", text: "text-amber-700", label: "Attention", dot: "bg-amber-500" },
+  critical:  { bg: "bg-red-100",   text: "text-red-700",   label: "Critical",  dot: "bg-red-500"   },
 };
 
 function fallBadge(count: number) {
@@ -61,18 +61,18 @@ function fallBadge(count: number) {
 }
 
 export default function ResidentsPage() {
-  const [search, setSearch]         = useState("");
+  const [search, setSearch]             = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage]   = useState(1);
 
-  const filtered = residents.filter((r) => {
+  const filtered   = residents.filter((r) => {
     const matchesSearch = r.name.toLowerCase().includes(search.toLowerCase()) || r.room.includes(search);
     const matchesStatus = statusFilter === "all" || r.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
-
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated  = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const ghosts     = PAGE_SIZE - paginated.length;
 
   const handleFilterChange = (val: string) => { setStatusFilter(val); setCurrentPage(1); };
   const handleSearch = (val: string)       => { setSearch(val);       setCurrentPage(1); };
@@ -109,16 +109,20 @@ export default function ResidentsPage() {
           </div>
         </div>
 
-        {/* Resident Grid */}
+        {/* Resident Grid — fixed min-height so ghost cards maintain page height */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {paginated.map((r) => {
+          {paginated.map((r, idx) => {
             const st = statusConfig[r.status];
+            const sn = (currentPage - 1) * PAGE_SIZE + idx + 1;
             return (
               <div key={`${r.name}-${r.room}`} className="rounded-xl border border-gray-200 bg-white p-4 hover:shadow-md transition-shadow">
-                {/* Header row */}
+                {/* S/N + status + messages */}
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{r.name}</p>
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <span className="text-xs font-medium text-gray-400">#{sn}</span>
+                      <p className="text-sm font-semibold text-gray-900">{r.name}</p>
+                    </div>
                     <p className="text-xs text-gray-500">Room {r.room} · Age {r.age}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
@@ -175,9 +179,28 @@ export default function ResidentsPage() {
               </div>
             );
           })}
+
+          {/* Ghost cards — invisible, maintain grid height */}
+          {Array.from({ length: ghosts }).map((_, i) => (
+            <div
+              key={`ghost-${i}`}
+              aria-hidden="true"
+              className="rounded-xl border border-transparent p-4 opacity-0 pointer-events-none select-none"
+            >
+              {/* Mirror structure of real card to match height */}
+              <div className="flex items-start justify-between mb-2">
+                <div><div className="h-4 mb-0.5" /><div className="h-3" /></div>
+                <div className="h-5 w-16" />
+              </div>
+              <div className="grid grid-cols-3 gap-x-2 mb-2"><div className="h-4" /><div className="h-4" /><div className="h-4" /></div>
+              <div className="h-3 mb-2" />
+              <div className="h-3 mb-2" />
+              <div className="flex gap-2"><div className="flex-1 h-7" /><div className="flex-1 h-7" /></div>
+            </div>
+          ))}
         </div>
 
-        {/* Pagination (below grid, outside the card container) */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="rounded-xl border border-gray-200 bg-white">
             <Pagination
