@@ -18,47 +18,121 @@ import {
   Shield,
   Wind,
 } from "lucide-react";
+import {
+  computeWellbeingScore,
+  WELLBEING_WEIGHTS,
+  type WellbeingInputs,
+} from "@/lib/wellbeing-score";
 
 // Day labels for mood stability (7 days)
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Mock data - replace with API fetch
-const MOCK = {
-  score: 85,
-  rating: "Excellent",
-  mood: { status: "Stable", trend: [72, 78, 82, 80, 85, 88, 85] },
-  behavioralIncidents: 0,
-  anomalies: [] as string[],
-  moodDataLogged: true,
-  lastLogged: "Just now",
-  medications: { status: "up_to_date" as "up_to_date" | "missed", taken: 3, missed: 0, missedList: [] as string[], prerequisiteNote: null as string | null },
-  vitals: {
-    bloodPressure: { value: "118/76", unit: "mmHg", status: "normal" as "normal" | "elevated" | "alert" },
-    bloodSugar: { value: 92, unit: "mg/dL", status: "normal" as "normal" | "elevated" | "alert" },
-    hydration: { value: "Good", status: "good" as "good" | "low" | "critical" },
-    heartRate: { value: 68, unit: "bpm", status: "normal" as "normal" | "elevated" | "alert" },
-    respiratoryRate: { value: 16, unit: "/min", status: "normal" as "normal" | "elevated" | "alert" },
+// ─────────────────────────────────────────────────────────────────────────────
+// MOCK DATA — replace each field with the matching API response value
+// when the backend is connected.
+//
+// Field → API source mapping:
+//   adherence.*         → GET /api/daily-adherence?patient_id=&date=today
+//   vitals.*            → GET /api/vitals?patient_id=&limit=1  (latest row)
+//   mentalHealth.*      → GET /api/mental-health-logs?patient_id=&limit=1
+//   mood.trend          → GET /api/mental-health-logs?patient_id=&limit=7  (map stress_level or mood per day)
+//   vitals (display)    → same vitals fetch as above
+//   medications (UI)    → same adherence fetch + GET /api/medication-logs?patient_id=&date=today
+// ─────────────────────────────────────────────────────────────────────────────
+const MOCK_INPUTS: WellbeingInputs = {
+  adherence: {
+    medications_taken:  3,
+    medications_missed: 0,
+    hydration_glasses:  6,
+    hydration_goal:     8,
+    steps_walked:       2800,
+    steps_goal:         3000,
+    sleep_hours:        7.5,
   },
-  sleep: "7.5 hrs",
-  movement: "Active",
+  vitals: {
+    heart_rate:              68,
+    blood_pressure_systolic: 118,
+    blood_sugar_mg_dl:       92,
+    respiratory_rate:        16,
+  },
+  mentalHealth: {
+    stress_level: 0.15,   // 0 = calm, 1 = max stress
+    mood:         "stable",
+  },
 };
 
+// Display-only vitals (fed from the same vitals API fetch)
+const MOCK_DISPLAY = {
+  vitals: {
+    bloodPressure:   { value: "118/76",  unit: "mmHg", status: "normal"   as "normal" | "elevated" | "alert" },
+    bloodSugar:      { value: 92,        unit: "mg/dL", status: "normal"  as "normal" | "elevated" | "alert" },
+    hydration:       { value: "Good",    status: "good" as "good" | "low" | "critical" },
+    heartRate:       { value: 68,        unit: "bpm",   status: "normal"  as "normal" | "elevated" | "alert" },
+    respiratoryRate: { value: 16,        unit: "/min",  status: "normal"  as "normal" | "elevated" | "alert" },
+  },
+  medications: {
+    status:           "up_to_date" as "up_to_date" | "missed",
+    taken:            3,
+    missed:           0,
+    missedList:       [] as string[],
+    prerequisiteNote: null as string | null,
+  },
+  sleep:             "7.5 hrs",
+  movement:          "Active",
+  mood: {
+    status: "Stable",
+    trend:  [72, 78, 82, 80, 85, 88, 85],   // 7-day stress-inverted % (from mental_health_logs)
+  },
+  behavioralIncidents: 0,
+  anomalies:           [] as string[],
+  moodDataLogged:      true,
+  lastLogged:          "Just now",
+};
+
+// ── Compute score ─────────────────────────────────────────────────────────────
+const wellbeing = computeWellbeingScore(MOCK_INPUTS);
+
+// ── Breakdown display config ──────────────────────────────────────────────────
+const BREAKDOWN_ITEMS: {
+  key:    keyof typeof wellbeing.breakdown;
+  label:  string;
+  weight: number;
+  icon:   React.ElementType;
+}[] = [
+  { key: "medication", label: "Medication",  weight: WELLBEING_WEIGHTS.medication, icon: Pill      },
+  { key: "vitals",     label: "Vitals",      weight: WELLBEING_WEIGHTS.vitals,     icon: Activity  },
+  { key: "hydration",  label: "Hydration",   weight: WELLBEING_WEIGHTS.hydration,  icon: Droplets  },
+  { key: "sleep",      label: "Sleep",       weight: WELLBEING_WEIGHTS.sleep,      icon: Bed       },
+  { key: "activity",   label: "Activity",    weight: WELLBEING_WEIGHTS.activity,   icon: Footprints},
+  { key: "mood",       label: "Mood",        weight: WELLBEING_WEIGHTS.mood,       icon: Smile     },
+];
+
+function breakdownBarColor(score: number): string {
+  if (score >= 90) return "bg-[#5C7F39]";
+  if (score >= 75) return "bg-[#5C7F39]";
+  if (score >= 60) return "bg-amber-500";
+  if (score >= 40) return "bg-red-500";
+  return "bg-red-700";
+}
+
+// ── Vital status helpers ──────────────────────────────────────────────────────
+function getVitalStatusColor(status: string): string {
+  if (status === "alert")    return "text-red-600";
+  if (status === "elevated") return "text-amber-600";
+  return "text-[#5C7F39]";
+}
+function getVitalBgColor(status: string): string {
+  if (status === "alert")    return "bg-red-50 border-red-200";
+  if (status === "elevated") return "bg-amber-50 border-amber-200";
+  return "bg-green-50/50 border-green-100";
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export function DailyWellbeingCard() {
-  const data = MOCK;
+  const data    = MOCK_DISPLAY;
   const hasMissedMeds = data.medications.status === "missed" && data.medications.missedList.length > 0;
-  const hasAnomalies = data.anomalies.length > 0;
-
-  const getVitalStatusColor = (status: string) => {
-    if (status === "alert") return "text-red-600";
-    if (status === "elevated") return "text-amber-600";
-    return "text-[#5C7F39]";
-  };
-
-  const getVitalBgColor = (status: string) => {
-    if (status === "alert") return "bg-red-50 border-red-200";
-    if (status === "elevated") return "bg-amber-50 border-amber-200";
-    return "bg-green-50/50 border-green-100";
-  };
+  const hasAnomalies  = data.anomalies.length > 0;
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
@@ -89,49 +163,92 @@ export function DailyWellbeingCard() {
 
       {/* Main Score + Progress */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
-        <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#5C7F39]">{data.score}</div>
+        <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#5C7F39]">{wellbeing.score}</div>
         <div className="text-center sm:text-right">
           <div className="text-sm text-gray-500">Out of 100</div>
-          <span className="inline-flex rounded-full bg-[#5C7F39] px-3 py-1 text-xs font-semibold text-white">{data.rating}</span>
+          <span className="inline-flex rounded-full bg-[#5C7F39] px-3 py-1 text-xs font-semibold text-white">
+            {wellbeing.rating}
+          </span>
         </div>
       </div>
       <div className="mb-5 h-3 rounded-full bg-green-100">
-        <div className="h-3 rounded-full bg-[#5C7F39] transition-all" style={{ width: `${data.score}%` }} />
+        <div
+          className="h-3 rounded-full bg-[#5C7F39] transition-all"
+          style={{ width: `${wellbeing.score}%` }}
+        />
       </div>
 
-      {/* Priority Vitals - Top-level */}
+      {/* Score Breakdown */}
+      <div className="mb-5 rounded-lg border border-gray-100 bg-gray-50 p-3">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+          Score breakdown
+        </p>
+        <div className="space-y-2">
+          {BREAKDOWN_ITEMS.map(({ key, label, weight, icon: Icon }) => {
+            const sub = wellbeing.breakdown[key];
+            return (
+              <div key={key} className="flex items-center gap-2">
+                <Icon className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                <span className="text-xs text-gray-600 w-20 flex-shrink-0">{label}</span>
+                <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <div
+                    className={`h-2 rounded-full transition-all ${breakdownBarColor(sub)}`}
+                    style={{ width: `${sub}%` }}
+                  />
+                </div>
+                <span className="text-xs font-semibold text-gray-700 w-8 text-right">{sub}</span>
+                <span className="text-[10px] text-gray-400 w-8 flex-shrink-0">
+                  ×{Math.round(weight * 100)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Priority Vitals */}
       <div className="mb-4">
         <div className="text-xs font-medium text-gray-500 mb-2">Priority vitals</div>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           <div className={`rounded-lg p-2.5 border ${getVitalBgColor(data.vitals.bloodPressure.status)}`}>
             <Gauge className="h-3.5 w-3.5 text-[#5C7F39] mb-0.5" />
             <div className="text-[10px] text-gray-500">Blood Pressure</div>
-            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.bloodPressure.status)}`}>{data.vitals.bloodPressure.value}</div>
+            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.bloodPressure.status)}`}>
+              {data.vitals.bloodPressure.value}
+            </div>
           </div>
           <div className={`rounded-lg p-2.5 border ${getVitalBgColor(data.vitals.bloodSugar.status)}`}>
             <Activity className="h-3.5 w-3.5 text-[#5C7F39] mb-0.5" />
             <div className="text-[10px] text-gray-500">Blood Sugar</div>
-            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.bloodSugar.status)}`}>{data.vitals.bloodSugar.value} {data.vitals.bloodSugar.unit}</div>
+            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.bloodSugar.status)}`}>
+              {data.vitals.bloodSugar.value} {data.vitals.bloodSugar.unit}
+            </div>
           </div>
           <div className={`rounded-lg p-2.5 border ${getVitalBgColor(data.vitals.hydration.status)}`}>
             <Droplets className="h-3.5 w-3.5 text-[#5C7F39] mb-0.5" />
             <div className="text-[10px] text-gray-500">Hydration</div>
-            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.hydration.status)}`}>{data.vitals.hydration.value}</div>
+            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.hydration.status)}`}>
+              {data.vitals.hydration.value}
+            </div>
           </div>
           <div className={`rounded-lg p-2.5 border ${getVitalBgColor(data.vitals.heartRate.status)}`}>
             <Heart className="h-3.5 w-3.5 text-[#5C7F39] mb-0.5" />
             <div className="text-[10px] text-gray-500">Heart Rate</div>
-            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.heartRate.status)}`}>{data.vitals.heartRate.value} {data.vitals.heartRate.unit}</div>
+            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.heartRate.status)}`}>
+              {data.vitals.heartRate.value} {data.vitals.heartRate.unit}
+            </div>
           </div>
           <div className={`rounded-lg p-2.5 border ${getVitalBgColor(data.vitals.respiratoryRate.status)}`}>
             <Wind className="h-3.5 w-3.5 text-[#5C7F39] mb-0.5" />
             <div className="text-[10px] text-gray-500">Respiratory Rate</div>
-            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.respiratoryRate.status)}`}>{data.vitals.respiratoryRate.value} {data.vitals.respiratoryRate.unit}</div>
+            <div className={`text-sm font-semibold ${getVitalStatusColor(data.vitals.respiratoryRate.status)}`}>
+              {data.vitals.respiratoryRate.value} {data.vitals.respiratoryRate.unit}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Medication Compliance - Prominent */}
+      {/* Medication Compliance */}
       <div className="mb-4 p-3 rounded-lg border bg-gray-50 border-gray-100">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
@@ -150,7 +267,9 @@ export function DailyWellbeingCard() {
                 <span className="text-sm font-semibold">Missed</span>
               </div>
             )}
-            <span className="text-xs text-gray-500">{data.medications.taken}/{data.medications.taken + data.medications.missed} taken</span>
+            <span className="text-xs text-gray-500">
+              {data.medications.taken}/{data.medications.taken + data.medications.missed} taken
+            </span>
             <Link
               href="/logs/medications"
               prefetch
@@ -180,10 +299,10 @@ export function DailyWellbeingCard() {
       {/* Sub-metrics Row */}
       <div className="mb-4 grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-sm">
         {[
-          { icon: Droplets, label: "Hydration", value: data.vitals.hydration.value },
-          { icon: Bed, label: "Sleep", value: data.sleep },
-          { icon: Pill, label: "Medications", value: data.medications.status === "up_to_date" ? "On track" : "Needs attention" },
-          { icon: Footprints, label: "Movement", value: data.movement },
+          { icon: Droplets,   label: "Hydration",   value: data.vitals.hydration.value },
+          { icon: Bed,        label: "Sleep",        value: data.sleep },
+          { icon: Pill,       label: "Medications",  value: data.medications.status === "up_to_date" ? "On track" : "Needs attention" },
+          { icon: Footprints, label: "Movement",     value: data.movement },
         ].map((item, index) => (
           <div key={index} className="text-center p-2 rounded-lg bg-gray-50 border border-gray-100">
             <item.icon className="h-4 w-4 sm:h-5 sm:w-5 mx-auto mb-1 text-[#5C7F39]" />
@@ -193,14 +312,13 @@ export function DailyWellbeingCard() {
         ))}
       </div>
 
-      {/* Mood & Behavioral Tracking - at bottom */}
+      {/* Mood & Behavioral Tracking */}
       <div className="border-t border-gray-100 pt-4">
         <div className="flex items-center gap-2 mb-3">
           <Smile className="h-5 w-5 text-[#5C7F39]" />
-          <h3 className="font-serif text-base font-semibold text-[#5C7F39]">Mood & Behavioral Tracking</h3>
+          <h3 className="font-serif text-base font-semibold text-[#5C7F39]">Mood &amp; Behavioral Tracking</h3>
         </div>
 
-        {/* Behavioral flags */}
         <div className="mb-4">
           <div className="text-xs font-medium text-gray-500 mb-2">Behavioral flags</div>
           {hasAnomalies ? (
@@ -209,9 +327,7 @@ export function DailyWellbeingCard() {
                 <AlertTriangle className="h-4 w-4 shrink-0" /> Anomalies detected
               </div>
               <ul className="text-xs text-amber-600 space-y-1">
-                {data.anomalies.map((a, i) => (
-                  <li key={i}>• {a}</li>
-                ))}
+                {data.anomalies.map((a, i) => <li key={i}>• {a}</li>)}
               </ul>
             </div>
           ) : (
@@ -222,7 +338,6 @@ export function DailyWellbeingCard() {
           )}
         </div>
 
-        {/* Mood data logging */}
         <div className="mb-4 flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-100">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-[#5C7F39]" />
@@ -240,7 +355,7 @@ export function DailyWellbeingCard() {
           </div>
         </div>
 
-        {/* Mood stability (7 days) - at bottom with day labels and percentages */}
+        {/* Mood stability (7 days) */}
         <div>
           <div className="text-xs font-medium text-gray-500 mb-2">Mood stability (7 days)</div>
           <div className="flex items-end gap-1 sm:gap-2" style={{ height: "7rem" }}>
