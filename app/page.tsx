@@ -35,6 +35,9 @@ export default function Home() {
       tier: "Organizational",
       label: "Tier 1",
       description: "Portfolio oversight, compliance, audit, and system administration.",
+      color: "#233E7D",
+      hoverColor: "#1c3164",
+      textDark: false,
       apps: [
         {
           title: "Betti Admin",
@@ -47,6 +50,9 @@ export default function Home() {
       tier: "Facility Operations",
       label: "Tier 2",
       description: "Site-level event queues, resident oversight, and daily operations.",
+      color: "#5C7F39",
+      hoverColor: "#4f6b32",
+      textDark: false,
       apps: [
         {
           title: "Betti Staff Operator",
@@ -64,6 +70,9 @@ export default function Home() {
       tier: "Response Partners",
       label: "Tier 3",
       description: "Responder consoles for dispatched and on-call partner agencies.",
+      color: "#99CA3C",
+      hoverColor: "#86b234",
+      textDark: true,
       apps: [
         {
           title: "Betti Emergency Service",
@@ -86,6 +95,9 @@ export default function Home() {
       tier: "Resident & Household",
       label: "Tier 4",
       description: "Individual-facing views for residents and the people they live with.",
+      color: "#59595B",
+      hoverColor: "#454547",
+      textDark: false,
       apps: [
         {
           title: "Betti Senior",
@@ -245,33 +257,39 @@ export default function Home() {
         </section>
 
         {/* Accordion Tiers */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-5">
           {tiers.map((tier) => {
             const isOpen = openTiers[tier.tier] ?? true;
+            const fg = tier.textDark ? tier.color : "white";
+            const fgMuted = tier.textDark ? `${tier.color}cc` : "rgba(255,255,255,0.7)";
             return (
               <div key={tier.tier}>
                 {/* Accordion header */}
                 <button
                   type="button"
                   onClick={() => toggleTier(tier.tier)}
-                  className="flex w-full items-center justify-between rounded-full bg-[#233E7D] px-5 py-3.5 text-left shadow-sm transition hover:bg-[#1c3164]"
+                  style={{ backgroundColor: tier.color }}
+                  className="flex w-full items-center justify-between rounded-full px-5 py-3.5 text-left shadow-sm transition-opacity hover:opacity-90"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold text-white">
+                    <span
+                      style={{ color: fg }}
+                      className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold"
+                    >
                       {tier.label}
                     </span>
-                    <span className="text-sm font-semibold text-white">{tier.tier}</span>
-                    <span className="hidden sm:inline text-xs text-white/70">— {tier.description}</span>
+                    <span style={{ color: fg }} className="text-sm font-semibold">{tier.tier}</span>
+                    <span style={{ color: fgMuted }} className="hidden sm:inline text-xs">— {tier.description}</span>
                   </div>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="currentColor"
+                    stroke={fg}
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className={`h-4 w-4 flex-shrink-0 text-white transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
                   >
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
@@ -283,7 +301,7 @@ export default function Home() {
                     {tier.apps.map((app) => (
                       <article
                         key={app.title}
-                        className="flex h-full flex-col gap-3 rounded-2xl border border-white/80 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                        className="flex h-full flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                       >
                         <div className="space-y-1">
                           <h3 className="text-sm font-semibold text-[#233E7D]">{app.title}</h3>
@@ -293,7 +311,8 @@ export default function Home() {
                           <button
                             type="button"
                             onClick={() => { window.location.href = app.href; }}
-                            className="inline-flex w-full items-center justify-center rounded-lg bg-[#233E7D] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#1c3164]"
+                            style={{ backgroundColor: tier.color, color: tier.textDark ? "#233E7D" : "white" }}
+                            className="inline-flex w-full items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold transition-opacity hover:opacity-90"
                           >
                             Open
                           </button>
