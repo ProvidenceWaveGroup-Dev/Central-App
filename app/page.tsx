@@ -2,8 +2,6 @@
 
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
-
 import { AiAssistantFab } from "@/components/ai-assistant-fab";
 import DashboardWarmup from "@/components/DashboardWarmup";
 import SignUpForm from "@/components/SignUpForm";
@@ -265,9 +263,18 @@ export default function Home() {
                     <p className="text-sm font-semibold text-[#233E7D]">{tier.tier}</p>
                     <p className="text-xs text-[#59595B]">{tier.description}</p>
                   </div>
-                  <ChevronDown
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     className={`h-4 w-4 flex-shrink-0 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-                  />
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
                 </button>
 
                 {/* Accordion body */}
