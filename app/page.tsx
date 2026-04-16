@@ -222,20 +222,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#EBEBEB] text-[#59595B]">
-      <main className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-10 sm:px-10">
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-6 py-10 sm:px-10">
         {/* Header */}
-        <section className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm">
+        <section className="flex flex-col items-start gap-4 rounded-2xl border border-[#DADADA] bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+          <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl bg-white">
             <Image
               src="/betti-logo.png"
               alt="Betti logo"
-              width={48}
-              height={48}
+              width={80}
+              height={80}
               priority
             />
           </div>
           <div>
-            <h1 className="text-xl font-semibold text-[#233E7D]">
+            <h1 className="text-2xl font-semibold text-[#233E7D]">
               Betti Intelligence Platform
             </h1>
             <p className="text-sm text-[#59595B]">
