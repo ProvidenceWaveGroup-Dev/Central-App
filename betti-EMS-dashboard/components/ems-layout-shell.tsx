@@ -21,7 +21,7 @@ const NOTIFICATION_ALERTS: NotificationAlert[] = [
 
 const pageTitles: Record<string, string> = {
   "/": "Dashboard",
-  "/health-wellness": "Health & Wellness",
+  "/health-wellness": "Resident Status",
   "/activity-feed": "Activity Feed",
   "/occupancy": "Monitoring",
   "/communication": "Communication",

@@ -52,7 +52,7 @@ export function DashboardHeader() {
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mt-2">
                 <div className="flex items-center gap-2">
                   <Activity className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/80 flex-shrink-0" />
-                  <span className="text-xs md:text-sm text-white/90 font-medium">Wellness Score: 7.8/10</span>
+                  <span className="text-xs md:text-sm text-white/90 font-medium">Alert Status: Active Response</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-white/80 flex-shrink-0" />

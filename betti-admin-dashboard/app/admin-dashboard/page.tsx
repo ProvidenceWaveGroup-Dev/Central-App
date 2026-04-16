@@ -21,6 +21,10 @@ import { FacilitiesSection } from "@/components/sections/facilities-section";
 import { SecuritySection } from "@/components/sections/security-section";
 import { AdminManagementSection } from "@/components/sections/admin-management-section";
 import { SettingsSection } from "@/components/sections/settings-section";
+import { HousingSection } from "@/components/sections/housing-section";
+import { ComplianceSection } from "@/components/sections/compliance-section";
+import { AuditLogSection } from "@/components/sections/audit-log-section";
+import { SocialImpactSection } from "@/components/sections/social-impact-section";
 import { BettiLoader, usePageLoader } from "@/components/betti-loader";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -29,7 +33,7 @@ import Image from "next/image";
 // Section titles for mobile header
 const sectionTitles: Record<string, string> = {
   overview: "Overview",
-  patients: "Patients",
+  patients: "Residents",
   appointments: "Appointments",
   caregivers: "Caregivers",
   alerts: "Alerts & Incidents",
@@ -45,6 +49,10 @@ const sectionTitles: Record<string, string> = {
   facilities: "Facilities",
   security: "Security & Access",
   "admin-management": "Admin Management",
+  housing: "Housing & Transitional Living",
+  compliance: "Compliance",
+  "audit-log": "Audit Log",
+  "social-impact": "Social Impact",
   settings: "Settings",
 };
 
@@ -138,6 +146,10 @@ export default function AdminDashboard() {
     facilities: <FacilitiesSection />,
     security: <SecuritySection />,
     "admin-management": <AdminManagementSection />,
+    housing: <HousingSection />,
+    compliance: <ComplianceSection />,
+    "audit-log": <AuditLogSection />,
+    "social-impact": <SocialImpactSection />,
     settings: <SettingsSection />,
   };
 

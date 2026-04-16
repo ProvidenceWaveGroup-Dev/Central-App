@@ -29,6 +29,10 @@ import {
   ShieldCheck,
   Flame,
   Calendar,
+  Home,
+  ClipboardCheck,
+  ScrollText,
+  TrendingUp,
   type LucideIcon,
 } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -58,7 +62,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: "patients",
-    label: "Patients",
+    label: "Residents",
     icon: Users,
     badge: null,
   },
@@ -152,6 +156,30 @@ const menuItems: MenuItem[] = [
     id: "admin-management",
     label: "Admin Management",
     icon: UserCog,
+    badge: null,
+  },
+  {
+    id: "housing",
+    label: "Housing & Transitional Living",
+    icon: Home,
+    badge: null,
+  },
+  {
+    id: "compliance",
+    label: "Compliance",
+    icon: ClipboardCheck,
+    badge: null,
+  },
+  {
+    id: "audit-log",
+    label: "Audit Log",
+    icon: ScrollText,
+    badge: null,
+  },
+  {
+    id: "social-impact",
+    label: "Social Impact",
+    icon: TrendingUp,
     badge: null,
   },
   {

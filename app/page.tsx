@@ -30,38 +30,74 @@ export default function Home() {
   // TODO: re-enable when backend is available
   // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || buildHostUrl("localhost", 8000);
 
-  const apps = [
+  const tiers = [
     {
-      title: "Betti Senior",
-      description: "Betti-Senior-Dashboard web app for wellness monitoring.",
-      href: appUrls.senior,
+      tier: "Organizational",
+      label: "Tier 1",
+      description: "Portfolio oversight, compliance, audit, and system administration.",
+      apps: [
+        {
+          title: "Betti Admin",
+          description: "Organizational oversight, portfolio management, compliance, audit, and system administration across all facilities and sites.",
+          href: appUrls.admin,
+        },
+      ],
     },
     {
-      title: "Betti Caregiver",
-      description: "Betti-Caregiver-dashboard web app for care coordination.",
-      href: appUrls.caregiver,
+      tier: "Facility Operations",
+      label: "Tier 2",
+      description: "Site-level event queues, resident oversight, and daily operations.",
+      apps: [
+        {
+          title: "Betti Staff Operator",
+          description: "Facility-level event queue, resident oversight, incident coordination, and shift management.",
+          href: appUrls.operator,
+        },
+        {
+          title: "Betti Caregiver",
+          description: "Event monitoring, care activity coordination, and environment response support for care staff.",
+          href: appUrls.caregiver,
+        },
+      ],
     },
     {
-      title: "Betti Emergency Service",
-      description: "Betti-EMS-dashboard web app for emergency response.",
-      href: appUrls.ems,
+      tier: "Response Partners",
+      label: "Tier 3",
+      description: "Responder consoles for dispatched and on-call partner agencies.",
+      apps: [
+        {
+          title: "Betti Emergency Service",
+          description: "Event response console and dispatch coordination for emergency medical services.",
+          href: appUrls.ems,
+        },
+        {
+          title: "Betti Security",
+          description: "Environmental monitoring and incident coordination for security personnel.",
+          href: appUrls.security,
+        },
+        {
+          title: "Betti Fire Service",
+          description: "Incident monitoring and responder coordination for fire and rescue services.",
+          href: appUrls.fire,
+        },
+      ],
     },
     {
-      title: "Betti Security",
-      description: "Betti-Security-Dashboard web app for security monitoring.",
-      href: appUrls.security,
-    },
-    {
-      title: "Betti Fire Service",
-      description: "Betti Fire Service dashboard for responder operations.",
-      href: appUrls.fire,
-    },
-    {
-      title: "Betti Staff Operator",
-      description: "Betti Staff Operator dashboard for facility operations and management.",
-      href: appUrls.operator,
+      tier: "Resident & Household",
+      label: "Tier 4",
+      description: "Individual-facing views for residents and the people they live with.",
+      apps: [
+        {
+          title: "Betti Senior",
+          description: "Personal living environment monitoring, daily routine support, and event visibility for residents.",
+          href: appUrls.senior,
+        },
+      ],
     },
   ];
+
+  // Flat list kept for DashboardWarmup
+  const apps = tiers.flatMap((t) => t.apps);
 
   const openLogin = (href: string) => {
     setPendingHref(href);
@@ -193,39 +229,52 @@ export default function Home() {
           </div>
           <div>
             <h1 className="text-2xl font-semibold text-[#233E7D]">
-              Betti Central Hub
+              Betti Intelligence Platform
             </h1>
             <p className="text-sm text-[#59595B]">
-              Quick access to every Betti dashboard experience.
+              Human-Centric Intelligence Infrastructure — environment monitoring, event coordination, and role-based response across every tier.
             </p>
           </div>
         </section>
 
-        {/* App Cards */}
-        <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {apps.map((app) => (
-            <article
-              key={app.title}
-              className="flex h-full flex-col gap-4 rounded-2xl border border-[#DADADA] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-            >
-              <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-[#233E7D]">
-                  {app.title}
-                </h2>
-                <p className="text-sm text-[#59595B]">{app.description}</p>
+        {/* System Tier Layout */}
+        <div className="space-y-8">
+          {tiers.map((tier) => (
+            <section key={tier.tier}>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="inline-flex items-center rounded-full bg-[#233E7D] px-2.5 py-0.5 text-xs font-semibold text-white">
+                  {tier.label}
+                </span>
+                <div>
+                  <h2 className="text-base font-semibold text-[#233E7D]">{tier.tier}</h2>
+                  <p className="text-xs text-[#59595B]">{tier.description}</p>
+                </div>
               </div>
-              <div className="mt-auto">
-                <button
-                  type="button"
-                  onClick={() => { window.location.href = app.href; }}
-                  className="inline-flex w-full items-center justify-center rounded-lg bg-[#233E7D] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1c3164]"
-                >
-                  Open dashboard
-                </button>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {tier.apps.map((app) => (
+                  <article
+                    key={app.title}
+                    className="flex h-full flex-col gap-4 rounded-2xl border border-[#DADADA] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                  >
+                    <div className="space-y-2">
+                      <h3 className="text-base font-semibold text-[#233E7D]">{app.title}</h3>
+                      <p className="text-sm text-[#59595B]">{app.description}</p>
+                    </div>
+                    <div className="mt-auto">
+                      <button
+                        type="button"
+                        onClick={() => { window.location.href = app.href; }}
+                        className="inline-flex w-full items-center justify-center rounded-lg bg-[#233E7D] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1c3164]"
+                      >
+                        Open
+                      </button>
+                    </div>
+                  </article>
+                ))}
               </div>
-            </article>
+            </section>
           ))}
-        </section>
+        </div>
         <DashboardWarmup urls={apps.map((app) => app.href)} />
       </main>
 

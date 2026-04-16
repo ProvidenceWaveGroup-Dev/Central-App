@@ -11,8 +11,8 @@ export default function HealthWellnessPage() {
 
       <div className="mx-auto max-w-7xl space-y-6">
         <div>
-          <h1 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">Health & Wellness</h1>
-          <p className="text-sm text-gray-500 mt-1">Comprehensive health monitoring and medication tracking</p>
+          <h1 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">Resident Status</h1>
+          <p className="text-sm text-gray-500 mt-1">Observed vitals, alerts, and care activity for assigned residents</p>
         </div>
 
         <div className="space-y-6">

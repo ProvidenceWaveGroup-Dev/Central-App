@@ -22,7 +22,7 @@ const initialAlerts: Alert[] = [
   { id: 2,  severity: "critical", type: "High Blood Pressure",  resident: "Thomas Wright",    room: "306", time: "1 min ago",   status: "new"          },
   { id: 3,  severity: "critical", type: "High Blood Pressure",  resident: "Margaret Collins", room: "204", time: "5 min ago",   status: "new"          },
   { id: 4,  severity: "warning",  type: "Elevated BP",          resident: "Robert Chen",      room: "118", time: "7 min ago",   status: "new"          },
-  { id: 5,  severity: "warning",  type: "Vitals Anomaly",       resident: "Robert Chen",      room: "118", time: "8 min ago",   status: "new"          },
+  { id: 5,  severity: "warning",  type: "Vitals Out of Range",  resident: "Robert Chen",      room: "118", time: "8 min ago",   status: "new"          },
   { id: 6,  severity: "warning",  type: "Inactivity (45 min)",  resident: "Dorothy Palmer",   room: "310", time: "15 min ago",  status: "new"          },
   { id: 7,  severity: "info",     type: "Device Offline",       resident: "James Wilson",     room: "205", time: "22 min ago",  status: "acknowledged" },
   { id: 8,  severity: "critical", type: "Emergency Button",     resident: "Frank Martinez",   room: "401", time: "30 min ago",  status: "acknowledged" },

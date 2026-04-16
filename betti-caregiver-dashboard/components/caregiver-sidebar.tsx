@@ -53,7 +53,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: "health",
-    label: "Health & Wellness",
+    label: "Monitoring",
     icon: Heart,
     badge: null,
   },
