@@ -69,7 +69,7 @@ export default function Home() {
       label: "Tier 3",
       description: "Responder consoles for dispatched and on-call partner agencies.",
       color: "#F2CB05",
-      textDark: true,
+      textDark: false,
       apps: [
         {
           title: "Betti Emergency Service",
@@ -93,7 +93,7 @@ export default function Home() {
       label: "Tier 4",
       description: "Individual-facing views for residents and the people they live with.",
       color: "#4AC3C6",
-      textDark: true,
+      textDark: false,
       apps: [
         {
           title: "Betti Senior",
@@ -109,7 +109,7 @@ export default function Home() {
 
   // All tiers open by default
   const [openTiers, setOpenTiers] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(tiers.map((t) => [t.tier, true]))
+    () => Object.fromEntries(tiers.map((t) => [t.tier, false]))
   );
   const toggleTier = (tier: string) =>
     setOpenTiers((prev) => ({ ...prev, [tier]: !prev[tier] }));
@@ -256,8 +256,8 @@ export default function Home() {
         <div className="flex flex-col gap-5">
           {tiers.map((tier) => {
             const isOpen = openTiers[tier.tier] ?? true;
-            const fg = tier.textDark ? tier.color : "white";
-            const fgMuted = tier.textDark ? `${tier.color}cc` : "rgba(255,255,255,0.7)";
+            const fg = "white";
+            const fgMuted = "rgba(255,255,255,0.75)";
             return (
               <div key={tier.tier}>
                 {/* Accordion header */}
@@ -307,7 +307,7 @@ export default function Home() {
                           <button
                             type="button"
                             onClick={() => { window.location.href = app.href; }}
-                            style={{ backgroundColor: tier.color, color: tier.textDark ? "#233E7D" : "white" }}
+                            style={{ backgroundColor: tier.color, color: "white" }}
                             className="inline-flex w-full items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold transition-opacity hover:opacity-90"
                           >
                             Open
