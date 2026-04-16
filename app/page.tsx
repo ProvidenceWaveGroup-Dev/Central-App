@@ -36,7 +36,6 @@ export default function Home() {
       label: "Tier 1",
       description: "Portfolio oversight, compliance, audit, and system administration.",
       color: "#233E7D",
-      hoverColor: "#1c3164",
       textDark: false,
       apps: [
         {
@@ -51,7 +50,6 @@ export default function Home() {
       label: "Tier 2",
       description: "Site-level event queues, resident oversight, and daily operations.",
       color: "#5C7F39",
-      hoverColor: "#4f6b32",
       textDark: false,
       apps: [
         {
@@ -70,8 +68,7 @@ export default function Home() {
       tier: "Response Partners",
       label: "Tier 3",
       description: "Responder consoles for dispatched and on-call partner agencies.",
-      color: "#99CA3C",
-      hoverColor: "#86b234",
+      color: "#F2CB05",
       textDark: true,
       apps: [
         {
@@ -95,9 +92,8 @@ export default function Home() {
       tier: "Resident & Household",
       label: "Tier 4",
       description: "Individual-facing views for residents and the people they live with.",
-      color: "#59595B",
-      hoverColor: "#454547",
-      textDark: false,
+      color: "#4AC3C6",
+      textDark: true,
       apps: [
         {
           title: "Betti Senior",
