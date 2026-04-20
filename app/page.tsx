@@ -26,6 +26,7 @@ export default function Home() {
     fire: process.env.NEXT_PUBLIC_BETTI_FIRE_URL || buildHostUrl("localhost", 3005),
     admin: process.env.NEXT_PUBLIC_BETTI_ADMIN_URL || buildHostUrl("localhost", 3006),
     operator: process.env.NEXT_PUBLIC_BETTI_OPERATOR_URL || buildHostUrl("localhost", 3007),
+    ashp: process.env.NEXT_PUBLIC_BETTI_ASHP_URL || buildHostUrl("localhost", 3008),
   };
   // TODO: re-enable when backend is available
   // const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || buildHostUrl("localhost", 8000);
@@ -42,6 +43,11 @@ export default function Home() {
           title: "Betti Admin",
           description: "Organizational oversight, portfolio management, compliance, audit, and system administration across all facilities and sites.",
           href: appUrls.admin,
+        },
+        {
+          title: "City & Transitional Housing",
+          description: "City and transitional housing administration — property management, resident services, compliance, and housing stability oversight.",
+          href: appUrls.ashp,
         },
       ],
     },

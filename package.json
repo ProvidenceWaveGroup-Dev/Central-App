@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npm run dev:all",
-    "dev:all": "concurrently -n hub,senior,caregiver,ems,security,fire,admin,operator \"npm run dev:hub\" \"npm run dev:senior\" \"npm run dev:caregiver\" \"npm run dev:ems\" \"npm run dev:security\" \"npm run dev:fire\" \"npm run dev:admin\" \"npm run dev:operator\"",
+    "dev:all": "concurrently -n hub,senior,caregiver,ems,security,fire,admin,operator,ashp \"npm run dev:hub\" \"npm run dev:senior\" \"npm run dev:caregiver\" \"npm run dev:ems\" \"npm run dev:security\" \"npm run dev:fire\" \"npm run dev:admin\" \"npm run dev:operator\" \"npm run dev:ashp\"",
     "dev:hub": "next dev",
     "dev:senior": "npm run dev --prefix ./betti-senior-dashboard",
     "dev:caregiver": "npm run dev --prefix ./betti-caregiver-dashboard",
@@ -13,6 +13,7 @@
     "dev:fire": "npm run dev --prefix ./betti-fire-service-dashboard",
     "dev:admin": "npm run dev --prefix ./betti-admin-dashboard",
     "dev:operator": "npm run dev --prefix ./betti-operator-dashboard",
+    "dev:ashp": "npm run dev --prefix ./ashp-admin-dashboard",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
