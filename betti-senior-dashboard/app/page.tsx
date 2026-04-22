@@ -68,97 +68,14 @@ const HumidityRiskCard = dynamic(() => import("@/components/humidity-risk-card")
   ssr: true,
 });
 
-type LiveEnvironmentResponse = {
-  data_mode?: string;
-  sample_count?: number;
-  metrics?: {
-    temperature_c?: number | null;
-    humidity_pct?: number | null;
-    co2_ppm?: number | null;
-  };
-  sensor_health?: {
-    status?: string;
-    nodes?: Array<{
-      node_id?: string | null;
-      age_seconds?: number | null;
-      last_seen_at?: string | null;
-    }>;
-  };
-};
-
-type ReminderRow = {
-  id?: number;
-  text?: string | null;
-  status?: string | null;
-  purpose?: string | null;
-  category?: string | null;
-};
-
-type AppointmentRow = {
-  id?: number;
-  provider_name?: string | null;
-  appointment_type?: string | null;
-  status?: string | null;
-  start_time?: string | null;
-  scheduled_for?: string | null;
-};
-
-type VitalRow = {
-  heart_rate?: number | string | null;
-  hydration_level?: number | string | null;
-};
-
-type AssignedPatient = {
-  patient_name?: string | null;
-  care_team?: Array<unknown>;
-};
-
-const toNumber = (value: unknown): number | null => {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : null;
-};
-
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
-
-const toLocalWhen = (value?: string | null): string => {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return "--";
-  return date.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-};
-
-const toMinsAgo = (value?: string | null): string => {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return "--";
-  const mins = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins} minutes ago`;
-  const hours = Math.round(mins / 60);
-  return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-};
-
-const decodeJwtSub = (token: string): number | null => {
-  try {
-    const parts = token.split(".");
-    if (parts.length < 2) return null;
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
-    const sub = Number(payload?.sub);
-    return Number.isFinite(sub) ? sub : null;
-  } catch {
-    return null;
-  }
-};
-
 export default function SeniorDashboard() {
-  const [residentName, setResidentName] = useState("Margaret");
   const [lastOkTime, setLastOkTime] = useState("2 hours ago");
   const [latestAlert, setLatestAlert] = useState<string | null>(null);
   const [okButtonText, setOkButtonText] = useState("I'm OK");
   const [, setShowAlertSnapshot] = useState(false);
   const [emergencyStatus, setEmergencyStatus] = useState("");
 
-  // Notification Bell State - shared via AlertsContext
+  // Notification Bell State — shared via AlertsContext
   const [showNotifications, setShowNotifications] = useState(false);
   const { alerts: notificationAlerts, readAlertIds, unreadCount, markAsRead } = useAlerts();
 
@@ -174,36 +91,29 @@ export default function SeniorDashboard() {
   const [showAbnormalThresholdPrompt, setShowAbnormalThresholdPrompt] = useState(false);
   const [thresholdAlertCountdown, setThresholdAlertCountdown] = useState(30);
   const [thresholdContactStatus, setThresholdContactStatus] = useState("");
-  const [envLive, setEnvLive] = useState<LiveEnvironmentResponse | null>(null);
-  const [liveReminders, setLiveReminders] = useState<ReminderRow[]>([]);
-  const [liveAppointments, setLiveAppointments] = useState<AppointmentRow[]>([]);
-  const [latestVital, setLatestVital] = useState<VitalRow | null>(null);
-  const [liveAlertsCount, setLiveAlertsCount] = useState(0);
-  const [assignedPatient, setAssignedPatient] = useState<AssignedPatient | null>(null);
-  const [liveDbError, setLiveDbError] = useState("");
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const fromStorage = (
-      localStorage.getItem("betti_patient_name") ||
-      localStorage.getItem("betti_first_name") ||
-      localStorage.getItem("betti_name") ||
-      ""
-    ).trim();
-    if (fromStorage) {
-      setResidentName(fromStorage);
+    const hasShownAlert = sessionStorage.getItem("alertShown");
+
+    if (!hasShownAlert) {
+      const alerts = [
+        "Medication reminder: Take your afternoon pills",
+        "Hydration reminder: You haven't had water in 3 hours",
+        "Restroom reminder: It's been 4 hours since your last visit",
+        "Shower reminder: Daily shower scheduled for 2 PM",
+      ];
+
+      const randomAlert = alerts[Math.floor(Math.random() * alerts.length)];
+      setLatestAlert(randomAlert);
+      sessionStorage.setItem("alertShown", "true");
+
+      const timer = setTimeout(() => {
+        setLatestAlert(null);
+      }, 10000);
+
+      return () => clearTimeout(timer);
     }
   }, []);
-
-  useEffect(() => {
-    const unread = notificationAlerts.find((alert) => !readAlertIds.includes(alert.id));
-    if (!unread) return;
-    setLatestAlert(unread.description || unread.title);
-    const timer = window.setTimeout(() => {
-      setLatestAlert(null);
-    }, 10000);
-    return () => window.clearTimeout(timer);
-  }, [notificationAlerts, readAlertIds]);
 
   // Simulate abnormal threshold alert (for demo/testing)
   const simulateAbnormalThresholdAlert = () => {
@@ -334,157 +244,6 @@ export default function SeniorDashboard() {
     setLatestAlert(null);
   };
 
-  const fetchLiveDb = useCallback(async () => {
-    try {
-      setLiveDbError("");
-      const apiUrl = process.env.NEXT_PUBLIC_BETTI_API_URL || "http://localhost:8000";
-      const token = typeof window !== "undefined" ? window.localStorage.getItem("betti_token") || "" : "";
-      if (!token) {
-        setLiveDbError("Login required for live dashboard data.");
-        return;
-      }
-      const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
-      const userId = decodeJwtSub(token);
-
-      const requests: Array<Promise<Response>> = [
-        fetch(`${apiUrl}/api/intelligence/environment/live?window_minutes=360`, { headers, cache: "no-store" }),
-        fetch(`${apiUrl}/api/reminders?include_completed=true`, { headers, cache: "no-store" }),
-        fetch(`${apiUrl}/api/appointments?limit=20`, { headers, cache: "no-store" }),
-        fetch(`${apiUrl}/api/vitals?limit=1`, { headers, cache: "no-store" }),
-        fetch(`${apiUrl}/api/alerts?limit=50`, { headers, cache: "no-store" }),
-      ];
-      if (userId !== null) {
-        requests.push(fetch(`${apiUrl}/api/users/${userId}/assigned-patients?active_only=true`, { headers, cache: "no-store" }));
-      }
-
-      const settled = await Promise.allSettled(requests);
-      const [envRes, remindersRes, appointmentsRes, vitalsRes, alertsRes, assignedRes] = settled;
-
-      if (envRes.status === "fulfilled" && envRes.value.ok) {
-        setEnvLive((await envRes.value.json()) as LiveEnvironmentResponse);
-      }
-
-      if (remindersRes.status === "fulfilled" && remindersRes.value.ok) {
-        const body = (await remindersRes.value.json()) as unknown;
-        setLiveReminders(Array.isArray(body) ? (body as ReminderRow[]) : []);
-      } else {
-        setLiveReminders([]);
-      }
-
-      if (appointmentsRes.status === "fulfilled" && appointmentsRes.value.ok) {
-        const body = (await appointmentsRes.value.json()) as unknown;
-        setLiveAppointments(Array.isArray(body) ? (body as AppointmentRow[]) : []);
-      } else {
-        setLiveAppointments([]);
-      }
-
-      if (vitalsRes.status === "fulfilled" && vitalsRes.value.ok) {
-        const body = (await vitalsRes.value.json()) as unknown;
-        const rows = Array.isArray(body) ? (body as VitalRow[]) : [];
-        setLatestVital(rows[0] || null);
-      } else {
-        setLatestVital(null);
-      }
-
-      if (alertsRes.status === "fulfilled" && alertsRes.value.ok) {
-        const body = (await alertsRes.value.json()) as unknown;
-        setLiveAlertsCount(Array.isArray(body) ? body.length : 0);
-      } else {
-        setLiveAlertsCount(0);
-      }
-
-      if (assignedRes && assignedRes.status === "fulfilled" && assignedRes.value.ok) {
-        const body = (await assignedRes.value.json()) as unknown;
-        const rows = Array.isArray(body) ? (body as AssignedPatient[]) : [];
-        const first = rows[0] || null;
-        setAssignedPatient(first);
-        if (first?.patient_name && first.patient_name.trim().length > 0) {
-          setResidentName(first.patient_name.trim().split(" ")[0]);
-        }
-      } else {
-        setAssignedPatient(null);
-      }
-    } catch (error) {
-      setLiveDbError(error instanceof Error ? error.message : "Unable to refresh live dashboard data.");
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchLiveDb();
-    const timer = window.setInterval(fetchLiveDb, 30000);
-    return () => window.clearInterval(timer);
-  }, [fetchLiveDb]);
-
-  const sensorOffline = String(envLive?.sensor_health?.status || "offline").toLowerCase() !== "online";
-  const sensorNode = envLive?.sensor_health?.nodes?.[0];
-  const humidity = toNumber(envLive?.metrics?.humidity_pct);
-  const hydrationRaw = toNumber(latestVital?.hydration_level);
-  const hydrationPct = hydrationRaw !== null ? (hydrationRaw <= 1 ? hydrationRaw * 100 : hydrationRaw) : humidity;
-  const hydrationValue = hydrationPct !== null ? `${Math.round(clamp(hydrationPct, 0, 100))}%` : sensorOffline ? "Sensor offline" : "--";
-  const hydrationProgress = hydrationPct !== null ? Math.round(clamp(hydrationPct, 0, 100)) : null;
-  const heartRate = toNumber(latestVital?.heart_rate);
-  const activityValue = heartRate !== null ? `${Math.round(heartRate)} bpm` : sensorOffline ? "Sensor offline" : "--";
-  const activityProgress = heartRate !== null ? Math.round(clamp((heartRate / 140) * 100, 0, 100)) : null;
-
-  const medicationReminders = liveReminders.filter((row) => {
-    const key = `${row.purpose || ""} ${row.category || ""} ${row.text || ""}`.toLowerCase();
-    return key.includes("med");
-  });
-  const medTotal = medicationReminders.length;
-  const medDone = medicationReminders.filter((row) => String(row.status || "").toLowerCase() === "completed").length;
-  const medicationValue = medTotal > 0 ? `${medDone}/${medTotal}` : "--";
-  const medicationDetails = medicationReminders.slice(0, 2).map((row) => ({
-    label: String(row.text || "Medication"),
-    status: String(row.status || "").toLowerCase() === "completed" ? "done" : "pending",
-  }));
-
-  const mealReminders = liveReminders.filter((row) => {
-    const key = `${row.purpose || ""} ${row.category || ""} ${row.text || ""}`.toLowerCase();
-    return key.includes("meal") || key.includes("breakfast") || key.includes("lunch") || key.includes("dinner");
-  });
-  const mealsTotal = mealReminders.length;
-  const mealsDone = mealReminders.filter((row) => String(row.status || "").toLowerCase() === "completed").length;
-  const mealsValue = mealsTotal > 0 ? `${mealsDone}/${mealsTotal}` : "--";
-  const mealDetails = mealReminders.slice(0, 3).map((row) => ({
-    label: String(row.text || "Meal"),
-    status: String(row.status || "").toLowerCase() === "completed" ? "done" : "pending",
-  }));
-
-  const appointmentRows = liveAppointments.slice(0, 2).map((apt) => {
-    const statusRaw = String(apt.status || "scheduled").toLowerCase();
-    const status = statusRaw === "confirmed" ? "Confirmed" : statusRaw === "completed" ? "Completed" : "Scheduled";
-    const badgeClass =
-      status === "Confirmed"
-        ? "bg-green-100 text-green-700 border border-green-200"
-        : status === "Completed"
-          ? "bg-gray-100 text-gray-700 border border-gray-200"
-          : "bg-blue-100 text-blue-700 border border-blue-200";
-    return {
-      doctor: String(apt.provider_name || apt.appointment_type || "Appointment"),
-      time: toLocalWhen(apt.start_time || apt.scheduled_for),
-      status,
-      badgeClass,
-    };
-  });
-
-  const fallbackAppointmentRows =
-    appointmentRows.length > 0
-      ? appointmentRows
-      : [
-          {
-            doctor: "No live appointments",
-            time: "Database has no current appointment rows",
-            status: "Live DB",
-            badgeClass: "bg-gray-100 text-gray-700 border border-gray-200",
-          },
-        ];
-
-  const fallIncidents = notificationAlerts.filter((a) => {
-    const text = `${a.title} ${a.description}`.toLowerCase();
-    return text.includes("fall");
-  }).length;
-  const emergencyContacts = Array.isArray(assignedPatient?.care_team) ? assignedPatient.care_team.length : 0;
-
   return (
     <div className="p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -496,7 +255,7 @@ export default function SeniorDashboard() {
                 <Heart className="h-10 w-10 text-green-600" />
               </div>
               <h2 className="font-serif text-xl text-[#233E7D] mb-2">
-                Hello, {residentName}!
+                Hello, Margaret!
               </h2>
               <div className="rounded-lg border border-gray-200 p-4 mb-6">
                 <div className="flex items-center justify-center gap-3 mb-2">
@@ -529,7 +288,7 @@ export default function SeniorDashboard() {
                 Fall Detected!
               </h2>
               <p className="text-lg text-gray-600 mb-6">
-                {residentName}, are you okay?
+                Margaret, are you okay?
               </p>
 
               {/* Countdown Timer */}
@@ -599,7 +358,7 @@ export default function SeniorDashboard() {
                 Abnormal Threshold Alert!
               </h2>
               <p className="text-lg text-gray-600 mb-6">
-                Blood pressure elevated: 145/95 mmHg - Above normal threshold.
+                Blood pressure elevated: 145/95 mmHg — Above normal threshold.
               </p>
 
               {/* Countdown Timer */}
@@ -659,7 +418,7 @@ export default function SeniorDashboard() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">
-              Welcome Back, {residentName}
+              Welcome Back, Margaret
             </h1>
             <p className="text-sm text-gray-500 mt-1">
               Here&apos;s your daily health overview
@@ -760,12 +519,6 @@ export default function SeniorDashboard() {
           </div>
         </div>
 
-        {liveDbError && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-            Live data warning: {liveDbError}
-          </div>
-        )}
-
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <div className="lg:col-span-2">
@@ -832,9 +585,6 @@ export default function SeniorDashboard() {
               <h2 className="font-serif text-lg font-semibold text-[#233E7D] mb-4">
                 Alerts
               </h2>
-              <div className="mb-3 text-sm text-gray-600">
-                Unread alerts: {liveAlertsCount}
-              </div>
               <button
                 onClick={handleViewAlerts}
                 className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#233E7D] px-4 py-2 text-sm font-medium text-white hover:bg-[#1c3266] transition-colors"
@@ -852,37 +602,44 @@ export default function SeniorDashboard() {
             {
               icon: Droplets,
               title: "Hydration",
-              value: hydrationValue,
-              subtitle: "Hydration level (live)",
-              progress: hydrationProgress,
-              goal: "From live vitals/humidity feed",
+              value: "6/8",
+              subtitle: "Glasses today",
+              progress: 75,
+              goal: "Goal: 8 glasses daily",
               color: "blue",
             },
             {
               icon: Pill,
               title: "Medications",
-              value: medicationValue,
-              subtitle: "Completed reminders",
+              value: "3/4",
+              subtitle: "Taken today",
               progress: null,
               color: "green",
-              details: medicationDetails.length > 0 ? medicationDetails : [{ label: "No live medication reminders", status: "pending" }],
+              details: [
+                { label: "Morning pills", status: "done" },
+                { label: "Afternoon pills", status: "pending" },
+              ],
             },
             {
               icon: Utensils,
               title: "Meals",
-              value: mealsValue,
-              subtitle: "Completed meal reminders",
+              value: "2/3",
+              subtitle: "Meals today",
               progress: null,
               color: "orange",
-              details: mealDetails.length > 0 ? mealDetails : [{ label: "No live meal reminders", status: "pending" }],
+              details: [
+                { label: "Breakfast", status: "done" },
+                { label: "Lunch", status: "done" },
+                { label: "Dinner", status: "pending" },
+              ],
             },
             {
               icon: Activity,
               title: "Activity",
-              value: activityValue,
-              subtitle: "Current heart rate (live)",
-              progress: activityProgress,
-              goal: sensorOffline ? "Sensor data required (offline)" : "Live sensor stream",
+              value: "2,847",
+              subtitle: "Steps today",
+              progress: 57,
+              goal: "Goal: 5,000 steps daily",
               color: "purple",
             },
           ].map((card, index) => {
@@ -980,7 +737,20 @@ export default function SeniorDashboard() {
               </h2>
             </div>
             <div className="space-y-3">
-              {fallbackAppointmentRows.map((apt, index) => (
+              {[
+                {
+                  doctor: "Dr. Smith",
+                  time: "Tomorrow 2:00 PM",
+                  status: "Confirmed",
+                  badgeClass: "bg-green-100 text-green-700 border border-green-200",
+                },
+                {
+                  doctor: "Physical Therapy",
+                  time: "Friday 10:00 AM",
+                  status: "Scheduled",
+                  badgeClass: "bg-blue-100 text-blue-700 border border-blue-200",
+                },
+              ].map((apt, index) => (
                 <div
                   key={index}
                   className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100 gap-2"
@@ -1011,9 +781,9 @@ export default function SeniorDashboard() {
             </div>
             <div className="space-y-3 sm:space-y-4">
               {[
-                { icon: Lock, label: "Front Door", status: sensorOffline ? "Sensor offline" : "Live feed" },
-                { icon: Lock, label: "Back Door", status: sensorOffline ? "Sensor offline" : "Live feed" },
-                { icon: Home, label: "Security System", status: sensorOffline ? "Sensor offline" : "Live feed" },
+                { icon: Lock, label: "Front Door", status: "Locked" },
+                { icon: Lock, label: "Back Door", status: "Locked" },
+                { icon: Home, label: "Security System", status: "Armed" },
               ].map((item, index) => (
                 <div
                   key={index}
@@ -1025,11 +795,7 @@ export default function SeniorDashboard() {
                       {item.label}
                     </span>
                   </div>
-                  <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                    item.status.toLowerCase().includes("offline")
-                      ? "bg-amber-100 text-amber-700 border-amber-200"
-                      : "bg-green-100 text-green-700 border-green-200"
-                  }`}>
+                  <span className="inline-flex rounded-full bg-green-100 text-green-700 border border-green-200 px-2.5 py-0.5 text-xs font-semibold">
                     {item.status}
                   </span>
                 </div>
@@ -1046,19 +812,19 @@ export default function SeniorDashboard() {
               </h2>
             </div>
             <div className="text-xl sm:text-2xl font-bold text-[#5C7F39] mb-2">
-              {sensorOffline ? "Sensor offline" : "--"}
+              4
             </div>
             <div className="text-xs sm:text-sm text-gray-500 mb-4">
-              {sensorOffline ? "Sensor data required" : "Visits today"}
+              Visits today
             </div>
             <div className="text-xs sm:text-sm space-y-1">
               <div className="flex justify-between">
                 <span className="text-gray-500">Last visit:</span>
-                <span className="text-gray-600">{sensorOffline ? "Sensor offline" : "--"}</span>
+                <span className="text-gray-600">1 hour ago</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Average frequency:</span>
-                <span className="text-gray-600">{sensorOffline ? "Sensor offline" : "--"}</span>
+                <span className="text-gray-600">Normal</span>
               </div>
             </div>
           </div>
@@ -1165,21 +931,19 @@ export default function SeniorDashboard() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">This Month:</span>
-                  <span className="text-gray-700 font-medium">{fallIncidents} incidents</span>
+                  <span className="text-gray-700 font-medium">0 incidents</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Frequency Trend:</span>
-                  <span className="text-green-600 font-medium">{fallIncidents === 0 ? "Stable" : "Active"}</span>
+                  <span className="text-green-600 font-medium">Improving</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Sensor Status:</span>
-                  <span className={`font-medium ${sensorOffline ? "text-amber-600" : "text-green-600"}`}>
-                    {sensorOffline ? "Sensor offline" : "Active"}
-                  </span>
+                  <span className="text-green-600 font-medium">Active</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Response Time:</span>
-                  <span className="text-gray-700 font-medium">{sensorOffline ? "Sensor offline" : "Live"}</span>
+                  <span className="text-gray-700 font-medium">30 seconds</span>
                 </div>
               </div>
             </div>
@@ -1195,8 +959,8 @@ export default function SeniorDashboard() {
             </div>
             <div className="space-y-3 sm:space-y-4">
               {[
-                { label: "Fall Detection", status: sensorOffline ? "Sensor Offline" : recoveryStatus === "monitoring" ? "Active" : recoveryStatus === "fall_detected" ? "Alert!" : "Active" },
-                { label: "Emergency Contacts", status: `${emergencyContacts} Available` },
+                { label: "Fall Detection", status: recoveryStatus === "monitoring" ? "Active" : recoveryStatus === "fall_detected" ? "Alert!" : "Active" },
+                { label: "Emergency Contacts", status: "3 Available" },
                 { label: "Voice Assistant", status: "Connected" },
               ].map((item, index) => (
                 <div
@@ -1207,7 +971,7 @@ export default function SeniorDashboard() {
                     {item.label}
                   </span>
                   <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold text-white ${
-                    item.status === "Alert!" ? "bg-red-600" : item.status.toLowerCase().includes("offline") ? "bg-amber-600" : "bg-[#5C7F39]"
+                    item.status === "Alert!" ? "bg-red-600" : "bg-[#5C7F39]"
                   }`}>
                     {item.status}
                   </span>
@@ -1225,19 +989,19 @@ export default function SeniorDashboard() {
               </h2>
             </div>
             <div className="text-xl sm:text-2xl font-bold text-[#5C7F39] mb-2">
-              {sensorOffline ? "Sensor Offline" : (sensorNode?.node_id || "Live Sensor Zone")}
+              Living Room
             </div>
             <div className="text-xs sm:text-sm text-gray-500 mb-4">
-              Last updated: {sensorOffline ? "Sensor data required" : toMinsAgo(sensorNode?.last_seen_at)}
+              Last updated: 5 minutes ago
             </div>
             <div className="text-xs sm:text-sm">
               <div className="flex justify-between mb-2">
                 <span className="text-gray-500">Time in room:</span>
-                <span className="text-gray-600">{sensorOffline ? "Sensor offline" : "--"}</span>
+                <span className="text-gray-600">45 minutes</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Activity level:</span>
-                <span className="text-gray-600">{sensorOffline ? "Sensor offline" : "Live"}</span>
+                <span className="text-gray-600">Normal</span>
               </div>
             </div>
           </div>
@@ -1249,7 +1013,7 @@ export default function SeniorDashboard() {
             Daily Encouragement
           </h3>
           <p className="text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed">
-            You're doing wonderfully today, {residentName}! Your consistent health
+            You're doing wonderfully today, Margaret! Your consistent health
             habits are paying off. Remember, every small step counts toward
             your well-being. Your family is proud of how well you're taking
             care of yourself.
