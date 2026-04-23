@@ -1,0 +1,130 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #59595B;
+  --card: #FFFFFF;
+  --card-foreground: #59595B;
+  --popover: #FFFFFF;
+  --popover-foreground: #59595B;
+  --primary: #233E7D;
+  --primary-foreground: #FFFFFF;
+  --secondary: #5C7F39;
+  --secondary-foreground: #FFFFFF;
+  --muted: #F4F4F4;
+  --muted-foreground: #59595B;
+  --accent: #99CA3C;
+  --accent-foreground: #FFFFFF;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #FFFFFF;
+  --border: #DADADA;
+  --input: #DADADA;
+  --ring: #0A588D;
+  --chart-1: #233E7D;
+  --chart-2: #5C7F39;
+  --chart-3: #99CA3C;
+  --chart-4: #0A588D;
+  --chart-5: #59595B;
+  --radius: 0.625rem;
+  --sidebar: #233E7D;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #0A588D;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFFFFF;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.15);
+  --sidebar-ring: #99CA3C;
+}
+
+.dark {
+  --background: #1a1f2e;
+  --foreground: #FFFFFF;
+  --card: #1e2535;
+  --card-foreground: #FFFFFF;
+  --popover: #1e2535;
+  --popover-foreground: #FFFFFF;
+  --primary: #99CA3C;
+  --primary-foreground: #1a1f2e;
+  --secondary: #5C7F39;
+  --secondary-foreground: #FFFFFF;
+  --muted: #2a3040;
+  --muted-foreground: #DADADA;
+  --accent: #0A588D;
+  --accent-foreground: #FFFFFF;
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: #2a3040;
+  --input: #2a3040;
+  --ring: #99CA3C;
+  --chart-1: #99CA3C;
+  --chart-2: #5C7F39;
+  --chart-3: #0A588D;
+  --chart-4: #233E7D;
+  --chart-5: #DADADA;
+  --sidebar: #151c2e;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #0A588D;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFFFFF;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #99CA3C;
+}
+
+@theme inline {
+  --font-sans: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  --font-serif: 'Georgia Pro', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Courier New', Courier, monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Georgia Pro', Georgia, 'Times New Roman', serif;
+  }
+}

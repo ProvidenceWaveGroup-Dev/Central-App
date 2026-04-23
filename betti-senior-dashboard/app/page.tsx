@@ -421,7 +421,7 @@ export default function SeniorDashboard() {
               Welcome Back, Margaret
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              Here&apos;s your daily health overview
+              Here&apos;s your daily overview
             </p>
           </div>
 
@@ -1013,8 +1013,8 @@ export default function SeniorDashboard() {
             Daily Encouragement
           </h3>
           <p className="text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed">
-            You're doing wonderfully today, Margaret! Your consistent health
-            habits are paying off. Remember, every small step counts toward
+            You're doing wonderfully today, Margaret! Your consistent daily
+            routine is paying off. Remember, every small step counts toward
             your well-being. Your family is proud of how well you're taking
             care of yourself.
           </p>

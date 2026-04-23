@@ -217,11 +217,11 @@ export default function ProfilePage() {
           <div className="rounded-xl border border-gray-200 bg-white p-5 lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <Heart className="h-5 w-5 text-[#233E7D]" />
-              <h2 className="font-serif text-lg font-semibold text-gray-900">Health Information</h2>
+              <h2 className="font-serif text-lg font-semibold text-gray-900">Support Profile</h2>
             </div>
             <div className="space-y-4">
               {[
-                { id: "conditions", key: "medicalConditions", label: "Medical Conditions", type: "textarea" },
+                { id: "conditions", key: "medicalConditions", label: "Noted Conditions", type: "textarea" },
                 { id: "allergies", key: "allergies", label: "Allergies", type: "input" },
                 { id: "medications", key: "medications", label: "Current Medications", type: "textarea" },
                 { id: "notes", key: "notes", label: "Additional Notes", type: "textarea" },

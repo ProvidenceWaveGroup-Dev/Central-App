@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { EVENT_TYPE } from "@/lib/event-types";
 import {
   Droplets,
   Pill,
@@ -89,13 +90,13 @@ const priorityConfig: Record<Priority, {
 // ── Icon Map ──────────────────────────────────────────────────────────────────
 
 const typeIcon: Record<string, React.ElementType> = {
-  fall:       ShieldAlert,
-  medication: Pill,
-  hydration:  Droplets,
-  activity:   Activity,
-  environment:Wind,
-  temperature:Thermometer,
-  default:    Bell,
+  [EVENT_TYPE.FALL_DETECTED]:    ShieldAlert,
+  [EVENT_TYPE.MISSED_MEDICATION]:Pill,
+  [EVENT_TYPE.INACTIVITY]:       Activity,
+  [EVENT_TYPE.VITALS_OUT_OF_RANGE]: Wind,
+  [EVENT_TYPE.TEMP_SPIKE]:       Thermometer,
+  hydration:                     Droplets,
+  default:                       Bell,
 };
 
 function AlertIcon({ type, priority }: { type: string; priority: Priority }) {
@@ -112,14 +113,14 @@ function AlertIcon({ type, priority }: { type: string; priority: Priority }) {
 
 const SIMULATION_ALERTS: Omit<Alert, "id" | "acknowledged" | "arrivedAt">[] = [
   {
-    type: "fall",
+    type: EVENT_TYPE.FALL_DETECTED,
     title: "Fall Detected — Living Room",
     message: "Sensor detected an impact event consistent with a fall. Please confirm you are okay.",
     time: "Now",
     priority: "critical",
   },
   {
-    type: "medication",
+    type: EVENT_TYPE.MISSED_MEDICATION,
     title: "Missed Medication — Morning Dose",
     message: "Your 9:00 AM medication has not been recorded as taken.",
     time: "9:15 AM",
@@ -133,21 +134,21 @@ const SIMULATION_ALERTS: Omit<Alert, "id" | "acknowledged" | "arrivedAt">[] = [
     priority: "low",
   },
   {
-    type: "environment",
+    type: EVENT_TYPE.VITALS_OUT_OF_RANGE,
     title: "Air Quality Alert — Bedroom",
     message: "CO₂ levels in the bedroom have exceeded the safe threshold.",
     time: "Now",
     priority: "critical",
   },
   {
-    type: "activity",
+    type: EVENT_TYPE.INACTIVITY,
     title: "Inactivity Detected",
     message: "No movement recorded in the last 90 minutes. A check-in may be needed.",
     time: "1:45 PM",
     priority: "medium",
   },
   {
-    type: "temperature",
+    type: EVENT_TYPE.TEMP_SPIKE,
     title: "Room Temperature Low",
     message: "Living room temperature has dropped below comfortable range (17°C).",
     time: "2:10 PM",
@@ -276,7 +277,7 @@ export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([
     {
       id: 1,
-      type: "medication",
+      type: EVENT_TYPE.MISSED_MEDICATION,
       title: "Afternoon Medication",
       message: "Time for your 2:00 PM medication.",
       time: "2:00 PM",

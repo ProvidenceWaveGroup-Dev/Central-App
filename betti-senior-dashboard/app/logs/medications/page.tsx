@@ -106,7 +106,7 @@ export default function MedicationsPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div>
           <h1 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">Medication History</h1>
-          <p className="text-sm text-gray-500 mt-1">Track your medication adherence and health metrics</p>
+          <p className="text-sm text-gray-500 mt-1">Track your medication adherence and daily routine</p>
         </div>
 
         {missedToday.length > 0 && (
@@ -165,7 +165,7 @@ export default function MedicationsPage() {
               <TrendingUp className="h-5 w-5 text-blue-600" />
               <span className="text-2xl font-bold text-blue-600">{healthMetrics.improvementScore}%</span>
             </div>
-            <p className="mt-2 text-xs font-medium text-gray-600">Health Improvement</p>
+            <p className="mt-2 text-xs font-medium text-gray-600">Routine Trend</p>
             <div className="mt-2 h-2 rounded-full bg-blue-100">
               <div className="h-2 rounded-full bg-blue-600 transition-all" style={{ width: `${healthMetrics.improvementScore}%` }} />
             </div>

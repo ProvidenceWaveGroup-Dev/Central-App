@@ -41,6 +41,7 @@ import {
   UserRoundPen,
   Users,
 } from "lucide-react";
+import { VOCAB } from "@/lib/vocabulary";
 
 type Gender = "male" | "female" | "other";
 
@@ -594,7 +595,7 @@ export function PatientsSection() {
       ? Number(form.facility_id)
       : (facilities[0]?.facility_id ?? NaN);
     if (!Number.isFinite(selectedFacilityId) || selectedFacilityId <= 0) {
-      setLoadError("Select a facility before creating a patient.");
+      setLoadError("Select a facility before adding a resident.");
       return;
     }
     setIsMutating(true);
@@ -693,7 +694,7 @@ export function PatientsSection() {
 
   const handleDeletePatient = async (patient: PatientRow) => {
     const confirmed = window.confirm(
-      `Delete patient ${patient.first_name} ${patient.last_name}? This action cannot be undone.`,
+      `Delete resident ${patient.first_name} ${patient.last_name}? This action cannot be undone.`,
     );
     if (!confirmed) {
       return;
@@ -752,21 +753,21 @@ export function PatientsSection() {
       <div className="flex-shrink-0 space-y-6 pb-4">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Patients</h1>
-            <p className="text-muted-foreground">Manage patient records from live database data</p>
+            <h1 className="text-3xl font-bold text-foreground">{VOCAB.RESIDENTS}</h1>
+            <p className="text-muted-foreground">Manage resident records from live database data</p>
           </div>
 
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
-                Add Patient
+                Add {VOCAB.RESIDENT}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[520px]">
               <DialogHeader>
-                <DialogTitle>Add Patient</DialogTitle>
-                <DialogDescription>Create a new patient profile in the database.</DialogDescription>
+                <DialogTitle>Add {VOCAB.RESIDENT}</DialogTitle>
+                <DialogDescription>Create a new resident record in the database.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-2">
                 <div className="grid grid-cols-2 gap-4">
@@ -859,7 +860,7 @@ export function PatientsSection() {
                   Cancel
                 </Button>
                 <Button onClick={handleCreatePatient} disabled={isMutating}>
-                  {isMutating ? "Creating..." : "Create Patient"}
+                  {isMutating ? "Adding..." : `Add ${VOCAB.RESIDENT}`}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -894,7 +895,7 @@ export function PatientsSection() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{patients.length}</div>
-                  <div className="text-xs text-muted-foreground">Total Patients</div>
+                  <div className="text-xs text-muted-foreground">Total {VOCAB.RESIDENTS}</div>
                 </div>
               </div>
             </CardContent>
@@ -945,16 +946,16 @@ export function PatientsSection() {
       <div className="min-h-0 flex-1 overflow-y-auto pr-2">
         <Card className="mb-4">
           <CardHeader>
-            <CardTitle>Patient List ({filteredPatients.length})</CardTitle>
+            <CardTitle>{VOCAB.RESIDENT} List ({filteredPatients.length})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Patient</th>
+                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">{VOCAB.RESIDENT}</th>
                     <th className="p-3 text-left text-sm font-medium text-muted-foreground">Facility</th>
-                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Clinical Profile</th>
+                    <th className="p-3 text-left text-sm font-medium text-muted-foreground">Support Profile</th>
                     <th className="p-3 text-left text-sm font-medium text-muted-foreground">Falls / Risk</th>
                     <th className="p-3 text-left text-sm font-medium text-muted-foreground">Care Plan</th>
                     <th className="p-3 text-left text-sm font-medium text-muted-foreground">Alerts</th>
@@ -980,7 +981,7 @@ export function PatientsSection() {
                       <td className="p-3 text-sm">
                         <div className="flex flex-col gap-1">
                           <span className="font-medium">
-                            {truncateText(patient.chronic_conditions, 58) || "No conditions listed"}
+                            {truncateText(patient.chronic_conditions, 58) || "No noted conditions"}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             Allergies: {truncateText(patient.allergies, 42) || "None listed"}
@@ -1085,8 +1086,8 @@ export function PatientsSection() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="sm:max-w-[520px]">
           <DialogHeader>
-            <DialogTitle>Edit Patient</DialogTitle>
-            <DialogDescription>Update patient details and save to database.</DialogDescription>
+            <DialogTitle>Edit {VOCAB.RESIDENT}</DialogTitle>
+            <DialogDescription>Update resident details and save to database.</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="grid grid-cols-2 gap-4">

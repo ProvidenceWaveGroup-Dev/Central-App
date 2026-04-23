@@ -13,7 +13,7 @@
     "dev:fire": "npm run dev --prefix ./betti-fire-service-dashboard",
     "dev:admin": "npm run dev --prefix ./betti-admin-dashboard",
     "dev:operator": "npm run dev --prefix ./betti-operator-dashboard",
-    "dev:ashp": "npm run dev --prefix ./ashp-admin-dashboard",
+    "dev:ashp": "npm run dev --prefix ./city-and-transitional-housing-dashboard",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
