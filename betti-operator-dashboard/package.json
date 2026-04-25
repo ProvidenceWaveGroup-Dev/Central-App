@@ -27,7 +27,7 @@
     "clsx": "^2.1.1",
     "date-fns": "4.1.0",
     "lucide-react": "^0.454.0",
-    "next": "15.2.8",
+    "next": "15.5.15",
     "react": "^19",
     "react-dom": "^19",
     "tailwind-merge": "^2.5.5",
@@ -42,5 +42,9 @@
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
     "typescript": "^5"
+  },
+  "overrides": {
+    "flatted": "^3.4.2",
+    "picomatch": "^4.0.4"
   }
 }
