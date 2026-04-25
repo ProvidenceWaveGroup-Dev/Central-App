@@ -30,6 +30,7 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
+import { DisclaimerBar } from "@/components/disclaimer-bar";
 
 const CardPlaceholder = () => (
   <div className="rounded-xl border border-gray-200 bg-white p-5 animate-pulse">
@@ -1020,6 +1021,7 @@ export default function SeniorDashboard() {
           </p>
         </div>
       </div>
+      <DisclaimerBar />
     </div>
   );
 }

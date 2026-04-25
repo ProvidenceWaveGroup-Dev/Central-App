@@ -349,7 +349,7 @@ export default function CalendarPage() {
           </Link>
           <div>
             <h1 className="font-serif text-2xl md:text-3xl font-bold text-gray-900">Caregiver Calendar</h1>
-            <p className="text-sm text-gray-500 mt-1">Live visit and checkup scheduling for assigned patients.</p>
+            <p className="text-sm text-gray-500 mt-1">Live visit and wellness check scheduling for assigned residents.</p>
           </div>
         </div>
 
@@ -382,7 +382,7 @@ export default function CalendarPage() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Patient</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Resident</label>
               <input
                 value={currentPatient?.patient_name || "Current Account"}
                 readOnly
@@ -404,7 +404,7 @@ export default function CalendarPage() {
                 value={appointmentType}
                 onChange={(event) => setAppointmentType(event.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="home_checkup"
+                placeholder="home_visit"
               />
             </div>
             <div>

@@ -69,7 +69,7 @@ export type EnvironmentType =
   | "transitional_housing"
   | "permanent_supportive"
   | "private_residence"
-  | "medical_facility"
+  | "care_facility"
   | "unknown"
 
 export interface LivingEnvironment {

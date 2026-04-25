@@ -14,6 +14,7 @@ import { OccupancyCard } from "@/components/occupancy-card";
 import { FallAlertCard } from "@/components/fall-alert-card";
 import { EnvironmentCard } from "@/components/environment-card";
 import { BettiLoader, usePageLoader } from "@/components/betti-loader";
+import { DisclaimerBar } from "@/components/disclaimer-bar";
 import SecurityPage from "./security/page";
 
 type AssignedPatient = {
@@ -94,6 +95,7 @@ export default function Dashboard() {
         <div className="p-4 md:p-6 lg:p-8">
           <div className="mx-auto max-w-7xl">{renderMainContent()}</div>
         </div>
+        <DisclaimerBar />
       </CaregiverLayoutShell>
     </>
   );

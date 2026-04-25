@@ -34,6 +34,7 @@ import {
   Check,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { DisclaimerBar } from "@/components/disclaimer-bar"
 
 export default function SettingsPage() {
   const { toast } = useToast()
@@ -89,7 +90,7 @@ export default function SettingsPage() {
     setIsEditingProfile(false)
     toast({
       title: "Profile Updated",
-      description: "Your patient profile has been successfully updated.",
+      description: "Your resident profile has been successfully updated.",
     })
   }
 
@@ -172,12 +173,12 @@ export default function SettingsPage() {
       </div>
 
       <div className="space-y-6">
-        {/* Patient Profile */}
+        {/* Resident Profile */}
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-serif flex items-center gap-2">
               <User className="h-5 w-5" />
-              Patient Profile
+              Resident Profile
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -204,7 +205,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="patientId">Patient ID</Label>
+              <Label htmlFor="patientId">Resident ID</Label>
               <Input id="patientId" defaultValue="#12847" disabled className="bg-muted" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -436,7 +437,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="autoBackup">Automatic Backup</Label>
-                <p className="text-sm text-muted-foreground">Daily backup of health data</p>
+                <p className="text-sm text-muted-foreground">Daily backup of event data</p>
               </div>
               <Switch id="autoBackup" checked={autoBackup} onCheckedChange={setAutoBackup} />
             </div>
@@ -465,7 +466,7 @@ export default function SettingsPage() {
                 <div>
                   <p className="font-semibold text-sm text-foreground mb-1">Data Retention</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Health data is retained for 7 years in compliance with medical record regulations. You can export
+                    Event data is retained for 7 years in compliance with applicable regulations. You can export
                     your data at any time.
                   </p>
                 </div>
@@ -720,6 +721,7 @@ export default function SettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <DisclaimerBar />
     </div>
   )
 }

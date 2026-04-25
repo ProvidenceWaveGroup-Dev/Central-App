@@ -664,7 +664,7 @@ export default function SignUpForm() {
                 </label>
                 <input
                   className="w-full rounded-lg border border-[#DADADA] bg-white px-3 py-2 text-sm text-[#59595B] focus:border-[#5C7F39] focus:outline-none focus:ring-2 focus:ring-[#5C7F39]/30"
-                  placeholder="Allergies, DNR status, notes"
+                  placeholder="Allergies, care directives, notes"
                   value={formData.emergencyNotes}
                   onChange={(event) =>
                     updateField(

@@ -11,6 +11,7 @@ import { EntryRouteRecommendation } from "@/components/entry-route-recommendatio
 import { DeviceHealth } from "@/components/device-health"
 import { MentalHealthCheck } from "@/components/mental-health-check"
 import { EnvironmentCard } from "@/components/environment-card"
+import { DisclaimerBar } from "@/components/disclaimer-bar"
 
 export default function DashboardPage() {
   return (
@@ -47,6 +48,8 @@ export default function DashboardPage() {
         {/* Daily Summary */}
         <RoutineOverview />
       </div>
-    </div></div>
+    </div>
+    <DisclaimerBar />
+  </div>
   )
 }

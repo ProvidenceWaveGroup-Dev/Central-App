@@ -11,6 +11,7 @@ import {
   Save,
   X,
 } from "lucide-react";
+import { DisclaimerBar } from "@/components/disclaimer-bar";
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
@@ -263,6 +264,7 @@ export default function ProfilePage() {
           Keep your profile information up to date for emergency situations
         </div>
       </div>
+      <DisclaimerBar />
     </div>
   );
 }

@@ -13,7 +13,7 @@ const reports = [
     date: "2024-01-10",
     type: "Daily Report",
     status: "Generated",
-    description: "Complete summary of patient activities, incidents, and health metrics for January 10, 2024",
+    description: "Complete summary of resident activities, incidents, and environment metrics for January 10, 2024",
   },
   {
     id: 2,

@@ -12,6 +12,7 @@ import { ResidentsPage } from "@/components/pages/residents-page"
 import { HealthWellnessPage } from "@/components/pages/health-wellness-page"
 import { MessagesPage } from "@/components/pages/messages-page"
 import { SettingsPage } from "@/components/pages/settings-page"
+import { DisclaimerBar } from "@/components/disclaimer-bar"
 
 export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState("dashboard")
@@ -58,6 +59,7 @@ export default function Dashboard() {
           )}
         >
           {renderPage()}
+          <DisclaimerBar />
         </main>
       </div>
     </div>

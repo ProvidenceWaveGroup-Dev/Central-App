@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { DisclaimerBar } from "@/components/disclaimer-bar"
 
 export default function SettingsPage() {
   const { toast } = useToast()
@@ -366,6 +367,7 @@ export default function SettingsPage() {
           </div>
         </DialogContent>
       </Dialog>
+      <DisclaimerBar />
     </div></div>
   )
 }

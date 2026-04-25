@@ -18,14 +18,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast"
+import { DisclaimerBar } from "@/components/disclaimer-bar"
 
 export default function CommunicationPage() {
   const [message, setMessage] = useState("")
-  const [recipient, setRecipient] = useState<"caregiver" | "patient">("caregiver")
+  const [recipient, setRecipient] = useState<"caregiver" | "resident">("caregiver")
   const { toast } = useToast()
   const [messages, setMessages] = useState([
-    { id: 1, sender: "caregiver", text: "How are you feeling today?", time: "10:30 AM" },
-    { id: 2, sender: "patient", text: "I'm doing well, thank you!", time: "10:32 AM" },
+    { id: 1, sender: "caregiver", text: "How are you doing today?", time: "10:30 AM" },
+    { id: 2, sender: "resident", text: "I'm doing well, thank you!", time: "10:32 AM" },
     { id: 3, sender: "caregiver", text: "Great! Remember to take your medication.", time: "10:35 AM" },
   ])
 
@@ -43,7 +44,7 @@ export default function CommunicationPage() {
       setMessage("")
       toast({
         title: "Message Sent",
-        description: `Your message was sent to ${recipient === "caregiver" ? "Sarah Johnson" : "Patient"}.`,
+        description: `Your message was sent to ${recipient === "caregiver" ? "Sarah Johnson" : "Resident"}.`,
       })
     }
   }
@@ -58,7 +59,7 @@ export default function CommunicationPage() {
   const handleSendNotification = () => {
     toast({
       title: "Notification Sent",
-      description: "Push notification has been delivered to the patient.",
+      description: "Push notification has been delivered to the resident.",
     })
   }
 
@@ -68,7 +69,7 @@ export default function CommunicationPage() {
       <div className="space-y-6">
         <div>
           <h1 className="font-serif text-2xl md:text-3xl font-bold text-foreground">Communication Center</h1>
-          <p className="text-muted-foreground mt-1">Connect with caregiver and patient</p>
+          <p className="text-muted-foreground mt-1">Connect with caregiver and resident</p>
         </div>
 
         <Tabs defaultValue="chat" className="w-full">
@@ -93,10 +94,10 @@ export default function CommunicationPage() {
                                 : "bg-secondary text-secondary-foreground"
                             }
                           >
-                            {recipient === "caregiver" ? "SJ" : "PT"}
+                            {recipient === "caregiver" ? "SJ" : "RS"}
                           </AvatarFallback>
                         </Avatar>
-                        <span>{recipient === "caregiver" ? "Sarah Johnson (Caregiver)" : "Patient"}</span>
+                        <span>{recipient === "caregiver" ? "Sarah Johnson (Caregiver)" : "Resident"}</span>
                       </div>
                       <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
@@ -110,11 +111,11 @@ export default function CommunicationPage() {
                       </Avatar>
                       Sarah Johnson (Caregiver)
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setRecipient("patient")}>
+                    <DropdownMenuItem onClick={() => setRecipient("resident")}>
                       <Avatar className="h-6 w-6 mr-2">
-                        <AvatarFallback className="bg-secondary text-secondary-foreground text-xs">PT</AvatarFallback>
+                        <AvatarFallback className="bg-secondary text-secondary-foreground text-xs">RS</AvatarFallback>
                       </Avatar>
-                      Patient
+                      Resident
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -183,28 +184,28 @@ export default function CommunicationPage() {
               </Card>
 
               <Card className="p-6 transition-all hover:shadow-lg duration-300">
-                <h3 className="font-serif text-lg font-semibold text-foreground mb-4">Call Patient</h3>
+                <h3 className="font-serif text-lg font-semibold text-foreground mb-4">Call Resident</h3>
                 <div className="flex items-center gap-3 mb-6">
                   <Avatar className="h-16 w-16">
-                    <AvatarFallback className="bg-secondary text-secondary-foreground text-xl">PT</AvatarFallback>
+                    <AvatarFallback className="bg-secondary text-secondary-foreground text-xl">RS</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h4 className="font-semibold text-foreground">Patient</h4>
-                    <p className="text-sm text-muted-foreground">Resident</p>
+                    <h4 className="font-semibold text-foreground">Resident</h4>
+                    <p className="text-sm text-muted-foreground">Unit Resident</p>
                     <Badge className="mt-1 bg-green-600">Available</Badge>
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     className="flex-1 bg-primary hover:bg-primary/90"
-                    onClick={() => handleCall("audio", "Patient")}
+                    onClick={() => handleCall("audio", "Resident")}
                   >
                     <Phone className="mr-2 h-4 w-4" />
                     Audio Call
                   </Button>
                   <Button
                     className="flex-1 bg-secondary hover:bg-secondary/90"
-                    onClick={() => handleCall("video", "Patient")}
+                    onClick={() => handleCall("video", "Resident")}
                   >
                     <Video className="mr-2 h-4 w-4" />
                     Video Call
@@ -230,7 +231,7 @@ export default function CommunicationPage() {
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-primary shrink-0" />
                     <div>
-                      <p className="font-medium text-foreground">Audio call with Patient</p>
+                      <p className="font-medium text-foreground">Audio call with Resident</p>
                       <p className="text-sm text-muted-foreground">Yesterday at 11:00 AM • 8 min</p>
                     </div>
                   </div>
@@ -243,7 +244,7 @@ export default function CommunicationPage() {
           <TabsContent value="notifications" className="space-y-4 animate-in fade-in duration-500">
             <Card className="p-6">
               <h3 className="font-serif text-lg font-semibold text-foreground mb-4">
-                Send Push Notification to Patient
+                Send Push Notification to Resident
               </h3>
               <div className="space-y-4">
                 <div>
@@ -277,7 +278,7 @@ export default function CommunicationPage() {
                     <p className="font-medium text-foreground">Check-in Request</p>
                     <span className="text-xs text-muted-foreground">5 hours ago</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">How are you feeling today?</p>
+                  <p className="text-sm text-muted-foreground">How are you doing today?</p>
                   <Badge className="mt-2 bg-green-600">Delivered</Badge>
                 </div>
               </div>
@@ -285,6 +286,7 @@ export default function CommunicationPage() {
           </TabsContent>
         </Tabs>
       </div>
+      <DisclaimerBar />
     </div>
     </div>
   )

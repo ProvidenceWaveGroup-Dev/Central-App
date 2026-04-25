@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare, Users, Stethoscope, Building2, Send, X, AlertTriangle } from "lucide-react";
+import { MessageSquare, Users, ClipboardList, Building2, Send, X, AlertTriangle } from "lucide-react";
 
 // ── Shared helpers ─────────────────────────────────────────────────────────────
 const inputCls =
@@ -142,8 +142,8 @@ function FamilyUpdateModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── Clinical Note Modal ────────────────────────────────────────────────────────
-function ClinicalNoteModal({ onClose }: { onClose: () => void }) {
+// ── Support Note Modal ────────────────────────────────────────────────────────
+function SupportNoteModal({ onClose }: { onClose: () => void }) {
   const [resident, setResident]   = useState("");
   const [noteType, setNoteType]   = useState("");
   const [content, setContent]     = useState("");
@@ -173,7 +173,7 @@ function ClinicalNoteModal({ onClose }: { onClose: () => void }) {
 
   if (submitted) {
     return (
-      <Modal title="Clinical Note" onClose={onClose}>
+      <Modal title="Support Note" onClose={onClose}>
         <SuccessBanner message="Clinical note recorded successfully." />
         <button
           onClick={onClose}
@@ -186,7 +186,7 @@ function ClinicalNoteModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <Modal title="Clinical Note" onClose={onClose}>
+    <Modal title="Support Note" onClose={onClose}>
       <div>
         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
           Resident
@@ -217,7 +217,7 @@ function ClinicalNoteModal({ onClose }: { onClose: () => void }) {
           rows={5}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Record your clinical observation or note…"
+          placeholder="Record your support observation or note…"
           className={`${inputCls} resize-none`}
         />
       </div>
@@ -487,11 +487,11 @@ function DirectMessageModal({
 }
 
 // ── Static data ────────────────────────────────────────────────────────────────
-type QuickActionKey = "Family Update" | "Clinical Note" | "Team Message" | "Emergency Broadcast";
+type QuickActionKey = "Family Update" | "Support Note" | "Team Message" | "Emergency Broadcast";
 
 const quickActions: { label: QuickActionKey; icon: React.ElementType; bg: string; text: string }[] = [
-  { label: "Family Update",        icon: Users,        bg: "bg-blue-50 hover:bg-blue-100 border-blue-200",   text: "text-blue-700"   },
-  { label: "Clinical Note",        icon: Stethoscope,  bg: "bg-green-50 hover:bg-green-100 border-green-200", text: "text-green-700"  },
+  { label: "Family Update",        icon: Users,         bg: "bg-blue-50 hover:bg-blue-100 border-blue-200",   text: "text-blue-700"   },
+  { label: "Support Note",         icon: ClipboardList, bg: "bg-green-50 hover:bg-green-100 border-green-200", text: "text-green-700"  },
   { label: "Team Message",         icon: MessageSquare, bg: "bg-purple-50 hover:bg-purple-100 border-purple-200", text: "text-purple-700" },
   { label: "Emergency Broadcast",  icon: Send,         bg: "bg-red-50 hover:bg-red-100 border-red-200",       text: "text-red-700"    },
 ];
@@ -499,28 +499,28 @@ const quickActions: { label: QuickActionKey; icon: React.ElementType; bg: string
 interface Message {
   id: number;
   sender: string;
-  recipientType: "Family" | "Clinical" | "Team";
+  recipientType: "Family" | "Support" | "Team";
   subject: string;
   time: string;
   read: boolean;
 }
 
 const recentMessages: Message[] = [
-  { id: 1, sender: "You",              recipientType: "Family",   subject: "Update: Margaret Collins — Stable after fall assessment",  time: "10 min ago", read: true  },
-  { id: 2, sender: "Dr. Angela Rivera", recipientType: "Clinical", subject: "Adjust medication for Robert Chen (Room 118)",             time: "25 min ago", read: false },
-  { id: 3, sender: "Nurse Sarah Kim",  recipientType: "Team",     subject: "Room 204 needs extra monitoring this shift",               time: "45 min ago", read: true  },
-  { id: 4, sender: "Collins Family",   recipientType: "Family",   subject: "RE: Thank you for the update on Mom",                      time: "1 hr ago",   read: false },
-  { id: 5, sender: "Maria Lopez",      recipientType: "Team",     subject: "Shift handoff notes — important items flagged",            time: "2 hr ago",   read: true  },
-  { id: 6, sender: "You",              recipientType: "Clinical", subject: "Vitals report for Thomas Wright — temp elevated",          time: "3 hr ago",   read: true  },
+  { id: 1, sender: "You",              recipientType: "Family",  subject: "Update: Margaret Collins — Stable after fall assessment",  time: "10 min ago", read: true  },
+  { id: 2, sender: "Dr. Angela Rivera", recipientType: "Support", subject: "Adjust medication for Robert Chen (Room 118)",            time: "25 min ago", read: false },
+  { id: 3, sender: "Nurse Sarah Kim",  recipientType: "Team",    subject: "Room 204 needs extra monitoring this shift",              time: "45 min ago", read: true  },
+  { id: 4, sender: "Collins Family",   recipientType: "Family",  subject: "RE: Thank you for the update on Mom",                     time: "1 hr ago",   read: false },
+  { id: 5, sender: "Maria Lopez",      recipientType: "Team",    subject: "Shift handoff notes — important items flagged",           time: "2 hr ago",   read: true  },
+  { id: 6, sender: "You",              recipientType: "Support", subject: "Sensor report for Thomas Wright — temp elevated",         time: "3 hr ago",   read: true  },
 ];
 
 const recipientColors: Record<string, string> = {
-  Family:   "bg-blue-100 text-blue-700",
-  Clinical: "bg-green-100 text-green-700",
-  Team:     "bg-purple-100 text-purple-700",
+  Family:  "bg-blue-100 text-blue-700",
+  Support: "bg-green-100 text-green-700",
+  Team:    "bg-purple-100 text-purple-700",
 };
 
-const contactTabs = ["Families", "Clinical Team", "Management"] as const;
+const contactTabs = ["Families", "Support Team", "Management"] as const;
 
 const contacts: Record<string, { name: string; role: string }[]> = {
   Families: [
@@ -529,10 +529,10 @@ const contacts: Record<string, { name: string; role: string }[]> = {
     { name: "Wilson Family",  role: "James Wilson (Room 105)"     },
     { name: "Torres Family",  role: "Helen Torres (Room 220)"     },
   ],
-  "Clinical Team": [
+  "Support Team": [
     { name: "Dr. Angela Rivera", role: "Primary Physician"        },
     { name: "Dr. Mark Thompson", role: "Geriatric Specialist"     },
-    { name: "Lisa Park, PT",     role: "Physical Therapist"       },
+    { name: "Lisa Park",         role: "Mobility Support"         },
     { name: "Pharmacy Team",     role: "Medication Management"    },
   ],
   Management: [
@@ -546,7 +546,7 @@ const contacts: Record<string, { name: string; role: string }[]> = {
 // ── Page ──────────────────────────────────────────────────────────────────────
 type ActiveModal =
   | { type: "familyUpdate" }
-  | { type: "clinicalNote" }
+  | { type: "supportNote" }
   | { type: "teamMessage" }
   | { type: "emergencyBroadcast" }
   | { type: "directMessage"; contact: { name: string; role: string } }
@@ -558,7 +558,7 @@ export default function CommunicationPage() {
 
   const openQuickAction = (label: QuickActionKey) => {
     if (label === "Family Update")       setActiveModal({ type: "familyUpdate" });
-    if (label === "Clinical Note")       setActiveModal({ type: "clinicalNote" });
+    if (label === "Support Note")         setActiveModal({ type: "supportNote" });
     if (label === "Team Message")        setActiveModal({ type: "teamMessage" });
     if (label === "Emergency Broadcast") setActiveModal({ type: "emergencyBroadcast" });
   };
@@ -653,7 +653,7 @@ export default function CommunicationPage() {
 
       {/* Modals */}
       {activeModal?.type === "familyUpdate"       && <FamilyUpdateModal       onClose={() => setActiveModal(null)} />}
-      {activeModal?.type === "clinicalNote"        && <ClinicalNoteModal        onClose={() => setActiveModal(null)} />}
+      {activeModal?.type === "supportNote"          && <SupportNoteModal          onClose={() => setActiveModal(null)} />}
       {activeModal?.type === "teamMessage"         && <TeamMessageModal         onClose={() => setActiveModal(null)} />}
       {activeModal?.type === "emergencyBroadcast"  && <EmergencyBroadcastModal  onClose={() => setActiveModal(null)} />}
       {activeModal?.type === "directMessage"       && (

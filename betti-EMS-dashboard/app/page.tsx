@@ -15,6 +15,7 @@ import { VOCHazardCard } from "@/components/voc-hazard-card";
 import { ThermalRiskCard } from "@/components/thermal-risk-card";
 import { HumidityRiskCard } from "@/components/humidity-risk-card";
 import { NotificationBellWidget } from "@/components/notification-bell-widget";
+import { DisclaimerBar } from "@/components/disclaimer-bar";
 export default function BettiDashboard() {
   return (
     <div className="p-4 md:p-6 lg:p-8">
@@ -65,6 +66,7 @@ export default function BettiDashboard() {
         </div>
         <EventFeed />
       </div>
+      <DisclaimerBar />
     </div>
   );
 }

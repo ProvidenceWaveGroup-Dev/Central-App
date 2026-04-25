@@ -14,7 +14,7 @@
  * Hydration          15 %     daily_adherence / hydration_logs
  * Sleep              15 %     daily_adherence / vital_metrics
  * Activity           10 %     daily_adherence / sensor_readings
- * Mood               10 %     mental_health_logs
+ * Mood               10 %     behavior_wellness_logs
  * ─────────────────────────────────────────────────────────────────────
  *
  * API fields that map to each input:
@@ -32,8 +32,8 @@
  *   vitals.blood_sugar_mg_dl      → sensor_readings (glucose sensor) or vital_metrics extension
  *   vitals.respiratory_rate       → sensor_readings (vital sensor)
  *
- *   mentalHealth.stress_level     → mental_health_logs.stress_level  (0.0 – 1.0)
- *   mentalHealth.mood             → mental_health_logs.mood          (string fallback)
+ *   mentalHealth.stress_level     → behavior_wellness_logs.stress_level  (0.0 – 1.0)
+ *   mentalHealth.mood             → behavior_wellness_logs.mood          (string fallback)
  */
 
 // ── Input / Output types ──────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ export interface WellbeingInputs {
     blood_sugar_mg_dl?:       number | null;
     respiratory_rate?:        number | null;
   };
-  /** Sourced from mental_health_logs (latest row for the day) */
+  /** Sourced from behavior_wellness_logs (latest row for the day) */
   mentalHealth: {
     /** 0.0 = completely calm, 1.0 = maximum stress */
     stress_level?: number | null;

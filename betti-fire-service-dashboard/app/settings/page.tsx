@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
+import { DisclaimerBar } from "@/components/disclaimer-bar"
 
 export default function SettingsPage() {
   const { toast } = useToast()
@@ -124,7 +125,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="critical-alerts">Critical Alerts</Label>
-                    <p className="text-sm text-muted-foreground">Fire, medical emergencies, panic buttons</p>
+                    <p className="text-sm text-muted-foreground">Fire, emergency events, panic buttons</p>
                   </div>
                   <Switch id="critical-alerts" defaultChecked />
                 </div>
@@ -316,6 +317,7 @@ export default function SettingsPage() {
           </Button>
         </div>
       </div>
+      <DisclaimerBar />
     </div>
     </div>
   )

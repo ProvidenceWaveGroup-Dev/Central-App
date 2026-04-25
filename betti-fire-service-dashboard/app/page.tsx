@@ -11,6 +11,7 @@ import { DeviceStatusBar } from "@/components/device-status-bar"
 import { MetricsGrid } from "@/components/metrics-grid"
 import { CaregiverCard } from "@/components/caregiver-card"
 import { MentalHealthCheck } from "@/components/mental-health-check"
+import { DisclaimerBar } from "@/components/disclaimer-bar"
 
 export default function DashboardPage() {
   return (
@@ -56,6 +57,7 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+    <DisclaimerBar />
     </div>
   );
 }

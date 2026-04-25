@@ -432,17 +432,17 @@ export default function AppointmentsPage() {
             </div>
           </div>
 
-          {/* Health Journey Progress */}
+          {/* Routine Progress */}
           <div className="rounded-xl bg-[#233E7D] p-6 text-center">
             <h3 className="font-serif text-lg font-semibold text-white mb-2">
-              Health Journey Progress
+              Routine Progress
             </h3>
             <p className="text-white/90 leading-relaxed">
               {completionRate >= 80
-                ? "Excellent work staying on top of your medical appointments! Your commitment to regular check-ups is keeping you healthy and strong."
+                ? "Excellent work staying on top of your scheduled visits! Your commitment to regular appointments is paying off."
                 : completionRate >= 60
-                ? "You're doing well with your medical care! Keep up the good work attending your appointments and following your doctor's advice."
-                : "Remember, regular medical check-ups are important for your health. Don't hesitate to schedule appointments when needed - your health is worth it!"}
+                ? "You're doing well with your scheduled visits! Keep up the good work attending your appointments and following your care team's guidance."
+                : "Remember, regular scheduled visits are important for your well-being. Don't hesitate to book appointments when needed."}
             </p>
           </div>
         </div>

@@ -19,6 +19,7 @@ import {
   Zap,
   X,
 } from "lucide-react";
+import { DisclaimerBar } from "@/components/disclaimer-bar";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
@@ -760,6 +761,7 @@ export default function SettingsPage() {
       <div className="text-center text-sm text-gray-400 pt-4">
         Changes are saved automatically when you click &quot;Save Settings&quot;
       </div>
+      <DisclaimerBar />
     </div>
   );
 }

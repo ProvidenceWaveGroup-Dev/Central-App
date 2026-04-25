@@ -155,8 +155,8 @@ const mockEnvironments: Record<number, LivingEnvironment[]> = {
   3: [
     {
       id: 8, resident_id: 3,
-      environment_type: "medical_facility",
-      location_name: "Capital City Medical Center",
+      environment_type: "care_facility",
+      location_name: "Capital City Care Center",
       city: "Capital City",
       entry_date: "2023-06-01", exit_date: "2023-08-25",
       notes: "Recovery stay following health event",

@@ -26,6 +26,7 @@ import { ComplianceSection } from "@/components/sections/compliance-section";
 import { AuditLogSection } from "@/components/sections/audit-log-section";
 import { SocialImpactSection } from "@/components/sections/social-impact-section";
 import { BettiLoader, usePageLoader } from "@/components/betti-loader";
+import { DisclaimerBar } from "@/components/disclaimer-bar";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import Image from "next/image";
@@ -251,6 +252,7 @@ export default function AdminDashboard() {
             );
           })}
         </div>
+        <DisclaimerBar />
       </main>
     </div>
   );

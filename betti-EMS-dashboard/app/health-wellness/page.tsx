@@ -3,6 +3,7 @@ import { HealthSnapshot } from "@/components/health-snapshot"
 import { VitalsMicroTiles } from "@/components/vitals-micro-tiles"
 import { MetricsGrid } from "@/components/metrics-grid"
 import { MedicationAcknowledgment } from "@/components/medication-acknowledgment"
+import { DisclaimerBar } from "@/components/disclaimer-bar"
 
 export default function HealthWellnessPage() {
   return (
@@ -22,6 +23,7 @@ export default function HealthWellnessPage() {
           <MetricsGrid />
         </div>
       </div>
+      <DisclaimerBar />
     </div>
   )
 }

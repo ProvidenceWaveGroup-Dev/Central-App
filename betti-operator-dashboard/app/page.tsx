@@ -18,6 +18,7 @@ import {
   Activity,
   X,
 } from "lucide-react";
+import { DisclaimerBar } from "@/components/disclaimer-bar";
 
 const stats = [
   { label: "Active Alerts", value: "5", icon: Bell, color: "text-red-600", bg: "bg-red-50", border: "border-red-200" },
@@ -272,6 +273,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      <DisclaimerBar />
     </div>
   );
 }

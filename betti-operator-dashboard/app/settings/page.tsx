@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Bell, Volume2, Monitor, User } from "lucide-react";
+import { DisclaimerBar } from "@/components/disclaimer-bar";
 
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState({
@@ -134,6 +135,7 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+      <DisclaimerBar />
     </div>
   );
 }

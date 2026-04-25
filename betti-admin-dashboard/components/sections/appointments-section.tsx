@@ -529,7 +529,7 @@ export function AppointmentsSection() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Create Appointment</DialogTitle>
-              <DialogDescription>Add a doctor check-up or clinical visit.</DialogDescription>
+              <DialogDescription>Add a wellness check or scheduled care visit.</DialogDescription>
             </DialogHeader>
             <AppointmentFormFields
               form={form}
@@ -718,7 +718,7 @@ export function AppointmentsSection() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Appointment</DialogTitle>
-            <DialogDescription>Update check-up details and timing.</DialogDescription>
+            <DialogDescription>Update visit details and timing.</DialogDescription>
           </DialogHeader>
           <AppointmentFormFields
             form={form}

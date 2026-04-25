@@ -248,7 +248,7 @@ export function InsightsTrends() {
           "100% medication adherence maintained",
           "Sleep patterns improved by 15% this month",
           "Regular exercise routine established",
-          "All medical appointments attended",
+          "All scheduled visits attended",
           "Consistent hydration levels",
         ],
         ["Monitor mobility trends", "Continue current care plan"],
@@ -293,7 +293,7 @@ export function InsightsTrends() {
           "Consistent sleep patterns observed",
           "Regular exercise routine followed",
           "All scheduled appointments attended",
-          "Stable vital signs throughout period",
+          "Stable monitored readings throughout period",
         ],
         ["Continue monitoring trends", "Maintain current care plan"],
       )

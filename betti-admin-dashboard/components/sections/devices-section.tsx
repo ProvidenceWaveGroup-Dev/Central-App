@@ -551,7 +551,7 @@ export function DevicesSection() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search devices, patients, rooms..."
+            placeholder="Search devices, residents, rooms..."
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
@@ -679,7 +679,7 @@ export function DevicesSection() {
 
                       <div className="grid grid-cols-2 gap-2 text-xs mb-2">
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Patient</span>
+                          <span className="text-muted-foreground">Resident</span>
                           <span className="font-medium truncate ml-1">{sensor.patient_name}</span>
                         </div>
                         <div className="flex justify-between">

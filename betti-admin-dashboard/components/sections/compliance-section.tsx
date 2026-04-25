@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 type ComplianceStatus = "compliant" | "due_soon" | "overdue" | "in_review";
-type ComplianceCategory = "regulatory" | "safety" | "privacy" | "clinical" | "operational";
+type ComplianceCategory = "regulatory" | "safety" | "privacy" | "care_protocols" | "operational";
 
 type ComplianceItem = {
   id: number;
@@ -34,13 +34,13 @@ const items: ComplianceItem[] = [
   { id: 1,  requirement: "State Licensing Renewal",             category: "regulatory",  facility: "All Facilities",   status: "compliant",  lastReview: "2025-12-01", nextDue: "2026-12-01", owner: "Admin Team" },
   { id: 2,  requirement: "HIPAA Privacy Training",              category: "privacy",     facility: "All Facilities",   status: "due_soon",   lastReview: "2025-04-10", nextDue: "2026-04-30", owner: "HR / Compliance" },
   { id: 3,  requirement: "Fire Safety Inspection",              category: "safety",      facility: "Sunrise Gardens",  status: "compliant",  lastReview: "2026-01-15", nextDue: "2026-07-15", owner: "Facilities" },
-  { id: 4,  requirement: "Medication Administration Audit",     category: "clinical",    facility: "Harbor View",      status: "overdue",    lastReview: "2025-10-22", nextDue: "2026-01-22", owner: "Clinical Lead" },
-  { id: 5,  requirement: "Fall Prevention Protocol Review",     category: "clinical",    facility: "Cedar Ridge",      status: "in_review",  lastReview: "2026-03-01", nextDue: "2026-06-01", owner: "Clinical Lead" },
+  { id: 4,  requirement: "Medication Administration Audit",     category: "care_protocols",    facility: "Harbor View",      status: "overdue",    lastReview: "2025-10-22", nextDue: "2026-01-22", owner: "Clinical Lead" },
+  { id: 5,  requirement: "Fall Prevention Protocol Review",     category: "care_protocols",    facility: "Cedar Ridge",      status: "in_review",  lastReview: "2026-03-01", nextDue: "2026-06-01", owner: "Clinical Lead" },
   { id: 6,  requirement: "Emergency Evacuation Drill",          category: "safety",      facility: "Meadow Brook",     status: "due_soon",   lastReview: "2025-10-05", nextDue: "2026-04-20", owner: "Facilities" },
   { id: 7,  requirement: "Staff Background Check Policy",       category: "regulatory",  facility: "All Facilities",   status: "compliant",  lastReview: "2026-02-01", nextDue: "2027-02-01", owner: "HR / Compliance" },
   { id: 8,  requirement: "Resident Rights Documentation",       category: "regulatory",  facility: "All Facilities",   status: "compliant",  lastReview: "2025-11-15", nextDue: "2026-11-15", owner: "Admin Team" },
   { id: 9,  requirement: "Device Data Security Assessment",     category: "privacy",     facility: "All Facilities",   status: "in_review",  lastReview: "2026-03-20", nextDue: "2026-09-20", owner: "IT / Security" },
-  { id: 10, requirement: "Infection Control Procedure Review",  category: "clinical",    facility: "Sunrise Gardens",  status: "overdue",    lastReview: "2025-09-30", nextDue: "2025-12-30", owner: "Clinical Lead" },
+  { id: 10, requirement: "Infection Control Procedure Review",  category: "care_protocols",    facility: "Sunrise Gardens",  status: "overdue",    lastReview: "2025-09-30", nextDue: "2025-12-30", owner: "Clinical Lead" },
   { id: 11, requirement: "Dietary & Nutrition Standards Audit", category: "operational", facility: "Harbor View",      status: "compliant",  lastReview: "2026-01-10", nextDue: "2026-07-10", owner: "Operations" },
   { id: 12, requirement: "Incident Reporting Policy Review",    category: "operational", facility: "All Facilities",   status: "due_soon",   lastReview: "2025-06-15", nextDue: "2026-06-15", owner: "Admin Team" },
 ];
@@ -56,7 +56,7 @@ const categoryColors: Record<ComplianceCategory, string> = {
   regulatory:  "bg-purple-100 text-purple-700",
   safety:      "bg-orange-100 text-orange-700",
   privacy:     "bg-teal-100 text-teal-700",
-  clinical:    "bg-sky-100 text-sky-700",
+  care_protocols: "bg-sky-100 text-sky-700",
   operational: "bg-gray-100 text-gray-700",
 };
 
@@ -101,7 +101,7 @@ export function ComplianceSection() {
         <ClipboardCheck className="h-6 w-6 text-muted-foreground" />
         <div>
           <h2 className="text-2xl font-bold">Compliance</h2>
-          <p className="text-sm text-muted-foreground">Regulatory, safety, clinical, and operational compliance tracking across all facilities.</p>
+          <p className="text-sm text-muted-foreground">Regulatory, safety, care-related, and operational compliance tracking across all facilities.</p>
         </div>
       </div>
 

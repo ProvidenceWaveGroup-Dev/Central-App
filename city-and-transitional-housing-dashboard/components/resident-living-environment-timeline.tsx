@@ -14,7 +14,7 @@ const envConfig: Record<
   transitional_housing:   { label: "Transitional Housing",    bar: "bg-yellow-400",  badge: "bg-yellow-100 text-yellow-700" },
   permanent_supportive:   { label: "Permanent Supportive",    bar: "bg-green-500",   badge: "bg-green-100 text-green-700" },
   private_residence:      { label: "Private Residence",       bar: "bg-blue-400",    badge: "bg-blue-100 text-blue-700" },
-  medical_facility:       { label: "Medical Facility",        bar: "bg-purple-400",  badge: "bg-purple-100 text-purple-700" },
+  care_facility:          { label: "Care Facility",           bar: "bg-purple-400",  badge: "bg-purple-100 text-purple-700" },
   unknown:                { label: "Unknown / Gap Period",    bar: "bg-gray-300",    badge: "bg-gray-100 text-gray-500" },
 }
 
